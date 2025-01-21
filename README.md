@@ -26,13 +26,6 @@ We appreciate and welcome contributions! If you’re interested in helping out, 
 3. Make your changes and test them.
 4. Submit a pull request with a detailed description of your changes.
 
-## Roadmap
-
-- [ ] Complete basic account support (Premium & Cracked)
-- [ ] Optimize performance for lower-end systems
-- [ ] Implement a user-friendly interface
-- [ ] Release Version 1.0
-
 ## Contact
 
 If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker or [STierProgrammer@gmail.com](mailto:contact@example.com).
