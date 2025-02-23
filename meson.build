@@ -1,13 +1,13 @@
 project('SynthLauncher', 'cpp', license: 'aGPL-3.0', version: '1.0.0', license_files: 'LICENSE', default_options: ['cpp_std=c++17', 'warning_level=3'])
 
 src = [
-  'src/http/builder.cc',
-  'src/http/parser.cc'
+  'src/entities/os.cc',
+  'src/entities/arch.cc',
+  'src/json/manifest.cc'
 ]
 
 test_src = [
-  'test/test.cc',
-  'test/http.cc'
+  'test/test.cc'
 ]
 
 # Build dependency
