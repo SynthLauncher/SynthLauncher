@@ -3,7 +3,8 @@ project('SynthLauncher', 'cpp', license: 'aGPL-3.0', version: '1.0.0', license_f
 src = [
   'src/entities/os.cc',
   'src/entities/arch.cc',
-  'src/json/manifest.cc'
+  'src/json/manifest.cc',
+  'src/config/app.cc'
 ]
 
 test_src = [
@@ -11,7 +12,7 @@ test_src = [
 ]
 
 # Build dependency
-simdjson = dependency('simdjson', required: true)
+simdjson = dependency('simdjson', required: false)
 
 # Test dependency
 gtest = dependency('gtest', required: false)
