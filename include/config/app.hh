@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <string>
+#include "include/httplib.h"
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"
 
@@ -17,3 +18,4 @@ struct AppConfig {
 };
 
 AppConfig initializeAppConfig();
+void initializeLauncherDir(AppConfig& config);

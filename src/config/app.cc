@@ -58,3 +58,35 @@ AppConfig initializeAppConfig() {
 
   return config;
 }
+
+// !!! Doesn't work yet!
+// !!! httplib.h caused some problems so I have to fix this
+void initializeLauncherDir(AppConfig &config) {
+  if (!fs::exists(config.DIR))
+    fs::create_directories(config.DIR);
+  if (!fs::exists(config.ASSETS_DIR))
+    fs::create_directories(config.ASSETS_DIR);
+  if (!fs::exists(config.LIBRARIES_DIR))
+    fs::create_directories(config.LIBRARIES_DIR);
+  if (!fs::exists(config.NATIVES_DIR))
+    fs::create_directories(config.NATIVES_DIR);
+
+  httplib::Client cli("https://launchermeta.mojang.com");
+
+  const fs::path manifest_path = config.DIR + "/manifest.json";
+
+  auto res = cli.Get("/mc/game/version_manifest.json");
+  
+  if (res && res->status == 200) {
+    std::ofstream out(manifest_path, std::ios::binary);
+    out.write(res->body.c_str(), res->body.size());
+    out.close();
+  } 
+  else {
+    if (!std::ifstream(manifest_path)) {
+      throw std::runtime_error(
+          "Failed to fetch Manifest.json; Response code: " +
+          std::to_string(res ? res->status : -1));
+    }
+  }
+}

@@ -6,7 +6,12 @@ src = [
   'src/json/manifest.cc',
   'src/config/app.cc',
   'src/http/builder.cc',
-  'src/http/parser.cc'
+  'src/http/parser.cc',
+  'src/json/assetindex.cc',
+  'src/json/client.cc',
+  'src/entities/instance.cc',
+  'src/config/config.cc',
+  'src/config/java.cc'
 ]
 
 test_src = [
