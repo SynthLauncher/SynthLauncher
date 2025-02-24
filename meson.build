@@ -4,11 +4,14 @@ src = [
   'src/entities/os.cc',
   'src/entities/arch.cc',
   'src/json/manifest.cc',
-  'src/config/app.cc'
+  'src/config/app.cc',
+  'src/http/builder.cc',
+  'src/http/parser.cc'
 ]
 
 test_src = [
-  'test/test.cc'
+  'test/test.cc',
+  'test/http.cc'
 ]
 
 # Build dependency

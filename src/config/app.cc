@@ -3,6 +3,7 @@
 AppConfig initializeAppConfig() {
     AppConfig config;
 
+    // OS Configuration
     #ifdef _WIN32
         config.OS = OperatingSystem::OS::Windows;
         const char* appData = std::getenv("APPDATA");
@@ -29,6 +30,7 @@ AppConfig initializeAppConfig() {
         }
     #endif
 
+    // Architecture Configuration
     #if defined(__x86_64__) || defined(_M_X64)
         config.ARCH = Architecture::Arch::X86_64;
     #elif defined(__i386) || defined(_M_IX86)
