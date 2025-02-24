@@ -8,4 +8,5 @@ namespace OperatingSystem {
     };
 
     OS os_from_string(const std::string &str);
+    std::string os_to_string(const OS& os);
 }

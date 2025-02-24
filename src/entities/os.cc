@@ -12,3 +12,12 @@ OperatingSystem::OS OperatingSystem::os_from_string(const std::string &str) {
         return OS::OSX;
     }
 }
+
+std::string OperatingSystem::os_to_string(const OperatingSystem::OS &os) {
+    switch (os)
+    {
+    case OS::Windows: return "windows";
+    case OS::Linux: return "linux";
+    case OS::OSX: return "osx";
+    }
+}

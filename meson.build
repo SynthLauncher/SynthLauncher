@@ -11,7 +11,8 @@ src = [
 
 test_src = [
   'test/test.cc',
-  'test/http.cc'
+  'test/http.cc',
+  'test/dir.cc'
 ]
 
 # Build dependency

@@ -12,6 +12,8 @@ struct AppConfig {
     fs::path NATIVES_DIR;
     OperatingSystem::OS OS;
     Architecture::Arch ARCH;
+
+    friend std::ostream& operator<< (std::ostream& os, const AppConfig& config);
 };
 
 AppConfig initializeAppConfig();
