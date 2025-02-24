@@ -1,7 +1,10 @@
 #include <iostream>
+#include <include/config/app.hh>
 
 int main() {
-  std::cout << "Hello, World!" << std::endl;
+  AppConfig config = initializeAppConfig();
   
+  fs::create_directories(config.DIR);
+
   return 0;
 }

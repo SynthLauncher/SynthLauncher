@@ -1,7 +1,13 @@
 #include <string>
+#include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 class Manifest {
 public:
+    static const fs::path PATH;
+
     class Latest {
     public:
         std::string release;
@@ -18,5 +24,5 @@ public:
     };
 
     Latest latest;
-    Version version[];
+    std::vector<Version> version;
 };
