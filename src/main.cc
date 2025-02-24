@@ -1,6 +1,10 @@
 #include <iostream>
+#include "include/config/app.hh"
 
 int main() {
-  std::cout << "Hello, World!\n";
+  AppConfig config = initializeAppConfig();
+
+  initializeLauncherDir(config);
+
   return 0;
 }

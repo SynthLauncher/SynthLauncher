@@ -1,3 +1,4 @@
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "include/config/app.hh"
 
 std::ostream &operator<<(std::ostream &os, const AppConfig &config) {
@@ -73,17 +74,17 @@ void initializeLauncherDir(AppConfig &config) {
 
   httplib::Client cli("https://launchermeta.mojang.com");
 
-  const fs::path manifest_path = config.DIR + "/manifest.json";
+  Manifest::PATH = config.DIR + "/manifest.json";
+ 
 
   auto res = cli.Get("/mc/game/version_manifest.json");
-  
+
   if (res && res->status == 200) {
-    std::ofstream out(manifest_path, std::ios::binary);
+    std::ofstream out(Manifest::PATH, std::ios::binary);
     out.write(res->body.c_str(), res->body.size());
     out.close();
-  } 
-  else {
-    if (!std::ifstream(manifest_path)) {
+  } else {
+    if (!std::ifstream(Manifest::PATH)) {
       throw std::runtime_error(
           "Failed to fetch Manifest.json; Response code: " +
           std::to_string(res ? res->status : -1));

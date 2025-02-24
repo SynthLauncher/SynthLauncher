@@ -6,7 +6,7 @@ namespace fs = std::filesystem;
 
 class Manifest {
 public:
-    static const fs::path PATH;
+    static fs::path PATH;
 
     class Latest {
     public:

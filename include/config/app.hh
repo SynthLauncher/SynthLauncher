@@ -3,6 +3,7 @@
 #include "include/httplib.h"
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"
+#include "include/json/manifest.hh"
 
 namespace fs = std::filesystem;
 
