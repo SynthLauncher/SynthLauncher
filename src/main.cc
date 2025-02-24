@@ -1,10 +1,8 @@
 #include <iostream>
 #include "include/config/app.hh"
+#include "include/json/assetindex.hh"
 
 int main() {
-  AppConfig config = initializeAppConfig();
-
-  initializeLauncherDir(config);
-
+  std::cout << "Hello, World!\n";
   return 0;
 }

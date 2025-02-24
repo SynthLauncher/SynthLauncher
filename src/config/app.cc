@@ -1,4 +1,3 @@
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "include/config/app.hh"
 
 std::ostream &operator<<(std::ostream &os, const AppConfig &config) {
@@ -60,8 +59,6 @@ AppConfig initializeAppConfig() {
   return config;
 }
 
-// !!! Doesn't work yet!
-// !!! httplib.h caused some problems so I have to fix this
 void initializeLauncherDir(AppConfig &config) {
   if (!fs::exists(config.DIR))
     fs::create_directories(config.DIR);
@@ -76,7 +73,6 @@ void initializeLauncherDir(AppConfig &config) {
 
   Manifest::PATH = config.DIR + "/manifest.json";
  
-
   auto res = cli.Get("/mc/game/version_manifest.json");
 
   if (res && res->status == 200) {

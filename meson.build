@@ -38,6 +38,6 @@ executable('SynthLauncher',
   link_args: '-static'
 )
 
-test_exe = executable('SynthLauncherTest', [src, test_src], dependencies: [gtest, simdjson])
+test_exe = executable('SynthLauncherTest', [src, test_src], dependencies: [gtest, simdjson, ws2_32, openssl, crypt32])
 
 test('SynthLauncherTest', test_exe)

@@ -1,3 +1,7 @@
+#pragma once
+
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+
 #include <filesystem>
 #include <string>
 #include "include/httplib.h"
