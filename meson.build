@@ -22,7 +22,10 @@ src = [
 test_src = [
   'test/test.cc',
   'test/http.cc',
-  'test/dir.cc'
+  'test/app.cc',
+  'test/java.cc',
+  'test/arch.cc',
+  'test/os.cc'
 ]
 
 # Build dependency

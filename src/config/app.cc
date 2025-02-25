@@ -13,44 +13,44 @@ std::ostream &operator<<(std::ostream &os, const AppConfig &config) {
 AppConfig initializeAppConfig() {
   AppConfig config;
 
-// OS Configuration
-#ifdef _WIN32
-  config.OS = OperatingSystem::OS::Windows;
-  const char *appData = std::getenv("APPDATA");
-  if (appData) {
-    config.DIR = std::string(appData) + "\\SynthLauncher";
-  } else {
-    config.DIR = "C:\\SynthLauncher";
-  }
-#elif __linux__
-  config.OS = OperatingSystem::OS::Linux;
-  const char *home = std::getenv("HOME");
-  if (home) {
-    config.DIR = std::string(home) + "/.synthlauncher";
-  } else {
-    config.DIR = "/usr/local/synthlauncher";
-  }
-#elif __APPLE__
-  config.OS = OperatingSystem::OS::OSX;
-  const char *home = std::getenv("HOME");
-  if (home) {
-    config.DIR =
-        std::string(home) + "/Library/Application Support/SynthLauncher";
-  } else {
-    config.DIR = "/usr/local/synthlauncher";
-  }
-#endif
+  // OS Configuration
+  #ifdef _WIN32
+    config.OS = OperatingSystem::OS::Windows;
+    const char *appData = std::getenv("APPDATA");
+    if (appData) {
+      config.DIR = std::string(appData) + "\\SynthLauncher";
+    } else {
+      config.DIR = "C:\\SynthLauncher";
+    }
+  #elif __linux__
+    config.OS = OperatingSystem::OS::Linux;
+    const char *home = std::getenv("HOME");
+    if (home) {
+      config.DIR = std::string(home) + "/.synthlauncher";
+    } else {
+      config.DIR = "/usr/local/synthlauncher";
+    }
+  #elif __APPLE__
+    config.OS = OperatingSystem::OS::OSX;
+    const char *home = std::getenv("HOME");
+    if (home) {
+      config.DIR =
+          std::string(home) + "/Library/Application Support/SynthLauncher";
+    } else {
+      config.DIR = "/usr/local/synthlauncher";
+    }
+  #endif
 
-// Architecture Configuration
-#if defined(__x86_64__) || defined(_M_X64)
-  config.ARCH = Architecture::Arch::X86_64;
-#elif defined(__i386) || defined(_M_IX86)
-  config.ARCH = Architecture::Arch::X86;
-#elif defined(__aarch64__)
-  config.ARCH = Architecture::Arch::Arm64;
-#elif defined(__arm__)
-  config.ARCH = Architecture::Arch::Arm;
-#endif
+  // Architecture Configuration
+  #if defined(__x86_64__) || defined(_M_X64)
+    config.ARCH = Architecture::Arch::X86_64;
+  #elif defined(__i386) || defined(_M_IX86)
+    config.ARCH = Architecture::Arch::X86;
+  #elif defined(__aarch64__)
+    config.ARCH = Architecture::Arch::Arm64;
+  #elif defined(__arm__)
+    config.ARCH = Architecture::Arch::Arm;
+  #endif
 
   config.ASSETS_DIR = fs::path(config.DIR) / "assets";
   config.LIBRARIES_DIR = fs::path(config.DIR) / "libraries";
@@ -60,14 +60,10 @@ AppConfig initializeAppConfig() {
 }
 
 void initializeLauncherDir(AppConfig &config) {
-  if (!fs::exists(config.DIR))
-    fs::create_directories(config.DIR);
-  if (!fs::exists(config.ASSETS_DIR))
-    fs::create_directories(config.ASSETS_DIR);
-  if (!fs::exists(config.LIBRARIES_DIR))
-    fs::create_directories(config.LIBRARIES_DIR);
-  if (!fs::exists(config.NATIVES_DIR))
-    fs::create_directories(config.NATIVES_DIR);
+  if (!fs::exists(config.DIR)) fs::create_directories(config.DIR);
+  if (!fs::exists(config.ASSETS_DIR)) fs::create_directories(config.ASSETS_DIR);
+  if (!fs::exists(config.LIBRARIES_DIR)) fs::create_directories(config.LIBRARIES_DIR);
+  if (!fs::exists(config.NATIVES_DIR)) fs::create_directories(config.NATIVES_DIR);
 
   httplib::Client cli("https://launchermeta.mojang.com");
 
