@@ -4,6 +4,7 @@ std::string AssetIndex::AssetObject::id() {
     if (hash.empty() || hash.size() < 2) {
         throw std::runtime_error("Invalid hash: too short to generate ID.");
     }
+    
     return hash.substr(0, 2);  
 }
 
