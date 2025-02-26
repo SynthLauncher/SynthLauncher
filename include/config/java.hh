@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <filesystem>
+#include <iostream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,8 +37,8 @@ private:
     static int compareVersions(std::string& version1, std::string& version2);
     static std::vector<Java> getCommonLinuxCups();
     static std::vector<Java> getCommonWindowsCups();
-    static std::vector<Java> getCupsInDirs(std::vector<fs::path> directories);
     static void findJavaBinaries(const fs::path& dir, std::vector<Java>& cups);
-    static std::vector<Java> getCupsPath();
+    static std::vector<Java> getCupsFromPath();
+    bool extractJavaVersion(Java& cup);
     static std::vector<Java> getRegCups();
 };

@@ -30,6 +30,9 @@ test_src = [
 
 # Build dependency
 simdjson = dependency('simdjson', required: false)
+if not simdjson.found()
+  simdjson = cpp.find_library('simdjson', required: true)
+endif
 
 # Test dependency
 gtest = dependency('gtest', required: false)
