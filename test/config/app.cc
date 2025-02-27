@@ -5,6 +5,4 @@
 
 TEST(App, AppConfigInitializationTest) {
     const AppConfig config = initializeAppConfig();
-    
-    std::cout << config << std::endl;
 }

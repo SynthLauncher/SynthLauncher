@@ -1,15 +1,5 @@
 #include "include/config/app.hh"
 
-std::ostream &operator<<(std::ostream &os, const AppConfig &config) {
-  os << "DIR: " << config.DIR << '\n'
-     << "ASSETS_DIR: " << config.ASSETS_DIR << '\n'
-     << "LIBRARIES_DIR: " << config.LIBRARIES_DIR << '\n'
-     << "NATIVES_DIR: " << config.NATIVES_DIR << '\n'
-     << "OS: " << OperatingSystem::os_to_string(config.OS) << '\n'
-     << "ARCH: " << Architecture::arch_to_string(config.ARCH) << '\n';
-  return os;
-}
-
 AppConfig initializeAppConfig() {
   AppConfig config;
 

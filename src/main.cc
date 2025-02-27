@@ -1,6 +1,8 @@
 #include <iostream>
+#include "include/config/java.hh"
 
 int main() {
-  std::cout << "Hello, World!\n";
+
+
   return 0;
 }

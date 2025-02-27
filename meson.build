@@ -6,8 +6,6 @@ crypt32 = cpp.find_library('crypt32')
 openssl = dependency('openssl')
 
 src = [
-  'src/entities/os.cc',
-  'src/entities/arch.cc',
   'src/json/manifest.cc',
   'src/config/app.cc',
   'src/http/builder.cc',
@@ -23,9 +21,7 @@ test_src = [
   'test/test.cc',
   'test/http.cc',
   'test/config/app.cc',
-  'test/config/java.cc',
-  'test/entities/arch.cc',
-  'test/entities/os.cc'
+  'test/config/java.cc'
 ]
 
 # Build dependency
