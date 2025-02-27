@@ -3,7 +3,44 @@
 Java::Java(std::string version, std::string path) : version(version), path(path) {};
 
 std::vector<Java> Java::getAvaliableJavaCups() {
+    std::vector<Java> cups;
 
+    if (IS_WINDOWS) {
+        auto winCups = getCommonWindowsCups();
+        cups.insert(cups.end(), winCups.begin(), winCups.end());
+    }
+    else {
+        auto linuxCups = getCommonLinuxCups();
+        cups.insert(cups.end(), linuxCups.begin(), linuxCups.end());
+    }
+
+    auto pathCups = getCupsFromPath();
+    cups.insert(cups.end(), pathCups.begin(), pathCups.end());
+
+    auto javaHome = getJavaHomeCup();
+    if (javaHome) {
+        cups.push_back(*javaHome);
+    }
+
+    for (auto it = cups.begin(); it != cups.end();) {
+        if (it->version.empty()) {
+            if(!extractJavaVersion(*it)) {
+                it = cups.erase(it);
+            }   
+            else {
+                ++it;
+            }
+        }
+        else {
+            ++it;
+        }
+    }
+
+    std::sort(cups.begin(), cups.end(), [](const Java& a, const Java& b) {
+        return compareVersions(a.version, b.version) < 0;
+    });
+
+    return cups;
 }
 
 #ifdef _WIN32 
@@ -113,4 +150,33 @@ std::unique_ptr<Java> Java::getJavaHomeCup() {
     }
 
     return nullptr;
+}
+
+bool Java::extractJavaVersion(Java& cup) {
+    std::string command = "\"" + cup.path + "\" -version 2>&1";
+    
+#ifdef _WIN32
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(command.c_str(), "r"), _pclose);
+#else
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+#endif
+    
+    if (!pipe) return false;
+
+    std::array<char, 128> buffer;
+    std::string result;
+    while (fgets(buffer.data(), buffer.size(), pipe.get())) {
+        result += buffer.data();
+    }
+
+    std::regex pattern(R"(version\s\"(\d+\.\d+\.\d+)_?(\d+)?\")");
+    std::smatch match;
+    if (std::regex_search(result, match, pattern)) {
+        cup.version = match[1];
+        if (match[2].matched) {
+            cup.version += "_" + match[2].str();
+        }
+        return true;
+    }
+    return false;
 }

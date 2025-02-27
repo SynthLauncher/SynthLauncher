@@ -44,4 +44,6 @@ private:
     static std::vector<Java> getCommonLinuxCups();
     static std::vector<Java> getCommonWindowsCups();
     static void findJavaBinaries(const fs::path& dir, std::vector<Java>& cups);
-    static std::vector<Java> getCupsFromPath(); };
+    static std::vector<Java> getCupsFromPath(); 
+    static bool extractJavaVersion(Java& cup);
+};
