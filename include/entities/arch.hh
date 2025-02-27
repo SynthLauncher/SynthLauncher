@@ -9,7 +9,4 @@ namespace Architecture {
         Arm64,
         Arm
     };
-
-    Arch arch_from_string(const std::string& str);
-    std::string arch_to_string(const Arch& arch);
 }
