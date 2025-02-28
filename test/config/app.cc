@@ -3,6 +3,6 @@
 #include <iostream>
 #include "include/config/app.hh"
 
-TEST(App, AppConfigInitializationTest) {
+TEST(AppCC, AppConfigInitializationTest) {
     const AppConfig config = initializeAppConfig();
 }

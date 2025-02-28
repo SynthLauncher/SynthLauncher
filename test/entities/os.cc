@@ -3,7 +3,7 @@
 
 #include "include/entities/os.hh"
 
-TEST(OS, OsFromStringTest) {
+TEST(OsCC, OsFromStringTest) {
     std::string str1 = "linux";
     std::string str2 = "windows";
     std::string str3 = "osx";

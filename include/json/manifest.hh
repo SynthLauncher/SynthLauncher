@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <stdexcept>
 #include <simdjson.h>
 
 namespace fs = std::filesystem;
