@@ -23,7 +23,9 @@ test_src = [
   'test/test.cc',
   'test/http.cc',
   'test/config/app.cc',
-  'test/config/java.cc'
+  'test/config/java.cc',
+  'test/entities/arch.cc',
+  'test/entities/os.cc'
 ]
 
 # Build dependency
