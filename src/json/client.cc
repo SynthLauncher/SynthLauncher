@@ -20,13 +20,9 @@ Client::Features Client::ArgumentDeserializer::deserialize_features(
 Client::OSRules Client::ArgumentDeserializer::deserialize_os_rules(simdjson::ondemand::object &obj) {
     Client::OSRules rules;
     
-    if (auto name = get_optional<std::string>(obj, "name")) {
-        rules.name = OperatingSystem::os_from_string(*name);
-    }
+    if (auto name = get_optional<std::string>(obj, "name")) rules.name = OperatingSystem::os_from_string(*name);
     
-    if (auto arch = get_optional<std::string>(obj, "arch")) {
-        rules.arch = Architecture::arch_from_string(*arch);
-    }
+    if (auto arch = get_optional<std::string>(obj, "arch")) rules.arch = Architecture::arch_from_string(*arch);
     
     rules.version = get_with_default(obj, "version", "");
     
