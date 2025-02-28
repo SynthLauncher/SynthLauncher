@@ -34,9 +34,7 @@ std::vector<Java> Java::getAvaliableJavaCups() {
     }
   }
 
-  std::sort(cups.begin(), cups.end(), [](const Java &a, const Java &b) {
-    return compareVersions(a.version, b.version) < 0;
-  });
+  sortCups(cups);
 
   return cups;
 }
@@ -73,6 +71,12 @@ std::vector<Java> Java::getCommonLinuxCups() {
   return cups;
 }
 #endif
+
+void Java::sortCups(std::vector<Java>& cups) {
+  std::sort(cups.begin(), cups.end(), [](const Java &a, const Java &b) {
+    return compareVersions(a.version, b.version) < 0;
+  });
+}
 
 void Java::findJavaBinaries(const fs::path &dir, std::vector<Java> &cups) {
   try {
