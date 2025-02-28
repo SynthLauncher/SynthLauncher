@@ -3,12 +3,17 @@
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"
 #include "include/utils/simdjson_utils.hh"
+#include "include/config/app.hh"
 
 #include <cstdint>
 #include <optional>
 #include <simdjson.h>
 #include <string>
 #include <vector>
+#include <map>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 class Client {
 public:
@@ -32,8 +37,8 @@ public:
     std::optional<OSRules> os;
     std::optional<Features> features;
 
-    bool osMatches();
-    bool osMatches(std::vector<Rule> rules);
+    bool osMatches(AppConfig &config);
+    bool osMatches(AppConfig &config, std::vector<Rule> rules);
   };
 
   struct Argument {
@@ -48,8 +53,7 @@ public:
   };
 
   class ArgumentDeserializer {
-  public:
-    
+  public:    
     Features deserialize_features(simdjson::ondemand::object &obj);
     OSRules deserialize_os_rules(simdjson::ondemand::object &obj);
     Rule deserialize_rule(simdjson::ondemand::object &obj);
@@ -66,17 +70,41 @@ public:
     std::vector<uint8_t> fetch();
   };
 
-  struct ClientDownloads {};
+  struct ClientDownloads {
+    Download client;
+    Download client_mappings;
+    Download server;
+    Download server_mappings;
+  };
 
-  struct JavaVersion {};
+  struct JavaVersion {
+    std::string component;
+    int majorVersion;
+  };
 
-  struct LibraryDownloads {};
+  struct LibraryDownloads {
+    Download artifact;
+    std::map<std::string, Download> classifiers;
 
-  struct LibraryExtractRules {};
+    std::vector<uint8_t> fetchArtifact();
+    fs::path artifactPath();
+    std::vector<uint8_t> fetchNative();
+    fs::path nativePath(std::string nativeIndex);
+  };
 
-  struct Library {};
+  struct LibraryExtractRules {
 
-  struct LoggingClient {};
+  };
 
-  struct LoggingInfo {};
+  struct Library {
+
+  };
+
+  struct LoggingClient {
+
+  };
+
+  struct LoggingInfo {
+
+  };
 };

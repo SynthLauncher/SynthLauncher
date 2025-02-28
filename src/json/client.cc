@@ -2,6 +2,31 @@
 
 using namespace simdjson_utils;
 
+bool Client::Rule::osMatches(AppConfig &config) { 
+  bool match = true; 
+
+  if (os != std::nullopt) {
+    if (os.value().name != std::nullopt)
+      match = (os.value().name == config.OS);
+
+    if (os.value().arch != std::nullopt)
+      match = (match && os.value().arch == config.ARCH);
+
+    if (action == "allow") return match;
+
+    if (action == "disallow") return !match;
+  }
+}
+
+bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
+  for (Rule rule : rules) {
+    if (!rule.osMatches(config))
+      return false;
+  }
+
+  return true;
+}
+
 Client::Features Client::ArgumentDeserializer::deserialize_features(
     simdjson::ondemand::object &obj) 
 {
@@ -36,7 +61,7 @@ Client::Rule Client::ArgumentDeserializer::deserialize_rule(simdjson::ondemand::
 
   if (auto os = get_optional<simdjson::ondemand::object>(obj, "os")) rule.os = deserialize_os_rules(*os);
 
-  rule.action = get_with_default<std::string>(obj, "action", "");
+  rule.action = get_with_default<std::string>(obj, "action", "disallow");
 
   return rule;
 }
