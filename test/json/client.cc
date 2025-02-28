@@ -40,5 +40,5 @@ TEST(ClientCC, DeserializingOsRulesTest) {
 
     ASSERT_EQ(osRules.name, OperatingSystem::OS::OSX);
     ASSERT_EQ(osRules.arch, Architecture::Arch::X86);
-    ASSERT_EQ(osRules.version, std::nullopt);
+    ASSERT_EQ(osRules.version, "");
 }

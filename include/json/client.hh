@@ -2,9 +2,10 @@
 
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"
+#include "include/utils/simdjson_utils.hh"
+
 #include <cstdint>
 #include <optional>
-#include <any>
 #include <simdjson.h>
 #include <string>
 #include <vector>
@@ -13,7 +14,7 @@ class Client {
 public:
   struct Features {
     bool isDemoUser = false;
-    bool hasCutomResolution = false;
+    bool hasCustomResolution = false;
     bool hasQuickPlaysSupport = false;
     bool isQuickPlaySingleplayer = false;
     bool isQuickPlayMultiplayer = false;
@@ -23,7 +24,7 @@ public:
   struct OSRules {
     std::optional<OperatingSystem::OS> name;
     std::optional<Architecture::Arch> arch;
-    std::optional<std::string> version;
+    std::string version;
   };
 
   struct Rule {
@@ -48,8 +49,6 @@ public:
 
   class ArgumentDeserializer {
   public:
-    template<typename T>
-    T check_and_return(simdjson::ondemand::object &obj, std::string_view field_name, T default_value);
     
     Features deserialize_features(simdjson::ondemand::object &obj);
     OSRules deserialize_os_rules(simdjson::ondemand::object &obj);
