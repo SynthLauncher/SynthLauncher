@@ -8,4 +8,6 @@ namespace OperatingSystem {
         Linux,
         OSX
     };
+
+    OS os_from_string(std::string& str);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <stdexcept>
 
 namespace Architecture {
     enum class Arch {
@@ -9,4 +10,6 @@ namespace Architecture {
         Arm64,
         Arm
     };
+
+    Arch arch_from_string(std::string& str);
 }

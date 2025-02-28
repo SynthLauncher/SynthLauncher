@@ -14,7 +14,9 @@ src = [
   'src/json/client.cc',
   'src/entities/instance.cc',
   'src/config/config.cc',
-  'src/config/java.cc'
+  'src/config/java.cc',
+  'src/entities/arch.cc',
+  'src/entities/os.cc'
 ]
 
 test_src = [
