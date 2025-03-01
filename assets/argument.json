@@ -1,0 +1,18 @@
+[
+  "${version_type}",
+  {
+    "rules": [{ "action": "allow", "features": { "is_demo_user": true } }],
+    "value": "--demo"
+  },
+  {
+    "rules": [
+      { "action": "allow", "features": { "has_custom_resolution": true } }
+    ],
+    "value": [
+      "--width",
+      "${resolution_width}",
+      "--height",
+      "${resolution_height}"
+    ]
+  }
+]

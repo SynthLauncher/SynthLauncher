@@ -43,3 +43,16 @@ TEST(ClientCC, DeserializeRuleTest) {
     ASSERT_EQ(rule.os->arch, Architecture::Arch::X86_64);
     ASSERT_EQ(rule.features, std::nullopt);
 }
+
+TEST(ClientCC, DeserializeArguments) { 
+    simdjson::ondemand::parser parser;
+    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
+    simdjson::ondemand::document doc = parser.iterate(json);
+
+    simdjson::ondemand::array arr = doc.get_array().value();
+
+    std::vector<Client::Argument> arguments;
+    for (auto val : arr) {
+      arguments.push_back(Client::Argument::deserialize(val.value()));
+    }
+}

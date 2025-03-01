@@ -38,5 +38,7 @@ public:
     std::string value;
     std::vector<std::string> values;
     std::vector<Rule> rules;
+
+    static Argument deserialize(simdjson::ondemand::value &val);
   };
 };

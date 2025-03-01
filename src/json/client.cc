@@ -49,3 +49,35 @@ Client::Rule Client::Rule::deserialize(simdjson::ondemand::object &obj) {
 
   return {.action = action, .os = os, .features = features};
 }
+
+Client::Argument Client::Argument::deserialize(simdjson::ondemand::value &val) {
+  Argument arg;
+
+  if (val.type() == simdjson::ondemand::json_type::string) {
+    arg.value = std::string(val.get_string().value());
+    return arg;
+  }
+
+  simdjson::ondemand::object obj = val.get_object().value();
+
+  if (auto rules = simdjson_utils::get_optional<simdjson::ondemand::array>(obj, "rules")) {
+    for (auto rule_value : *rules) {
+      auto val = rule_value.get_object().value();
+      arg.rules.push_back(Rule::deserialize(val));
+    }
+  }
+
+  if (auto value = obj["value"]; !value.error()) {
+    if (value.type() == simdjson::ondemand::json_type::string)
+      arg.value = simdjson_utils::get<std::string>(obj, "value");
+
+    else if (value.type() == simdjson::ondemand::json_type::array) {
+      simdjson::ondemand::array arr = value.get_array().value();
+
+      for (auto elem : arr)
+        arg.values.push_back(std::string(elem.get_string().value()));
+    }
+  }
+
+  return arg;
+}
