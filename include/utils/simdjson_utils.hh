@@ -20,6 +20,20 @@ inline std::optional<T> get_optional(simdjson::ondemand::object &obj,
   return std::nullopt;
 }
 
+template<>
+inline std::optional<std::string> get_optional(simdjson::ondemand::object &obj, std::string_view field_name) {
+  auto field = obj[field_name];
+
+  if (field.error())
+    return std::nullopt;
+
+  std::string_view result;
+  if (field.get(result) == simdjson::SUCCESS)
+    return std::string(result);
+
+  return std::nullopt;
+}
+
 template <typename T>
 inline T get_with_default(simdjson::ondemand::object &obj,
                           std::string_view field_name, T default_value) {

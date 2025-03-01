@@ -25,4 +25,6 @@ public:
 
     OSRules deserialize(simdjson::ondemand::object &obj);
   };
+
+  
 };
