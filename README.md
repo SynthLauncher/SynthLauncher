@@ -1,4 +1,4 @@
-# SynthLauncher
+# [SynthLauncher](https://synthlauncher.vercel.app)
 
 ![SynthLauncher Logo](https://i.imgur.com/jCbkNh4.png)
 
