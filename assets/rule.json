@@ -1,0 +1,3 @@
+{
+  "rule": { "action": "allow", "os": { "name": "osx", "arch": "x86_64" } }
+}

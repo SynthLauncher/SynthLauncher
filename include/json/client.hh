@@ -15,7 +15,7 @@ public:
     bool isQuickPlayMultiplayer;
     bool isQuickPlayRealms;
 
-    Features deserialize(simdjson::ondemand::object &obj);
+    static Features deserialize(simdjson::ondemand::object &obj);
   };
 
   struct OSRules {
@@ -23,8 +23,14 @@ public:
     std::optional<Architecture::Arch> arch;
     std::string version;
 
-    OSRules deserialize(simdjson::ondemand::object &obj);
+    static OSRules deserialize(simdjson::ondemand::object &obj);
   };
 
-  
+  struct Rule {
+    std::string action;
+    std::optional<OSRules> os;
+    std::optional<Features> features;
+
+    static Rule deserialize(simdjson::ondemand::object &obj);
+  };
 };

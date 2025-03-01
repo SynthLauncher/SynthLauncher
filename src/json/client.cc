@@ -18,21 +18,34 @@ Client::Features::deserialize(simdjson::ondemand::object &obj) {
 }
 
 Client::OSRules Client::OSRules::deserialize(simdjson::ondemand::object &obj) {
-  auto name = simdjson_utils::get_optional<std::string>(obj, "name");
-  auto arch = simdjson_utils::get_optional<std::string>(obj, "arch");
+  std::optional<OperatingSystem::OS> name;
+  if (auto name_obj = simdjson_utils::get_optional<std::string>(obj, "name"))
+    name = OperatingSystem::os_from_string(*name_obj);
+
+  std::optional<Architecture::Arch> arch;
+  if (auto arch_obj = simdjson_utils::get_optional<std::string>(obj, "arch"))
+    arch = Architecture::arch_from_string(*arch_obj);
+
   auto version =
       simdjson_utils::get_with_default<std::string>(obj, "version", "");
 
-  return {
-      .name =
-          (name != std::nullopt)
-              ? std::optional<
-                    OperatingSystem::OS>{OperatingSystem::os_from_string(*name)}
-              : std::nullopt,
-      .arch =
-          (arch != std::nullopt)
-              ? std::optional<
-                    Architecture::Arch>{Architecture::arch_from_string(*arch)}
-              : std::nullopt,
-      .version = version};
+  return {.name = name, .arch = arch, .version = version};
+}
+
+Client::Rule Client::Rule::deserialize(simdjson::ondemand::object &obj) {
+  std::string action =
+      simdjson_utils::get_with_default<std::string>(obj, "action", "disallow");
+
+  std::optional<OSRules> os;
+  if (auto os_obj =
+          simdjson_utils::get_optional<simdjson::ondemand::object>(obj, "os"))
+    os = OSRules::deserialize(*os_obj);
+
+  std::optional<Features> features;
+  if (auto features_obj =
+          simdjson_utils::get_optional<simdjson::ondemand::object>(obj,
+                                                                   "features"))
+    features = Features::deserialize(*features_obj);
+
+  return {.action = action, .os = os, .features = features};
 }
