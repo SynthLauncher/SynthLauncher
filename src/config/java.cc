@@ -18,20 +18,17 @@ std::vector<Java> Java::getAvaliableJavaCups() {
   cups.insert(cups.end(), pathCups.begin(), pathCups.end());
 
   auto javaHome = getJavaHomeCup();
-  if (javaHome) {
+  if (javaHome)
     cups.push_back(*javaHome);
-  }
 
   for (auto it = cups.begin(); it != cups.end();) {
     if (it->version.empty()) {
-      if (!extractJavaVersion(*it)) {
+      if (!extractJavaVersion(*it))
         it = cups.erase(it);
-      } else {
+      else
         ++it;
-      }
-    } else {
+    } else
       ++it;
-    }
   }
 
   sortCups(cups);
@@ -49,9 +46,8 @@ std::vector<Java> Java::getCommonWindowsCups() {
       fs::path(systemDrive) / "Program Files (x86)" / "Java"};
 
   for (const auto &path : paths) {
-    if (fs::exists(path)) {
+    if (fs::exists(path))
       findJavaBinaries(path, cups);
-    }
   }
 
   return cups;
@@ -63,16 +59,15 @@ std::vector<Java> Java::getCommonLinuxCups() {
                                  "/usr/lib32/jvm"};
 
   for (const auto &path : paths) {
-    if (fs::exists(path)) {
+    if (fs::exists(path))
       findJavaBinaries(path, cups);
-    }
   }
 
   return cups;
 }
 #endif
 
-void Java::sortCups(std::vector<Java>& cups) {
+void Java::sortCups(std::vector<Java> &cups) {
   std::sort(cups.begin(), cups.end(), [](const Java &a, const Java &b) {
     return compareVersions(a.version, b.version) < 0;
   });
@@ -83,11 +78,10 @@ void Java::findJavaBinaries(const fs::path &dir, std::vector<Java> &cups) {
     for (const auto &entry : fs::directory_iterator(dir)) {
       fs::path path = entry.path() / "bin" / (IS_WINDOWS ? "java.exe" : "java");
 
-      if (fs::exists(path)) {
+      if (fs::exists(path))
         cups.emplace_back("", path.string());
-      } else {
+      else
         findJavaBinaries(entry.path(), cups);
-      }
     }
   } catch (const fs::filesystem_error &error) {
     std::cerr << error.what();
@@ -104,9 +98,8 @@ std::vector<Java> Java::getCupsFromPath() {
   while (std::getline(s1, dir, IS_WINDOWS ? ';' : ':')) {
     fs::path path = fs::path(dir) / (IS_WINDOWS ? "java.exe" : "java");
 
-    if (fs::exists(path)) {
+    if (fs::exists(path))
       cups.emplace_back("", path.string());
-    }
   }
 
   return cups;
@@ -156,9 +149,11 @@ bool Java::extractJavaVersion(Java &cup) {
   std::string command = "\"" + cup.path + "\" -version 2>&1";
 
 #ifdef _WIN32
-  std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(command.c_str(), "r"), _pclose);
+  std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(command.c_str(), "r"),
+                                                 _pclose);
 #else
-  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"),
+                                                pclose);
 #endif
 
   if (!pipe)
@@ -167,21 +162,19 @@ bool Java::extractJavaVersion(Java &cup) {
   std::array<char, 128> buffer;
   std::string result;
 
-  while (fgets(buffer.data(), buffer.size(), pipe.get())) {
+  while (fgets(buffer.data(), buffer.size(), pipe.get()))
     result += buffer.data();
-  }
 
   std::regex pattern(R"(version\s\"(\d+\.\d+\.\d+)_?(\d+)?\")");
   std::smatch match;
   if (std::regex_search(result, match, pattern)) {
     cup.version = match[1];
-    
-    if (match[2].matched) {
+
+    if (match[2].matched)
       cup.version += "_" + match[2].str();
-    }
 
     return true;
   }
-  
+
   return false;
 }

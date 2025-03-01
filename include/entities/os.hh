@@ -1,14 +1,10 @@
 #pragma once
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace OperatingSystem {
-    enum class OS {
-        Windows,
-        Linux,
-        OSX
-    };
+enum class OS { Windows, Linux, OSX };
 
-    OS os_from_string(std::string& str);
-}
+OS os_from_string(std::string &str);
+} // namespace OperatingSystem

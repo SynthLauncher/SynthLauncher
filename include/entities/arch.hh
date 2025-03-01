@@ -1,15 +1,10 @@
 #pragma once
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace Architecture {
-    enum class Arch {
-        X86,
-        X86_64,
-        Arm64,
-        Arm
-    };
+enum class Arch { X86, X86_64, Arm64, Arm };
 
-    Arch arch_from_string(std::string& str);
-}
+Arch arch_from_string(std::string &str);
+} // namespace Architecture

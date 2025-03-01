@@ -1,7 +1,8 @@
 #include "include/json/assetindex.hh"
 
 std::string AssetIndex::AssetObject::id() {
-  if (hash.empty() || hash.size() < 2) throw std::runtime_error("Invalid hash: too short to generate ID.");
+  if (hash.empty() || hash.size() < 2)
+    throw std::runtime_error("Invalid hash: too short to generate ID.");
 
   return hash.substr(0, 2);
 }
@@ -25,8 +26,9 @@ void AssetIndex::AssetObject::fetch(AppConfig &config) {
       fs::create_directories(asset_path.parent_path());
 
       std::ofstream outFile(asset_path, std::ios::binary);
-      
-      if (!outFile) throw std::runtime_error("Failed to open file for writing.");
+
+      if (!outFile)
+        throw std::runtime_error("Failed to open file for writing.");
 
       outFile.write(res->body.data(), res->body.size());
     } else {

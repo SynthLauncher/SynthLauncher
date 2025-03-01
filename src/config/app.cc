@@ -7,28 +7,27 @@ AppConfig initializeAppConfig() {
 #ifdef _WIN32
   config.OS = OperatingSystem::OS::Windows;
   const char *appData = std::getenv("APPDATA");
-  if (appData) {
+  if (appData)
     config.DIR = std::string(appData) + "\\SynthLauncher";
-  } else {
+  else
     config.DIR = "C:\\SynthLauncher";
-  }
 #elif __linux__
   config.OS = OperatingSystem::OS::Linux;
   const char *home = std::getenv("HOME");
-  if (home) {
+  if (home)
     config.DIR = std::string(home) + "/.synthlauncher";
-  } else {
+  else
     config.DIR = "/usr/local/synthlauncher";
-  }
+
 #elif __APPLE__
   config.OS = OperatingSystem::OS::OSX;
   const char *home = std::getenv("HOME");
-  if (home) {
+  if (home)
     config.DIR =
         std::string(home) + "/Library/Application Support/SynthLauncher";
-  } else {
+  else
     config.DIR = "/usr/local/synthlauncher";
-  }
+
 #endif
 
 // Architecture Configuration
