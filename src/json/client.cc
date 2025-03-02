@@ -94,3 +94,21 @@ Client::Arguments Client::Arguments::deserialize(simdjson::ondemand::object &obj
 
   return args;
 }
+
+Client::Download Client::Download::deserialize(simdjson::ondemand::object &obj) {
+  std::string id = simdjson_utils::get_with_default<std::string>(obj, "id", "");
+  std::string path = simdjson_utils::get_with_default<std::string>(obj, "path", "");
+  std::string sha1 = simdjson_utils::get<std::string>(obj, "sha1");
+  int64_t size = simdjson_utils::get<int64_t>(obj, "size");
+  std::optional<int64_t> totalSize = simdjson_utils::get_optional<int64_t>(obj, "totalSize");
+  std::string url = simdjson_utils::get<std::string>(obj, "url");
+
+  return {
+    .id = id,
+    .path = path,
+    .sha1 = sha1,
+    .size = size,
+    .totalSize = totalSize,
+    .url = url
+  };
+}

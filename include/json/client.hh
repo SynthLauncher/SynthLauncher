@@ -1,5 +1,6 @@
 #include <string>
 #include <optional>
+#include <cstdint>
 #include <simdjson.h>
 #include "include/utils/simdjson_utils.hh"
 #include "include/entities/os.hh"
@@ -47,5 +48,17 @@ public:
     std::vector<Argument> jvm;
 
     static Arguments deserialize(simdjson::ondemand::object &obj);
+  };
+
+  struct Download {
+    std::string id;
+    std::string path;
+    std::string sha1;
+    int64_t size;
+    std::optional<int64_t> totalSize;
+    std::string url;
+
+    static Download deserialize(simdjson::ondemand::object &obj);
+    std::vector<uint8_t> fetch();
   };
 };
