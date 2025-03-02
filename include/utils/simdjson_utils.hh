@@ -1,8 +1,9 @@
 #pragma once
 
 #include <optional>
-#include <simdjson.h>
 #include <string>
+
+#include <simdjson.h>
 
 namespace simdjson_utils {
 template <typename T>
@@ -10,12 +11,11 @@ inline std::optional<T> get_optional(simdjson::ondemand::object &obj,
                                      std::string_view field_name) {
   auto field = obj[field_name];
 
-  if (field.error())
-    return std::nullopt;
-
-  T result;
-  if (field.get(result) == simdjson::SUCCESS)
-    return result;
+  if (field.error() == simdjson::SUCCESS) {
+    T result;
+    if (field.get(result) == simdjson::SUCCESS)
+      return result;
+  }
 
   return std::nullopt;
 }
@@ -25,12 +25,11 @@ inline std::optional<std::string> get_optional(simdjson::ondemand::object &obj,
                                                std::string_view field_name) {
   auto field = obj[field_name];
 
-  if (field.error())
-    return std::nullopt;
-
-  std::string_view result;
-  if (field.get(result) == simdjson::SUCCESS)
-    return std::string(result);
+  if (field.error() == simdjson::SUCCESS) {
+    std::string_view result;
+    if (field.get_string().get(result) == simdjson::SUCCESS)
+      return std::string(result);
+  }
 
   return std::nullopt;
 }
@@ -40,50 +39,53 @@ inline std::optional<simdjson::ondemand::object>
 get_optional<simdjson::ondemand::object>(simdjson::ondemand::object &obj,
                                          std::string_view field_name) {
   auto field = obj[field_name];
+
+  if (field.error() == simdjson::SUCCESS) {
+    simdjson::ondemand::object result;
+    if (field.get_object().get(result) == simdjson::SUCCESS)
+      return result;
+  }
+
+  return std::nullopt;
+}
+
+template <>
+inline std::optional<simdjson::ondemand::array>
+simdjson_utils::get_optional<simdjson::ondemand::array>(
+    simdjson::ondemand::object &obj, std::string_view field_name) {
+  auto field = obj[field_name];
+
+  if (field.error() == simdjson::SUCCESS) {
+    simdjson::ondemand::array result;
+    if (field.get_array().get(result) == simdjson::SUCCESS)
+      return result;
+  }
+
+  return std::nullopt;
+}
+
+template <>
+inline std::optional<int64_t>
+get_optional<int64_t>(simdjson::ondemand::object &obj,
+                      std::string_view field_name) {
+  auto field = obj[field_name];
+
   if (field.error())
     return std::nullopt;
 
-  if (field.type().error() ||
-      field.type() != simdjson::ondemand::json_type::object)
-    return std::nullopt;
-
-  simdjson::ondemand::object result;
-  if (field.get(result) == simdjson::SUCCESS)
+  int64_t result;
+  if (field.get_int64().get(result) == simdjson::SUCCESS)
     return result;
 
   return std::nullopt;
 }
 
 template <>
-inline std::optional<simdjson::ondemand::array> 
-simdjson_utils::get_optional<simdjson::ondemand::array>(simdjson::ondemand::object& obj, 
-                                                       std::string_view field_name) {
-    auto field = obj[field_name];
-    if (field.error()) return std::nullopt;
-    if (field.type().error() || field.type() != simdjson::ondemand::json_type::array) 
-        return std::nullopt;
-    
-    return field.get_array().value();
+inline std::optional<int> get_optional<int>(simdjson::ondemand::object &obj,
+                                            std::string_view field_name) {
+  auto value = get_optional<int64_t>(obj, field_name);
+  return value ? std::optional<int>(static_cast<int>(*value)) : std::nullopt;
 }
-
-template <>
-inline std::optional<int64_t> get_optional<int64_t>(simdjson::ondemand::object& obj,
-                                                   std::string_view field_name) {
-    auto field = obj[field_name];
-    if (field.error()) return std::nullopt;
-    
-    int64_t result;
-    if (field.get_int64().get(result) == simdjson::SUCCESS) return result;
-    return std::nullopt;
-}
-
-template <>
-inline std::optional<int> get_optional<int>(simdjson::ondemand::object& obj,
-                                           std::string_view field_name) {
-    auto value = get_optional<int64_t>(obj, field_name);
-    return value ? std::optional<int>(static_cast<int>(*value)) : std::nullopt;
-}
-
 
 template <typename T>
 inline T get_with_default(simdjson::ondemand::object &obj,
@@ -94,10 +96,10 @@ inline T get_with_default(simdjson::ondemand::object &obj,
 }
 
 template <>
-inline int64_t get_with_default<int64_t>(simdjson::ondemand::object& obj,
-                                        std::string_view field_name,
-                                        int64_t default_value) {
-    return get_optional<int64_t>(obj, field_name).value_or(default_value);
+inline int64_t get_with_default<int64_t>(simdjson::ondemand::object &obj,
+                                         std::string_view field_name,
+                                         int64_t default_value) {
+  return get_optional<int64_t>(obj, field_name).value_or(default_value);
 }
 
 template <typename T>
@@ -111,4 +113,3 @@ inline T get(simdjson::ondemand::object &obj, std::string_view field_name) {
   return *value;
 }
 } // namespace simdjson_utils
-

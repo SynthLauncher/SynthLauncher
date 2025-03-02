@@ -31,8 +31,9 @@ void AssetIndex::AssetObject::fetch(AppConfig &config) {
         throw std::runtime_error("Failed to open file for writing.");
 
       outFile.write(res->body.data(), res->body.size());
-    } else {
+    } 
+    else 
       throw std::runtime_error("Failed to download asset: " + hash);
-    }
+    
   }
 }

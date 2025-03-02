@@ -1,24 +1,24 @@
-#include <string>
-#include <optional>
 #include <cstdint>
-#include <map>
 #include <filesystem>
+#include <map>
+#include <optional>
 #include <simdjson.h>
+#include <string>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
+#include "include/config/app.hh"
+#include "include/entities/arch.hh"
+#include "include/entities/os.hh"
 #include "include/httplib.h"
 #include "include/utils/httplib_utils.hh"
 #include "include/utils/simdjson_utils.hh"
-#include "include/entities/os.hh"
-#include "include/entities/arch.hh"
-#include "include/config/app.hh"
 
 namespace fs = std::filesystem;
 
 class Client {
 public:
-  struct Features {    
+  struct Features {
     bool isDemoUser;
     bool hasCustomResolution;
     bool hasQuickPlaysSupport;

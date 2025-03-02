@@ -17,7 +17,7 @@ TEST(ClientCC, DeserializeFeaturesTest) {
 
 TEST(ClientCC, DeserializeOSRulesTest) { 
     simdjson::ondemand::parser parser;
-    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/osrules.json");
+    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/os_rules.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["os"].get_object().value();
@@ -86,7 +86,7 @@ TEST(ClientCC, DeserializeDownloadTest) {
 
 TEST(ClientCC, DeserializeClientDownloadTest) {
     simdjson::ondemand::parser parser; 
-    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/clientdownload.json");
+    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["downloads"].get_object().value();
@@ -101,7 +101,7 @@ TEST(ClientCC, DeserializeClientDownloadTest) {
 
 TEST(ClientCC, DeserializeJavaVersionTest) {
     simdjson::ondemand::parser parser; 
-    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/javaversion.json");
+    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["javaVersion"].get_object().value();

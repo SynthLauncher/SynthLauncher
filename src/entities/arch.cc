@@ -1,6 +1,6 @@
 #include "include/entities/arch.hh"
 
-Architecture::Arch Architecture::arch_from_string(std::string &str) {
+Architecture::Arch Architecture::arch_from_string(std::string_view str) {
   if (str == "arm64")
     return Arch::Arm64;
 
@@ -13,5 +13,5 @@ Architecture::Arch Architecture::arch_from_string(std::string &str) {
   else if (str == "x86_64")
     return Arch::X86_64;
 
-  throw std::invalid_argument("Unknown architecture: " + str);
+  throw std::invalid_argument("Unknown architecture: " + std::string(str));
 }

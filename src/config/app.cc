@@ -18,7 +18,6 @@ AppConfig initializeAppConfig() {
     config.DIR = std::string(home) + "/.synthlauncher";
   else
     config.DIR = "/usr/local/synthlauncher";
-
 #elif __APPLE__
   config.OS = OperatingSystem::OS::OSX;
   const char *home = std::getenv("HOME");
@@ -27,7 +26,6 @@ AppConfig initializeAppConfig() {
         std::string(home) + "/Library/Application Support/SynthLauncher";
   else
     config.DIR = "/usr/local/synthlauncher";
-
 #endif
 
 // Architecture Configuration
@@ -66,6 +64,7 @@ void initializeLauncherDir(AppConfig &config) {
 
   if (res && res->status == 200) {
     std::ofstream out(Manifest::PATH, std::ios::binary);
+    
     out.write(res->body.c_str(), res->body.size());
     out.close();
   } else {

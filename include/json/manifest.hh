@@ -1,10 +1,12 @@
 #pragma once
 
 #include <filesystem>
-#include <simdjson.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <simdjson.h>
+
+#include "include/utils/simdjson_utils.hh"
 
 namespace fs = std::filesystem;
 

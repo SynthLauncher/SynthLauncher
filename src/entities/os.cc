@@ -1,6 +1,6 @@
 #include "include/entities/os.hh"
 
-OperatingSystem::OS OperatingSystem::os_from_string(std::string &str) {
+OperatingSystem::OS OperatingSystem::os_from_string(std::string_view str) {
   if (str == "windows")
     return OS::Windows;
 
@@ -10,5 +10,5 @@ OperatingSystem::OS OperatingSystem::os_from_string(std::string &str) {
   else if (str == "linux")
     return OS::Linux;
 
-  throw std::invalid_argument("Unknown OS: " + str);
+  throw std::invalid_argument("Unknown OS: " + std::string(str));
 }
