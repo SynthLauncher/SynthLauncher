@@ -2,6 +2,11 @@
 #include <optional>
 #include <cstdint>
 #include <simdjson.h>
+
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+
+#include "include/httplib.h"
+#include "include/utils/httplib_utils.hh"
 #include "include/utils/simdjson_utils.hh"
 #include "include/entities/os.hh"
 #include "include/entities/arch.hh"
@@ -33,6 +38,8 @@ public:
     std::optional<Features> features;
 
     static Rule deserialize(simdjson::ondemand::object &obj);
+    bool osMatches();
+    bool osMatches(std::vector<Rule> rules);
   };
 
   struct Argument {
@@ -59,6 +66,6 @@ public:
     std::string url;
 
     static Download deserialize(simdjson::ondemand::object &obj);
-    std::vector<uint8_t> fetch();
+    std::vector<std::uint8_t> fetch();
   };
 };

@@ -112,3 +112,17 @@ Client::Download Client::Download::deserialize(simdjson::ondemand::object &obj) 
     .url = url
   };
 }
+
+std::vector<std::uint8_t> Client::Download::fetch() {
+  auto [host, path] = httplib_utils::extractHostAndPath(this->url);
+
+  httplib::Client cli(host);
+
+  auto res = cli.Get(path);
+  if (!res || res->status != 200) {
+    throw std::runtime_error("Failed to download " + url);
+  }
+
+  const auto &body = res->body;
+  return std::vector<uint8_t>(body.begin(), body.end());
+}
