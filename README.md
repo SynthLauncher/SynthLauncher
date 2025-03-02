@@ -1,4 +1,4 @@
-# SynthLauncher
+# [SynthLauncher](https://synthlauncher.vercel.app)
 
 ![SynthLauncher Logo](https://i.imgur.com/jCbkNh4.png)
 
@@ -28,7 +28,7 @@ We appreciate and welcome contributions! If you’re interested in helping out, 
 
 ## Contact
 
-If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker or [STierProgrammer@gmail.com](mailto:contact@example.com).
+If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker, Email: [STierProgrammer@gmail.com](mailto:contact@example.com) or Discord: ```stierprogrammer```.
 
 ---
 
