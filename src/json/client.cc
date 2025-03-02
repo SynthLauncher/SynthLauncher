@@ -128,8 +128,8 @@ Client::Download Client::Download::deserialize(simdjson::ondemand::object &obj) 
   return {
     .id =  simdjson_utils::get_with_default<std::string>(obj, "id", ""),
     .path = simdjson_utils::get_with_default<std::string>(obj, "path", ""),
-    .sha1 = simdjson_utils::get<std::string>(obj, "sha1"),
-    .size = simdjson_utils::get<int64_t>(obj, "size"),
+    .sha1 = simdjson_utils::get_with_default<std::string>(obj, "sha1", ""),
+    .size = simdjson_utils::get_with_default<int64_t>(obj, "size", 0),
     .totalSize = simdjson_utils::get_optional<int64_t>(obj, "totalSize"),
     .url = simdjson_utils::get<std::string>(obj, "url")
   };
@@ -159,5 +159,12 @@ Client::ClientDownloads Client::ClientDownloads::deserialize(simdjson::ondemand:
     .client_mappings = Client::Download::deserialize(client_mappings),
     .server = Client::Download::deserialize(server),
     .server_mappings = Client::Download::deserialize(server_mappings)
+  };
+}
+
+Client::JavaVersion Client::JavaVersion::deserialize(simdjson::ondemand::object &obj) {
+  return { 
+    .component = simdjson_utils::get<std::string>(obj, "component"),
+    .majorVersion = simdjson_utils::get<int>(obj, "majorVersion") 
   };
 }

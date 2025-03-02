@@ -83,3 +83,31 @@ TEST(ClientCC, DeserializeDownloadTest) {
     ASSERT_EQ(download.url, "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
     ASSERT_EQ(download.totalSize, std::nullopt);
 }
+
+TEST(ClientCC, DeserializeClientDownloadTest) {
+    simdjson::ondemand::parser parser; 
+    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/clientdownload.json");
+    simdjson::ondemand::document doc = parser.iterate(json);
+
+    simdjson::ondemand::object obj = doc["downloads"].get_object().value();
+
+    Client::ClientDownloads downloads = Client::ClientDownloads::deserialize(obj);
+
+    ASSERT_EQ(downloads.client.sha1, "9acca901e3564a91250b941cd2c55a55d0b71bca");
+    ASSERT_EQ(downloads.client_mappings.sha1, "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
+    ASSERT_EQ(downloads.server.sha1, "e003d151668a0eff64c1191972707655e341f8f5");
+    ASSERT_EQ(downloads.server_mappings.sha1, "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
+}
+
+TEST(ClientCC, DeserializeJavaVersionTest) {
+    simdjson::ondemand::parser parser; 
+    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/javaversion.json");
+    simdjson::ondemand::document doc = parser.iterate(json);
+
+    simdjson::ondemand::object obj = doc["javaVersion"].get_object().value();
+
+    Client::JavaVersion version = Client::JavaVersion::deserialize(obj);
+
+    ASSERT_EQ(version.component, "java-runtime-delta");
+    ASSERT_EQ(version.majorVersion, 21);
+}

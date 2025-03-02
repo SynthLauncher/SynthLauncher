@@ -78,4 +78,11 @@ public:
 
     static ClientDownloads deserialize(simdjson::ondemand::object &obj);
   };
+
+  struct JavaVersion {
+    std::string component;
+    int majorVersion;
+
+    static JavaVersion deserialize(simdjson::ondemand::object &obj);
+  };
 };
