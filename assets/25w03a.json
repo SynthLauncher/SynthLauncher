@@ -123,6 +123,7 @@
       "url": "https://piston-data.mojang.com/v1/objects/ad7bb6cf9bdb85fd561981e2c4634a9d3292592d/server.txt"
     }
   },
+  
   "id": "25w03a",
   "javaVersion": { "component": "java-runtime-delta", "majorVersion": 21 },
   "libraries": [

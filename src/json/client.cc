@@ -50,6 +50,35 @@ Client::Rule Client::Rule::deserialize(simdjson::ondemand::object &obj) {
   return {.action = action, .os = os, .features = features};
 }
 
+bool Client::Rule::osMatches(AppConfig &config) { 
+  bool match = true; 
+
+  if (os != std::nullopt) {
+    if (os->name != std::nullopt) 
+      match = (os->name == config.OS);
+    
+    if (os->arch != std::nullopt)
+      match = match && os->arch == config.ARCH;
+
+    if (action == "allow")
+      return match;
+
+    if (action == "disallow")
+      return !match;
+  }
+
+  return match;
+}
+
+bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
+  for (auto& rule : rules) {
+    if (!rule.osMatches(config))
+      return false;
+  }
+
+  return true;
+}
+
 Client::Argument Client::Argument::deserialize(simdjson::ondemand::value& val) {  
   Argument arg;
 
@@ -96,20 +125,13 @@ Client::Arguments Client::Arguments::deserialize(simdjson::ondemand::object &obj
 }
 
 Client::Download Client::Download::deserialize(simdjson::ondemand::object &obj) {
-  std::string id = simdjson_utils::get_with_default<std::string>(obj, "id", "");
-  std::string path = simdjson_utils::get_with_default<std::string>(obj, "path", "");
-  std::string sha1 = simdjson_utils::get<std::string>(obj, "sha1");
-  int64_t size = simdjson_utils::get<int64_t>(obj, "size");
-  std::optional<int64_t> totalSize = simdjson_utils::get_optional<int64_t>(obj, "totalSize");
-  std::string url = simdjson_utils::get<std::string>(obj, "url");
-
   return {
-    .id = id,
-    .path = path,
-    .sha1 = sha1,
-    .size = size,
-    .totalSize = totalSize,
-    .url = url
+    .id =  simdjson_utils::get_with_default<std::string>(obj, "id", ""),
+    .path = simdjson_utils::get_with_default<std::string>(obj, "path", ""),
+    .sha1 = simdjson_utils::get<std::string>(obj, "sha1"),
+    .size = simdjson_utils::get<int64_t>(obj, "size"),
+    .totalSize = simdjson_utils::get_optional<int64_t>(obj, "totalSize"),
+    .url = simdjson_utils::get<std::string>(obj, "url")
   };
 }
 
@@ -119,10 +141,23 @@ std::vector<std::uint8_t> Client::Download::fetch() {
   httplib::Client cli(host);
 
   auto res = cli.Get(path);
-  if (!res || res->status != 200) {
+  if (!res || res->status != 200) 
     throw std::runtime_error("Failed to download " + url);
-  }
 
   const auto &body = res->body;
   return std::vector<uint8_t>(body.begin(), body.end());
+}
+
+Client::ClientDownloads Client::ClientDownloads::deserialize(simdjson::ondemand::object &obj) {
+  auto client = obj["client"].get_object().value();
+  auto client_mappings = obj["client_mappings"].get_object().value();
+  auto server = obj["server"].get_object().value();
+  auto server_mappings = obj["server_mappings"].get_object().value();
+
+  return {
+    .client = Client::Download::deserialize(client),
+    .client_mappings = Client::Download::deserialize(client_mappings),
+    .server = Client::Download::deserialize(server),
+    .server_mappings = Client::Download::deserialize(server_mappings)
+  };
 }

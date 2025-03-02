@@ -10,6 +10,7 @@
 #include "include/utils/simdjson_utils.hh"
 #include "include/entities/os.hh"
 #include "include/entities/arch.hh"
+#include "include/config/app.hh"
 
 class Client {
 public:
@@ -38,8 +39,8 @@ public:
     std::optional<Features> features;
 
     static Rule deserialize(simdjson::ondemand::object &obj);
-    bool osMatches();
-    bool osMatches(std::vector<Rule> rules);
+    bool osMatches(AppConfig &config);
+    bool osMatches(AppConfig &config, std::vector<Rule> rules);
   };
 
   struct Argument {
@@ -67,5 +68,14 @@ public:
 
     static Download deserialize(simdjson::ondemand::object &obj);
     std::vector<std::uint8_t> fetch();
+  };
+
+  struct ClientDownloads {
+    Download client;
+    Download client_mappings;
+    Download server;
+    Download server_mappings;
+
+    static ClientDownloads deserialize(simdjson::ondemand::object &obj);
   };
 };
