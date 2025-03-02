@@ -1,6 +1,8 @@
 #include <string>
 #include <optional>
 #include <cstdint>
+#include <map>
+#include <filesystem>
 #include <simdjson.h>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
@@ -11,6 +13,8 @@
 #include "include/entities/os.hh"
 #include "include/entities/arch.hh"
 #include "include/config/app.hh"
+
+namespace fs = std::filesystem;
 
 class Client {
 public:
@@ -84,5 +88,17 @@ public:
     int majorVersion;
 
     static JavaVersion deserialize(simdjson::ondemand::object &obj);
+  };
+
+  struct LibraryDownloads {
+    Download artifact;
+    std::map<std::string, Download> classifiers;
+
+    std::vector<uint8_t> fetchArtifact();
+    fs::path artifactPath(AppConfig &config);
+    std::vector<uint8_t> fetchNative(std::string nativeIndex);
+    fs::path nativePath(AppConfig &config, std::string nativeIndex);
+
+    LibraryDownloads deserialize(simdjson::ondemand::object &obj);
   };
 };

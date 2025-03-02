@@ -176,3 +176,21 @@ Client::JavaVersion Client::JavaVersion::deserialize(simdjson::ondemand::object 
     .majorVersion = simdjson_utils::get<int>(obj, "majorVersion") 
   };
 }
+
+std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
+  return artifact.fetch();
+}
+
+fs::path Client::LibraryDownloads::artifactPath(AppConfig &config) {
+  return config.LIBRARIES_DIR / artifact.path;
+}
+
+std::vector<uint8_t> Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
+  return classifiers.at(nativeIndex).fetch();
+}
+
+fs::path Client::LibraryDownloads::nativePath(AppConfig &config, std::string nativeIndex) {
+  Download download = classifiers.at(nativeIndex);
+
+  return config.NATIVES_DIR / download.path;
+}
