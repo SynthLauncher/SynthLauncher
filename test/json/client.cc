@@ -56,3 +56,13 @@ TEST(ClientCC, DeserializeArguments) {
       arguments.push_back(Client::Argument::deserialize(val.value()));
     }
 }
+
+TEST(ClientCC, DeserializeGameAndJvmArgs) { 
+    simdjson::ondemand::parser parser;
+    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
+    simdjson::ondemand::document doc = parser.iterate(json);
+
+    simdjson::ondemand::object obj = doc["arguments"].get_object().value();
+
+    Client::Arguments args = Client::Arguments::deserialize(obj);
+}

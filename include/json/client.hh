@@ -41,4 +41,11 @@ public:
 
     static Argument deserialize(simdjson::ondemand::value &val);
   };
+
+  struct Arguments {
+    std::vector<Argument> game;
+    std::vector<Argument> jvm;
+
+    static Arguments deserialize(simdjson::ondemand::object &obj);
+  };
 };

@@ -50,7 +50,7 @@ Client::Rule Client::Rule::deserialize(simdjson::ondemand::object &obj) {
   return {.action = action, .os = os, .features = features};
 }
 
-Client::Argument Client::Argument::deserialize(simdjson::ondemand::value &val) {
+Client::Argument Client::Argument::deserialize(simdjson::ondemand::value& val) {  
   Argument arg;
 
   if (val.type() == simdjson::ondemand::json_type::string) {
@@ -61,23 +61,36 @@ Client::Argument Client::Argument::deserialize(simdjson::ondemand::value &val) {
   simdjson::ondemand::object obj = val.get_object().value();
 
   if (auto rules = simdjson_utils::get_optional<simdjson::ondemand::array>(obj, "rules")) {
-    for (auto rule_value : *rules) {
-      auto val = rule_value.get_object().value();
-      arg.rules.push_back(Rule::deserialize(val));
+    for (simdjson::ondemand::value rule_value : *rules) {
+      auto rule_obj = rule_value.get_object().value();
+      arg.rules.push_back(Rule::deserialize(rule_obj));
     }
   }
 
   if (auto value = obj["value"]; !value.error()) {
-    if (value.type() == simdjson::ondemand::json_type::string)
-      arg.value = simdjson_utils::get<std::string>(obj, "value");
-
+    if (value.type() == simdjson::ondemand::json_type::string) 
+      arg.value = std::string(value.get_string().value());
     else if (value.type() == simdjson::ondemand::json_type::array) {
-      simdjson::ondemand::array arr = value.get_array().value();
-
-      for (auto elem : arr)
+      for (simdjson::ondemand::value elem : value.get_array())   
         arg.values.push_back(std::string(elem.get_string().value()));
     }
   }
 
   return arg;
+}
+
+Client::Arguments Client::Arguments::deserialize(simdjson::ondemand::object &obj) {
+  Arguments args;
+
+  if (auto game = obj["game"].get_array(); !game.error()) {
+    for (simdjson::ondemand::value arg : game)   
+      args.game.push_back(Argument::deserialize(arg));
+  }
+
+  if (auto jvm = obj["jvm"].get_array(); !jvm.error()) {
+    for (simdjson::ondemand::value arg : jvm)
+      args.jvm.push_back(Argument::deserialize(arg));
+  }
+
+  return args;
 }
