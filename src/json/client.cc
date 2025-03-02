@@ -125,13 +125,21 @@ Client::Arguments Client::Arguments::deserialize(simdjson::ondemand::object &obj
 }
 
 Client::Download Client::Download::deserialize(simdjson::ondemand::object &obj) {
+  auto sha1 = std::string(obj["sha1"].get_string().value());
+  auto size = obj["size"].get_int64().value();
+  auto url = std::string(obj["url"].get_string().value());
+
+  auto id = simdjson_utils::get_with_default<std::string>(obj, "id", "");
+  auto path = simdjson_utils::get_with_default<std::string>(obj, "path", "");
+  auto totalSize = simdjson_utils::get_optional<int64_t>(obj, "totalSize");
+
   return {
-    .id =  simdjson_utils::get_with_default<std::string>(obj, "id", ""),
-    .path = simdjson_utils::get_with_default<std::string>(obj, "path", ""),
-    .sha1 = simdjson_utils::get_with_default<std::string>(obj, "sha1", ""),
-    .size = simdjson_utils::get_with_default<int64_t>(obj, "size", 0),
-    .totalSize = simdjson_utils::get_optional<int64_t>(obj, "totalSize"),
-    .url = simdjson_utils::get<std::string>(obj, "url")
+    .id = id,
+    .path = path,
+    .sha1 = sha1,
+    .size = size,
+    .totalSize = totalSize,
+    .url = url
   };
 }
 
