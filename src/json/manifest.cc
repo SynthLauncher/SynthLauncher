@@ -11,14 +11,14 @@ Manifest::Latest::parse_latest(simdjson::ondemand::object &obj) {
 
 Manifest::Version
 Manifest::Version::parse_version(simdjson::ondemand::object &obj) {
-  return {.id = std::string(obj["id"].get_string().value()),
-          .type = std::string(obj["type"].get_string().value()),
-          .url = std::string(obj["type"].get_string().value()),
-          .time = std::string(obj["time"].get_string().value()),
-          .releaseTime = std::string(obj["releaseTime"].get_string().value())};
+  return {.id = simdjson_utils::get<std::string>(obj, "id"),
+          .type = simdjson_utils::get<std::string>(obj, "type"),
+          .url = simdjson_utils::get<std::string>(obj, "url"),
+          .time = simdjson_utils::get<std::string>(obj, "time"),
+          .releaseTime = simdjson_utils::get<std::string>(obj, "releaseTime")};
 }
 
-Manifest Manifest::parse_maniftest(const std::string &path) {
+Manifest Manifest::parse_maniftest(const std::string_view path) {
   simdjson::ondemand::parser parser;
   simdjson::padded_string json = simdjson::padded_string::load(path);
   simdjson::ondemand::document doc = parser.iterate(json);
