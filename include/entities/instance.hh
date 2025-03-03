@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "include/json/manifest.hh"
+#include "include/config/app.hh"
 
 namespace fs = std::filesystem;
 
@@ -20,6 +21,7 @@ public:
   Instance(const std::string &name, const std::string &version);
   fs::path dir();
   void initDir();
+  void init(AppConfig &config);
   static Instance createInstance(const std::string &name,
                                  const std::string &version);
   static std::vector<Instance> readInstances();

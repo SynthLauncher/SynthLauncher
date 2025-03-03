@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "include/json/manifest.hh"
+#include "include/config/app.hh"
 
 TEST(ManifestHH, LatestParsing) { 
     simdjson::ondemand::parser parser;
@@ -32,14 +33,23 @@ TEST(ManifestHH, VersionParsing) {
     ASSERT_EQ(version.releaseTime, "2025-01-15T14:28:04+00:00");
 }
 
-TEST(ManifestHH, ManifestParsing) { 
-    Manifest manifest = Manifest::parse("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
-    
-    ASSERT_EQ(manifest.latest.release, "1.21.4");
-    ASSERT_EQ(manifest.latest.snapshot, "25w03a");
-    ASSERT_EQ(manifest.versions.at(1).id, "25w02a");
-    ASSERT_EQ(manifest.versions.at(1).type, "snapshot");
-    ASSERT_EQ(manifest.versions.at(1).url, "https://piston-meta.mojang.com/v1/packages/02a2ae8e2c54cfc39402997bae1bbb2ccc956c84/25w02a.json");
-    ASSERT_EQ(manifest.versions.at(1).time, "2025-01-08T13:54:13+00:00");
-    ASSERT_EQ(manifest.versions.at(1).releaseTime, "2025-01-08T13:42:18+00:00");
+/* 
+This test has to be rewritten since I reconfigured how Manifest::parse() works!
+*/
+TEST(ManifestHH, ManifestParsing) {
+  AppConfig config = initializeAppConfig();
+  Manifest::PATH =
+      "E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json";
+
+  Manifest manifest = Manifest::parse();
+
+  ASSERT_EQ(manifest.latest.release, "1.21.4");
+  ASSERT_EQ(manifest.latest.snapshot, "25w03a");
+  ASSERT_EQ(manifest.versions.at(1).id, "25w02a");
+  ASSERT_EQ(manifest.versions.at(1).type, "snapshot");
+  ASSERT_EQ(manifest.versions.at(1).url,
+            "https://piston-meta.mojang.com/v1/packages/"
+            "02a2ae8e2c54cfc39402997bae1bbb2ccc956c84/25w02a.json");
+  ASSERT_EQ(manifest.versions.at(1).time, "2025-01-08T13:54:13+00:00");
+  ASSERT_EQ(manifest.versions.at(1).releaseTime, "2025-01-08T13:42:18+00:00");
 }

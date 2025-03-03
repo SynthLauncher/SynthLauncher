@@ -1,6 +1,14 @@
 #include "include/entities/instance.hh"
 
+fs::path Instance::PARENT_DIR;
+fs::path Instance::INSTANCE_FILE;
+
 Instance::Instance(const std::string& name, const std::string& version) : name(name), version(version) {}
+
+void Instance::init(AppConfig &config) {
+  PARENT_DIR = config.DIR + "instances/";
+  INSTANCE_FILE = config.DIR + "instances.json";
+}
 
 fs::path Instance::dir() { 
     return this->PARENT_DIR / this->name; 

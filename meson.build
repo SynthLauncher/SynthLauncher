@@ -34,7 +34,8 @@ test_src = [
   'test/entities/arch.cc',
   'test/entities/os.cc',
   'test/json/client.cc',
-  'test/json/manifest.cc'
+  'test/json/manifest.cc',
+  'test/utils/httplib_utils.cc'
 ]
 
 # Build dependency
