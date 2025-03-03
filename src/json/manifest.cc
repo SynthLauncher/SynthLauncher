@@ -5,8 +5,8 @@ fs::path Manifest::PATH = "";
 Manifest::Latest
 Manifest::Latest::parse_latest(simdjson::ondemand::object &obj) {
   return {
-    .release = std::string(obj["release"].get_string().value()),
-          .snapshot = std::string(obj["snapshot"].get_string().value())};
+    .release = simdjson_utils::get<std::string>(obj, "release"),
+          .snapshot = simdjson_utils::get<std::string>(obj, "snapshot")};
 }
 
 Manifest::Version
