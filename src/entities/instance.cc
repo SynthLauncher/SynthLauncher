@@ -39,8 +39,10 @@ Instance Instance::createInstance(const std::string& name, const std::string& ve
         "Unexpected version occured while creating an instance!");
 
   instance.initDir();
-
+  
+  fs::path client_path = instance.dir() / "client.json";
+  
   /*
-        I have more to implement!
+      I've got more to implement here!
   */
 }

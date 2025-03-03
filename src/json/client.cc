@@ -130,9 +130,9 @@ Client::Arguments Client::Arguments::parse(simdjson::ondemand::object &obj) {
   json is deformed for some reason
 */
 Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
-  auto sha1 = simdjson_utils::get<std::string>(obj, "sha1");
-  auto size = simdjson_utils::get<int64_t>(obj, "size");
-  auto url = simdjson_utils::get<std::string>(obj, "url");
+  auto sha1 = obj["sha1"].get_string().value();
+  auto size = obj["size"].get_int64().value();
+  auto url = obj["url"].get_string().value();
 
   auto id = simdjson_utils::get_with_default<std::string>(obj, "id", "");
   auto path = simdjson_utils::get_with_default<std::string>(obj, "path", "");
@@ -141,10 +141,10 @@ Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
   return {
     .id = id,
     .path = path,
-    .sha1 = sha1,
+    .sha1 = std::string(sha1),
     .size = size,
     .totalSize = totalSize,
-    .url = url
+    .url = std::string(url)
   };
 }
 
@@ -154,10 +154,10 @@ Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
 Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::object &obj) {
   Client::ClientDownloads download;
 
-  auto client_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "client");
-  auto client_mappings_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "client_mappings");
-  auto server_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "server");
-  auto server_mappings_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "server_mappings");
+  auto client_obj = obj["client"].get_object().value(); 
+  auto client_mappings_obj = obj["client_mappings"].get_object().value();
+  auto server_obj = obj["server"].get_object().value();
+  auto server_mappings_obj = obj["server_mappings"].get_object().value();
 
   std::cout << client_obj << std::endl;
   
