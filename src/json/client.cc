@@ -124,10 +124,15 @@ Client::Arguments Client::Arguments::parse(simdjson::ondemand::object &obj) {
   return args;
 }
 
+/*
+  This function works properly I tested it in test/client.cc!
+  The reason that this didn't work with the ClientDownloads parsing is because
+  json is deformed for some reason
+*/
 Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
-  auto sha1 = std::string(obj["sha1"].get_string().value());
-  auto size = obj["size"].get_int64().value();
-  auto url = std::string(obj["url"].get_string().value());
+  auto sha1 = simdjson_utils::get<std::string>(obj, "sha1");
+  auto size = simdjson_utils::get<int64_t>(obj, "size");
+  auto url = simdjson_utils::get<std::string>(obj, "url");
 
   auto id = simdjson_utils::get_with_default<std::string>(obj, "id", "");
   auto path = simdjson_utils::get_with_default<std::string>(obj, "path", "");
@@ -143,18 +148,26 @@ Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
   };
 }
 
+/*
+  Debugging purposes for now
+*/
 Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::object &obj) {
-  auto client = obj["client"].get_object().value();
-  auto client_mappings = obj["client_mappings"].get_object().value();
-  auto server = obj["server"].get_object().value();
-  auto server_mappings = obj["server_mappings"].get_object().value();
+  Client::ClientDownloads download;
 
-  return {
-    .client = Client::Download::parse(client),
-    .client_mappings = Client::Download::parse(client_mappings),
-    .server = Client::Download::parse(server),
-    .server_mappings = Client::Download::parse(server_mappings)
-  };
+  auto client_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "client");
+  auto client_mappings_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "client_mappings");
+  auto server_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "server");
+  auto server_mappings_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "server_mappings");
+
+  std::cout << client_obj << std::endl;
+
+  /*
+    Problem arrises here, for some reason the simdjson parser says that the json is deformed in some way
+    which causes it to not be able to parse
+  */
+  // auto client = Client::Download::parse(client_obj);
+
+  return download;
 }
 
 std::vector<std::uint8_t> Client::Download::fetch() {
