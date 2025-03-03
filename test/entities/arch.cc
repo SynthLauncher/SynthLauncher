@@ -3,7 +3,7 @@
 
 #include "include/entities/arch.hh"
 
-TEST(ArchCC, ArchFromStringTest) {
+TEST(ArchHH, ArchFromString) {
   std::string str1 = "arm64";
   std::string str2 = "arm";
   std::string str3 = "x86";

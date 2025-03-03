@@ -3,14 +3,14 @@
 fs::path Manifest::PATH = "";
 
 Manifest::Latest
-Manifest::Latest::parse_latest(simdjson::ondemand::object &obj) {
+Manifest::Latest::parse(simdjson::ondemand::object &obj) {
   return {
     .release = simdjson_utils::get<std::string>(obj, "release"),
           .snapshot = simdjson_utils::get<std::string>(obj, "snapshot")};
 }
 
 Manifest::Version
-Manifest::Version::parse_version(simdjson::ondemand::object &obj) {
+Manifest::Version::parse(simdjson::ondemand::object &obj) {
   return {.id = simdjson_utils::get<std::string>(obj, "id"),
           .type = simdjson_utils::get<std::string>(obj, "type"),
           .url = simdjson_utils::get<std::string>(obj, "url"),
@@ -18,7 +18,7 @@ Manifest::Version::parse_version(simdjson::ondemand::object &obj) {
           .releaseTime = simdjson_utils::get<std::string>(obj, "releaseTime")};
 }
 
-Manifest Manifest::parse_maniftest(const std::string_view path) {
+Manifest Manifest::parse(const std::string_view path) {
   simdjson::ondemand::parser parser;
   simdjson::padded_string json = simdjson::padded_string::load(path);
   simdjson::ondemand::document doc = parser.iterate(json);
@@ -28,8 +28,8 @@ Manifest Manifest::parse_maniftest(const std::string_view path) {
 
   std::vector<Version> versions;
   for (simdjson::ondemand::object version_obj : versions_arr)
-    versions.push_back(Manifest::Version::parse_version(version_obj));
+    versions.push_back(Manifest::Version::parse(version_obj));
 
-  return {.latest = Manifest::Latest::parse_latest(latest_obj),
+  return {.latest = Manifest::Latest::parse(latest_obj),
           .versions = versions};
 }

@@ -3,7 +3,7 @@
 #include "include/config/app.hh"
 #include <iostream>
 
-TEST(AppCC, AppConfigInitializationTest) {
+TEST(AppHH, AppConfigInitialization) {
   AppConfig config = initializeAppConfig();
 
 #ifdef _WIN32
@@ -15,7 +15,7 @@ TEST(AppCC, AppConfigInitializationTest) {
 #endif
 }
 
-TEST(AppCC, InitializeLauncherDirectoryTest) {
+TEST(AppHH, LauncherDirectoryInitialization) {
   AppConfig config = initializeAppConfig();
   initializeLauncherDir(config);
 }

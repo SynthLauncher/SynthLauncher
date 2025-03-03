@@ -1,42 +1,42 @@
 #include <gtest/gtest.h>
 #include "include/json/client.hh"
 
-TEST(ClientCC, DeserializeFeaturesTest) { 
+TEST(ClientHH, FeaturesParsing) { 
     simdjson::ondemand::parser parser;
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/features.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["features"].get_object().value();
 
-    Client::Features features = Client::Features::deserialize(obj);
+    Client::Features features = Client::Features::parse(obj);
 
     ASSERT_EQ(features.isDemoUser, true);
     ASSERT_EQ(features.hasQuickPlaysSupport, true);
     ASSERT_EQ(features.hasCustomResolution, false);
 }
 
-TEST(ClientCC, DeserializeOSRulesTest) { 
+TEST(ClientHH, OSRulesParsing) { 
     simdjson::ondemand::parser parser;
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/os_rules.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["os"].get_object().value();
 
-    Client::OSRules rules = Client::OSRules::deserialize(obj);
+    Client::OSRules rules = Client::OSRules::parse(obj);
 
     ASSERT_EQ(rules.name, OperatingSystem::OS::Windows);
     ASSERT_EQ(rules.arch, Architecture::Arch::X86);
     ASSERT_EQ(rules.version, "");
 }
 
-TEST(ClientCC, DeserializeRuleTest) { 
+TEST(ClientHH, RuleParsing) { 
     simdjson::ondemand::parser parser;
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["rule"].get_object().value();
 
-    Client::Rule rule = Client::Rule::deserialize(obj);
+    Client::Rule rule = Client::Rule::parse(obj);
 
     ASSERT_EQ(rule.action, "allow");
     ASSERT_EQ(rule.os->name, OperatingSystem::OS::OSX);
@@ -44,7 +44,7 @@ TEST(ClientCC, DeserializeRuleTest) {
     ASSERT_EQ(rule.features, std::nullopt);
 }
 
-TEST(ClientCC, DeserializeArgumentsTest) { 
+TEST(ClientHH, MultipleArgumentParsing) { 
     simdjson::ondemand::parser parser;
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
     simdjson::ondemand::document doc = parser.iterate(json);
@@ -53,28 +53,28 @@ TEST(ClientCC, DeserializeArgumentsTest) {
 
     std::vector<Client::Argument> arguments;
     for (auto val : arr) {
-      arguments.push_back(Client::Argument::deserialize(val.value()));
+      arguments.push_back(Client::Argument::parse(val.value()));
     }
 }
 
-TEST(ClientCC, DeserializeGameAndJvmArgsTest) { 
+TEST(ClientHH, ArgumentsParsing) { 
     simdjson::ondemand::parser parser;
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["arguments"].get_object().value();
 
-    Client::Arguments args = Client::Arguments::deserialize(obj);
+    Client::Arguments args = Client::Arguments::parse(obj);
 }
 
-TEST(ClientCC, DeserializeDownloadTest) { 
+TEST(ClientHH, DownloadParsing) { 
     simdjson::ondemand::parser parser; 
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["download"].get_object().value();
 
-    Client::Download download = Client::Download::deserialize(obj);
+    Client::Download download = Client::Download::parse(obj);
 
     ASSERT_EQ(download.id, "");
     ASSERT_EQ(download.path, "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
@@ -84,14 +84,14 @@ TEST(ClientCC, DeserializeDownloadTest) {
     ASSERT_EQ(download.totalSize, std::nullopt);
 }
 
-TEST(ClientCC, DeserializeClientDownloadTest) {
+TEST(ClientHH, ClientDownloadParsing) {
     simdjson::ondemand::parser parser; 
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["downloads"].get_object().value();
 
-    Client::ClientDownloads downloads = Client::ClientDownloads::deserialize(obj);
+    Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
 
     ASSERT_EQ(downloads.client.sha1, "9acca901e3564a91250b941cd2c55a55d0b71bca");
     ASSERT_EQ(downloads.client_mappings.sha1, "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
@@ -99,14 +99,14 @@ TEST(ClientCC, DeserializeClientDownloadTest) {
     ASSERT_EQ(downloads.server_mappings.sha1, "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
 }
 
-TEST(ClientCC, DeserializeJavaVersionTest) {
+TEST(ClientHH, JavaVersionParsing) {
     simdjson::ondemand::parser parser; 
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["javaVersion"].get_object().value();
 
-    Client::JavaVersion version = Client::JavaVersion::deserialize(obj);
+    Client::JavaVersion version = Client::JavaVersion::parse(obj);
 
     ASSERT_EQ(version.component, "java-runtime-delta");
     ASSERT_EQ(version.majorVersion, 21);

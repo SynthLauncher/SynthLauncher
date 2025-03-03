@@ -2,20 +2,20 @@
 
 #include "include/json/manifest.hh"
 
-TEST(ManifestHH, LatestParsingTest) { 
+TEST(ManifestHH, LatestParsing) { 
     simdjson::ondemand::parser parser;
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
     simdjson::ondemand::document doc = parser.iterate(json);
 
     simdjson::ondemand::object obj = doc["latest"].get_object().value();
 
-    Manifest::Latest latest = Manifest::Latest::parse_latest(obj);
+    Manifest::Latest latest = Manifest::Latest::parse(obj);
 
     ASSERT_EQ(latest.release, "1.21.4");
     ASSERT_EQ(latest.snapshot, "25w03a");
 }
 
-TEST(ManifestHH, VersionParsingTest) {
+TEST(ManifestHH, VersionParsing) {
     simdjson::ondemand::parser parser;
     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
     simdjson::ondemand::document doc = parser.iterate(json);
@@ -23,7 +23,7 @@ TEST(ManifestHH, VersionParsingTest) {
     simdjson::ondemand::array arr = doc["versions"].get_array().value();
     simdjson::ondemand::object obj = arr.at(0).get_object().value();
 
-    Manifest::Version version = Manifest::Version::parse_version(obj);
+    Manifest::Version version = Manifest::Version::parse(obj);
 
     ASSERT_EQ(version.id, "25w03a");
     ASSERT_EQ(version.type, "snapshot");
@@ -32,8 +32,8 @@ TEST(ManifestHH, VersionParsingTest) {
     ASSERT_EQ(version.releaseTime, "2025-01-15T14:28:04+00:00");
 }
 
-TEST(ManifestHH, ManifestParsingTest) { 
-    Manifest manifest = Manifest::parse_maniftest("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
+TEST(ManifestHH, ManifestParsing) { 
+    Manifest manifest = Manifest::parse("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
     
     ASSERT_EQ(manifest.latest.release, "1.21.4");
     ASSERT_EQ(manifest.latest.snapshot, "25w03a");

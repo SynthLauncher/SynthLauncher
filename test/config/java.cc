@@ -2,7 +2,7 @@
 
 #include "include/config/java.hh"
 
-TEST(JavaCC, GetCupsFromPathAndExtractVersionTest) {
+TEST(JavaHH, VersionExtraction) {
   auto cups = Java::getAvaliableJavaCups();
   auto cup = cups[0];
   Java::extractJavaVersion(cup);

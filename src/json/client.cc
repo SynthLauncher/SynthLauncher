@@ -1,8 +1,8 @@
 #include "include/json/client.hh"
 
-// Deserializes features
+// parses features
 Client::Features
-Client::Features::deserialize(simdjson::ondemand::object &obj) {
+Client::Features::parse(simdjson::ondemand::object &obj) {
   return {.isDemoUser = simdjson_utils::get_with_default<bool>(
               obj, "is_demo_user", false),
           .hasCustomResolution = simdjson_utils::get_with_default<bool>(
@@ -17,7 +17,7 @@ Client::Features::deserialize(simdjson::ondemand::object &obj) {
               obj, "is_quick_play_realms", false)};
 }
 
-Client::OSRules Client::OSRules::deserialize(simdjson::ondemand::object &obj) {
+Client::OSRules Client::OSRules::parse(simdjson::ondemand::object &obj) {
   std::optional<OperatingSystem::OS> name;
   if (auto name_obj = simdjson_utils::get_optional<std::string>(obj, "name"))
     name = OperatingSystem::os_from_string(*name_obj);
@@ -32,20 +32,20 @@ Client::OSRules Client::OSRules::deserialize(simdjson::ondemand::object &obj) {
   return {.name = name, .arch = arch, .version = version};
 }
 
-Client::Rule Client::Rule::deserialize(simdjson::ondemand::object &obj) {
+Client::Rule Client::Rule::parse(simdjson::ondemand::object &obj) {
   std::string action =
       simdjson_utils::get_with_default<std::string>(obj, "action", "disallow");
 
   std::optional<OSRules> os;
   if (auto os_obj =
           simdjson_utils::get_optional<simdjson::ondemand::object>(obj, "os"))
-    os = OSRules::deserialize(*os_obj);
+    os = OSRules::parse(*os_obj);
 
   std::optional<Features> features;
   if (auto features_obj =
           simdjson_utils::get_optional<simdjson::ondemand::object>(obj,
                                                                    "features"))
-    features = Features::deserialize(*features_obj);
+    features = Features::parse(*features_obj);
 
   return {.action = action, .os = os, .features = features};
 }
@@ -79,7 +79,7 @@ bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
   return true;
 }
 
-Client::Argument Client::Argument::deserialize(simdjson::ondemand::value& val) {  
+Client::Argument Client::Argument::parse(simdjson::ondemand::value& val) {  
   Argument arg;
 
   if (val.type() == simdjson::ondemand::json_type::string) {
@@ -92,7 +92,7 @@ Client::Argument Client::Argument::deserialize(simdjson::ondemand::value& val) {
   if (auto rules = simdjson_utils::get_optional<simdjson::ondemand::array>(obj, "rules")) {
     for (simdjson::ondemand::value rule_value : *rules) {
       auto rule_obj = rule_value.get_object().value();
-      arg.rules.push_back(Rule::deserialize(rule_obj));
+      arg.rules.push_back(Rule::parse(rule_obj));
     }
   }
 
@@ -108,23 +108,23 @@ Client::Argument Client::Argument::deserialize(simdjson::ondemand::value& val) {
   return arg;
 }
 
-Client::Arguments Client::Arguments::deserialize(simdjson::ondemand::object &obj) {
+Client::Arguments Client::Arguments::parse(simdjson::ondemand::object &obj) {
   Arguments args;
 
   if (auto game = obj["game"].get_array(); !game.error()) {
     for (simdjson::ondemand::value arg : game)   
-      args.game.push_back(Argument::deserialize(arg));
+      args.game.push_back(Argument::parse(arg));
   }
 
   if (auto jvm = obj["jvm"].get_array(); !jvm.error()) {
     for (simdjson::ondemand::value arg : jvm)
-      args.jvm.push_back(Argument::deserialize(arg));
+      args.jvm.push_back(Argument::parse(arg));
   }
 
   return args;
 }
 
-Client::Download Client::Download::deserialize(simdjson::ondemand::object &obj) {
+Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
   auto sha1 = std::string(obj["sha1"].get_string().value());
   auto size = obj["size"].get_int64().value();
   auto url = std::string(obj["url"].get_string().value());
@@ -156,21 +156,21 @@ std::vector<std::uint8_t> Client::Download::fetch() {
   return std::vector<uint8_t>(body.begin(), body.end());
 }
 
-Client::ClientDownloads Client::ClientDownloads::deserialize(simdjson::ondemand::object &obj) {
+Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::object &obj) {
   auto client = obj["client"].get_object().value();
   auto client_mappings = obj["client_mappings"].get_object().value();
   auto server = obj["server"].get_object().value();
   auto server_mappings = obj["server_mappings"].get_object().value();
 
   return {
-    .client = Client::Download::deserialize(client),
-    .client_mappings = Client::Download::deserialize(client_mappings),
-    .server = Client::Download::deserialize(server),
-    .server_mappings = Client::Download::deserialize(server_mappings)
+    .client = Client::Download::parse(client),
+    .client_mappings = Client::Download::parse(client_mappings),
+    .server = Client::Download::parse(server),
+    .server_mappings = Client::Download::parse(server_mappings)
   };
 }
 
-Client::JavaVersion Client::JavaVersion::deserialize(simdjson::ondemand::object &obj) {
+Client::JavaVersion Client::JavaVersion::parse(simdjson::ondemand::object &obj) {
   return { 
     .component = simdjson_utils::get<std::string>(obj, "component"),
     .majorVersion = simdjson_utils::get<int>(obj, "majorVersion") 

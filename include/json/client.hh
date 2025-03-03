@@ -26,7 +26,7 @@ public:
     bool isQuickPlayMultiplayer;
     bool isQuickPlayRealms;
 
-    static Features deserialize(simdjson::ondemand::object &obj);
+    static Features parse(simdjson::ondemand::object &obj);
   };
 
   struct OSRules {
@@ -34,7 +34,7 @@ public:
     std::optional<Architecture::Arch> arch;
     std::string version;
 
-    static OSRules deserialize(simdjson::ondemand::object &obj);
+    static OSRules parse(simdjson::ondemand::object &obj);
   };
 
   struct Rule {
@@ -42,7 +42,7 @@ public:
     std::optional<OSRules> os;
     std::optional<Features> features;
 
-    static Rule deserialize(simdjson::ondemand::object &obj);
+    static Rule parse(simdjson::ondemand::object &obj);
     bool osMatches(AppConfig &config);
     bool osMatches(AppConfig &config, std::vector<Rule> rules);
   };
@@ -52,14 +52,14 @@ public:
     std::vector<std::string> values;
     std::vector<Rule> rules;
 
-    static Argument deserialize(simdjson::ondemand::value &val);
+    static Argument parse(simdjson::ondemand::value &val);
   };
 
   struct Arguments {
     std::vector<Argument> game;
     std::vector<Argument> jvm;
 
-    static Arguments deserialize(simdjson::ondemand::object &obj);
+    static Arguments parse(simdjson::ondemand::object &obj);
   };
 
   struct Download {
@@ -70,7 +70,7 @@ public:
     std::optional<int64_t> totalSize;
     std::string url;
 
-    static Download deserialize(simdjson::ondemand::object &obj);
+    static Download parse(simdjson::ondemand::object &obj);
     std::vector<std::uint8_t> fetch();
   };
 
@@ -80,14 +80,14 @@ public:
     Download server;
     Download server_mappings;
 
-    static ClientDownloads deserialize(simdjson::ondemand::object &obj);
+    static ClientDownloads parse(simdjson::ondemand::object &obj);
   };
 
   struct JavaVersion {
     std::string component;
     int majorVersion;
 
-    static JavaVersion deserialize(simdjson::ondemand::object &obj);
+    static JavaVersion parse(simdjson::ondemand::object &obj);
   };
 
   struct LibraryDownloads {
@@ -99,6 +99,6 @@ public:
     std::vector<uint8_t> fetchNative(std::string nativeIndex);
     fs::path nativePath(AppConfig &config, std::string nativeIndex);
 
-    LibraryDownloads deserialize(simdjson::ondemand::object &obj);
+    LibraryDownloads parse(simdjson::ondemand::object &obj);
   };
 };
