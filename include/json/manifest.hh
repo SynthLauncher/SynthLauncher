@@ -33,5 +33,5 @@ public:
 
   Latest latest;
   std::vector<Version> versions;
-  static Manifest parse(const std::string_view path);
+  static Manifest parse();
 };

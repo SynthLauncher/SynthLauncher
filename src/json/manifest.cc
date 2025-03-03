@@ -18,9 +18,9 @@ Manifest::Version::parse(simdjson::ondemand::object &obj) {
           .releaseTime = simdjson_utils::get<std::string>(obj, "releaseTime")};
 }
 
-Manifest Manifest::parse(const std::string_view path) {
+Manifest Manifest::parse() {
   simdjson::ondemand::parser parser;
-  simdjson::padded_string json = simdjson::padded_string::load(path);
+  simdjson::padded_string json = simdjson::padded_string::load(PATH.string());
   simdjson::ondemand::document doc = parser.iterate(json);
 
   simdjson::ondemand::object latest_obj = doc["latest"].get_object().value();

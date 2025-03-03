@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "include/json/manifest.hh"
 
 namespace fs = std::filesystem;
 
