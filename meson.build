@@ -8,8 +8,6 @@ openssl = dependency('openssl')
 src = [
   'src/json/manifest.cc',
   'src/config/app.cc',
-  'src/http/builder.cc',
-  'src/http/parser.cc',
   'src/json/assetindex.cc',
   'src/json/client.cc',
   'src/entities/instance.cc',
@@ -21,7 +19,6 @@ src = [
 
 test_src = [
   'test/test.cc',
-  'test/http.cc',
   'test/config/app.cc',
   'test/config/java.cc',
   'test/entities/arch.cc',
