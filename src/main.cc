@@ -16,6 +16,7 @@ int main() {
     Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
 
     std::cout << downloads.client.sha1 << std::endl;
+    std::cout << downloads.server.sha1 << std::endl;
 
     return 0; 
 }

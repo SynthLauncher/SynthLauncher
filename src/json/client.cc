@@ -158,8 +158,6 @@ Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::objec
   auto client_mappings_obj = obj["client_mappings"].get_object().value();
   auto server_obj = obj["server"].get_object().value();
   auto server_mappings_obj = obj["server_mappings"].get_object().value();
-
-  std::cout << client_obj << std::endl;
   
   /*
     Problem arrises here, for some reason the simdjson parser says that the json is deformed in some way
@@ -169,8 +167,14 @@ Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::objec
     Another weird notice: on top if I don't do std::cout then this fails entirely 
   */
   auto client = Client::Download::parse(client_obj);
+  auto client_mappings = Client::Download::parse(client_mappings_obj);
+  auto server = Client::Download::parse(server_obj);
+  auto server_mappings = Client::Download::parse(server_mappings_obj);
 
   download.client = client;
+  download.client_mappings = client_mappings;
+  download.server = server;
+  download.server_mappings = server_mappings;
 
   return download;
 }
