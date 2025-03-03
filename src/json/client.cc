@@ -143,19 +143,6 @@ Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
   };
 }
 
-std::vector<std::uint8_t> Client::Download::fetch() {
-  auto [host, path] = httplib_utils::extractHostAndPath(this->url);
-
-  httplib::Client cli(host);
-
-  auto res = cli.Get(path);
-  if (!res || res->status != 200) 
-    throw std::runtime_error("Failed to download " + url);
-
-  const auto &body = res->body;
-  return std::vector<uint8_t>(body.begin(), body.end());
-}
-
 Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::object &obj) {
   auto client = obj["client"].get_object().value();
   auto client_mappings = obj["client_mappings"].get_object().value();
@@ -168,6 +155,19 @@ Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::objec
     .server = Client::Download::parse(server),
     .server_mappings = Client::Download::parse(server_mappings)
   };
+}
+
+std::vector<std::uint8_t> Client::Download::fetch() {
+  auto [host, path] = httplib_utils::extractHostAndPath(this->url);
+
+  httplib::Client cli(host);
+
+  auto res = cli.Get(path);
+  if (!res || res->status != 200) 
+    throw std::runtime_error("Failed to download " + url);
+
+  const auto &body = res->body;
+  return std::vector<uint8_t>(body.begin(), body.end());
 }
 
 Client::JavaVersion Client::JavaVersion::parse(simdjson::ondemand::object &obj) {

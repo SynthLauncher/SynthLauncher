@@ -34,6 +34,5 @@ void AssetIndex::AssetObject::fetch(AppConfig &config) {
     } 
     else 
       throw std::runtime_error("Failed to download asset: " + hash);
-    
   }
 }
