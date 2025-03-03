@@ -160,12 +160,17 @@ Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::objec
   auto server_mappings_obj = simdjson_utils::get<simdjson::ondemand::object>(obj, "server_mappings");
 
   std::cout << client_obj << std::endl;
-
+  
   /*
     Problem arrises here, for some reason the simdjson parser says that the json is deformed in some way
     which causes it to not be able to parse
   */
-  // auto client = Client::Download::parse(client_obj);
+  /*
+    Another weird notice: on top if I don't do std::cout then this fails entirely 
+  */
+  auto client = Client::Download::parse(client_obj);
+
+  download.client = client;
 
   return download;
 }
