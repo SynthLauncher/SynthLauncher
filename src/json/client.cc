@@ -1,15 +1,22 @@
 #include "include/json/client.hh"
 
-Client::Features
-Client::Features::parse(const rapidjson::Value &obj) {
+Client::Features Client::Features::parse(const rapidjson::Value &obj) {
   Features features;
 
-  features.isDemoUser = obj.HasMember("is_demo_user") && obj["is_demo_user"].GetBool();
-  features.hasCustomResolution = obj.HasMember("has_custom_resolution") && obj["has_custom_resolution"].GetBool();
-  features.hasQuickPlaysSupport = obj.HasMember("has_quick_plays_support") && obj["has_quick_plays_support"].GetBool();
-  features.isQuickPlaySingleplayer = obj.HasMember("is_quick_play_singleplayer") && obj["is_quick_play_singleplayer"].GetBool();
-  features.isQuickPlayMultiplayer = obj.HasMember("is_quick_play_multiplayer") && obj["is_quick_play_multiplayer"].GetBool();
-  features.isQuickPlayRealms = obj.HasMember("is_quick_play_realms") && obj["is_quick_play_realms"].GetBool();
+  features.isDemoUser =
+      obj.HasMember("is_demo_user") && obj["is_demo_user"].GetBool();
+  features.hasCustomResolution = obj.HasMember("has_custom_resolution") &&
+                                 obj["has_custom_resolution"].GetBool();
+  features.hasQuickPlaysSupport = obj.HasMember("has_quick_plays_support") &&
+                                  obj["has_quick_plays_support"].GetBool();
+  features.isQuickPlaySingleplayer =
+      obj.HasMember("is_quick_play_singleplayer") &&
+      obj["is_quick_play_singleplayer"].GetBool();
+  features.isQuickPlayMultiplayer =
+      obj.HasMember("is_quick_play_multiplayer") &&
+      obj["is_quick_play_multiplayer"].GetBool();
+  features.isQuickPlayRealms = obj.HasMember("is_quick_play_realms") &&
+                               obj["is_quick_play_realms"].GetBool();
 
   return features;
 }
@@ -17,20 +24,20 @@ Client::Features::parse(const rapidjson::Value &obj) {
 Client::OSRules Client::OSRules::parse(const rapidjson::Value &obj) {
   OSRules rules;
 
-  if (obj.HasMember("name")) 
-      rules.name = OperatingSystem::os_from_string(obj["name"].GetString());
-  else 
-      rules.name = std::nullopt;
+  if (obj.HasMember("name"))
+    rules.name = OperatingSystem::os_from_string(obj["name"].GetString());
+  else
+    rules.name = std::nullopt;
 
-  if (obj.HasMember("arch")) 
-      rules.arch = Architecture::arch_from_string(obj["arch"].GetString());
-  else 
-      rules.arch = std::nullopt;
+  if (obj.HasMember("arch"))
+    rules.arch = Architecture::arch_from_string(obj["arch"].GetString());
+  else
+    rules.arch = std::nullopt;
 
   if (obj.HasMember("version"))
-      rules.version = obj["version"].GetString();
-  else 
-      rules.version = "";
+    rules.version = obj["version"].GetString();
+  else
+    rules.version = "";
 
   return rules;
 }
@@ -38,16 +45,16 @@ Client::OSRules Client::OSRules::parse(const rapidjson::Value &obj) {
 Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
   Client::Rule rule;
 
-  if (obj.HasMember("action")) 
+  if (obj.HasMember("action"))
     rule.action = obj["action"].GetString();
-  else 
+  else
     rule.action = "disallow";
-  
+
   if (obj.HasMember("os"))
     rule.os = OSRules::parse(obj["os"]);
   else
     rule.os = std::nullopt;
-  
+
   if (obj.HasMember("features"))
     rule.features = Features::parse(obj["features"]);
   else
@@ -56,13 +63,13 @@ Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
   return rule;
 }
 
-bool Client::Rule::osMatches(AppConfig &config) { 
-  bool match = true; 
+bool Client::Rule::osMatches(AppConfig &config) {
+  bool match = true;
 
   if (os != std::nullopt) {
-    if (os->name != std::nullopt) 
+    if (os->name != std::nullopt)
       match = (os->name == config.OS);
-    
+
     if (os->arch != std::nullopt)
       match = match && os->arch == config.ARCH;
 
@@ -77,7 +84,7 @@ bool Client::Rule::osMatches(AppConfig &config) {
 }
 
 bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
-  for (auto& rule : rules) {
+  for (auto &rule : rules) {
     if (!rule.osMatches(config))
       return false;
   }
@@ -85,7 +92,7 @@ bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
   return true;
 }
 
-Client::Argument Client::Argument::parse(const rapidjson::Value &val) {  
+Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
   Argument arg;
 
   if (val.IsString()) {
@@ -93,24 +100,25 @@ Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
     return arg;
   }
 
-  const auto &obj = val.GetObject();
-  
-  if (obj.HasMember("rules")) {
-    for (const auto &rule : obj["rules"].GetArray()) {
-      arg.rules.push_back(Rule::parse(rule));
-    }
-  }
+  if (val.IsObject()) {
+    const auto &obj = val;
 
-  if (obj.HasMember("value")) {
-    if (obj["value"].IsString()) {
-      arg.value = obj["value"].GetString();
-    } else if (obj["value"].IsArray()) {
-      for (const auto &val : obj["value"].GetArray()) {
-        arg.values.push_back(val.GetString());
+    if (obj.HasMember("rules")) {
+      for (const auto &rule : obj["rules"].GetArray()) {
+        arg.rules.push_back(Rule::parse(rule));
+      }
+    }
+
+    if (obj.HasMember("value")) {
+      if (obj["value"].IsString()) {
+        arg.value = obj["value"].GetString();
+      } else if (obj["value"].IsArray()) {
+        for (const auto &val : obj["value"].GetArray()) {
+          arg.values.push_back(val.GetString());
+        }
       }
     }
   }
-
 
   return arg;
 }
@@ -136,60 +144,61 @@ Client::Arguments Client::Arguments::parse(const rapidjson::Value &obj) {
 Client::Download Client::Download::parse(const rapidjson::Value &obj) {
   Client::Download download;
 
-  if (obj.HasMember("id")) 
+  if (obj.HasMember("id"))
     download.id = obj["id"].GetString();
-  else 
+  else
     download.id = "";
 
   if (obj.HasMember("path"))
     download.path = obj["path"].GetString();
-  else 
+  else
     download.path = "";
 
   if (obj.HasMember("totalSize"))
     download.totalSize = obj["totalSize"].GetInt64();
-  else 
+  else
     download.totalSize = std::nullopt;
 
   if (obj.HasMember("sha1"))
     download.sha1 = obj["sha1"].GetString();
-  else 
+  else
     download.sha1 = "";
 
-  if (obj.HasMember("size")) 
+  if (obj.HasMember("size"))
     download.size = obj["size"].GetInt64();
-  else 
+  else
     download.size = 0;
 
   if (obj.HasMember("url"))
     download.url = obj["url"].GetString();
-  else 
+  else
     download.url = "";
 
   return download;
 }
 
-Client::ClientDownloads Client::ClientDownloads::parse(const rapidjson::Value &obj) {
+Client::ClientDownloads
+Client::ClientDownloads::parse(const rapidjson::Value &obj) {
   Client::ClientDownloads download;
 
-  if (obj.HasMember("client")) 
+  if (obj.HasMember("client"))
     download.client = Download::parse(obj["client"]);
-  else 
+  else
     download.client = Download();
 
   if (obj.HasMember("client_mappings"))
     download.client_mappings = Download::parse(obj["client_mappings"]);
-  else 
+  else
     download.client_mappings = Download();
 
-  if (obj.HasMember("server"))  
+  if (obj.HasMember("server"))
     download.server = Download::parse(obj["server"]);
-  else 
+  else
     download.server = Download();
 
   if (obj.HasMember("server_mappings"))
     download.server_mappings = Download::parse(obj["server_mappings"]);
-  else 
+  else
     download.server_mappings = Download();
 
   return download;
@@ -200,12 +209,12 @@ Client::JavaVersion Client::JavaVersion::parse(const rapidjson::Value &obj) {
 
   if (obj.HasMember("component"))
     version.component = obj["component"].GetString();
-  else 
+  else
     version.component = "";
 
   if (obj.HasMember("majorVersion"))
     version.majorVersion = obj["majorVersion"].GetInt();
-  else 
+  else
     version.majorVersion = 0;
 
   return version;
@@ -217,7 +226,7 @@ std::vector<std::uint8_t> Client::Download::fetch() {
   httplib::Client cli(host);
 
   auto res = cli.Get(path);
-  if (!res || res->status != 200) 
+  if (!res || res->status != 200)
     throw std::runtime_error("Failed to download " + url);
 
   const auto &body = res->body;
@@ -232,11 +241,13 @@ fs::path Client::LibraryDownloads::artifactPath(AppConfig &config) {
   return config.LIBRARIES_DIR / artifact.path;
 }
 
-std::vector<uint8_t> Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
+std::vector<uint8_t>
+Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
   return classifiers.at(nativeIndex).fetch();
 }
 
-fs::path Client::LibraryDownloads::nativePath(AppConfig &config, std::string nativeIndex) {
+fs::path Client::LibraryDownloads::nativePath(AppConfig &config,
+                                              std::string nativeIndex) {
   Download download = classifiers.at(nativeIndex);
 
   return config.NATIVES_DIR / download.path;

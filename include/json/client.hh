@@ -1,26 +1,27 @@
 #pragma once
 
-#include <map>
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
-#include "include/entities/os.hh"
+#include "include/config/app.hh"
 #include "include/entities/arch.hh"
+#include "include/entities/os.hh"
 #include "include/rapidjson/document.h"
 #include "include/rapidjson/error/en.h"
-#include "include/config/app.hh"
 #include "include/utils/httplib_utils.hh"
 
 /*
   Windows macro was intefering with the GetObject function
   from the rapidjson library. This undefines the macro
 */
-#undef GetObject 
+#undef GetObject
+
 
 namespace fs = std::filesystem;
 
@@ -108,5 +109,10 @@ public:
     fs::path nativePath(AppConfig &config, std::string nativeIndex);
 
     LibraryDownloads parse(rapidjson::Value &obj);
+  };
+
+  struct LibraryExtractRules {
+    std::string exclude;
+    std::string include;
   };
 };
