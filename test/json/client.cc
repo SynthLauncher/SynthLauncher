@@ -104,3 +104,12 @@ TEST(ClientHH, JavaVersionParsing) {
     ASSERT_EQ(version.component, "java-runtime-delta");
     ASSERT_EQ(version.majorVersion, 21);
 }
+
+TEST(ClientHH, LibraryDownloadParsing) {
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/library_download.json");
+    const rapidjson::Value &obj = doc;
+
+    Client::LibraryDownloads downloads = Client::LibraryDownloads::parse(obj);
+
+    ASSERT_EQ(downloads.artifact.sha1, "1227f9e0666314f9de41477e3ec277e542ed7f7b");
+}

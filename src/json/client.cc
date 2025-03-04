@@ -252,3 +252,26 @@ fs::path Client::LibraryDownloads::nativePath(AppConfig &config,
 
   return config.NATIVES_DIR / download.path;
 }
+
+Client::LibraryDownloads Client::LibraryDownloads::parse(const rapidjson::Value &obj) {
+  LibraryDownloads downloads;
+
+  if (obj.HasMember("downloads")) {
+    if (obj["downloads"].HasMember("artifact")) {
+      downloads.artifact = Download::parse(obj["downloads"]["artifact"]);
+    }
+  }
+
+  /* 
+    This field doesn't always show up in the JSON, so we need to check if it exists before parsing it.
+  */
+  if (obj.HasMember("classifiers")) {
+    for (auto itr = obj["classifiers"].MemberBegin(); itr != obj["classifiers"].MemberEnd(); ++itr) {
+      auto& key = itr->name;
+      auto& val = itr->value;
+      downloads.classifiers[key.GetString()] = Download::parse(val);
+    }
+  }
+
+  return downloads;
+}

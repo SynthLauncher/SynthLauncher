@@ -108,7 +108,7 @@ public:
     std::vector<uint8_t> fetchNative(std::string nativeIndex);
     fs::path nativePath(AppConfig &config, std::string nativeIndex);
 
-    LibraryDownloads parse(rapidjson::Value &obj);
+    static LibraryDownloads parse(const rapidjson::Value &obj);
   };
 
   struct LibraryExtractRules {
