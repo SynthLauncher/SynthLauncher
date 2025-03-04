@@ -4,11 +4,8 @@
 #include "include/config/app.hh"
 
 TEST(ManifestHH, LatestParsing) { 
-    simdjson::ondemand::parser parser;
-    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
-    simdjson::ondemand::document doc = parser.iterate(json);
-
-    simdjson::ondemand::object obj = doc["latest"].get_object().value();
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
+    const rapidjson::Value &obj = doc["latest"];
 
     Manifest::Latest latest = Manifest::Latest::parse(obj);
 
@@ -17,12 +14,8 @@ TEST(ManifestHH, LatestParsing) {
 }
 
 TEST(ManifestHH, VersionParsing) {
-    simdjson::ondemand::parser parser;
-    simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
-    simdjson::ondemand::document doc = parser.iterate(json);
-
-    simdjson::ondemand::array arr = doc["versions"].get_array().value();
-    simdjson::ondemand::object obj = arr.at(0).get_object().value();
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
+    const rapidjson::Value &obj = doc["versions"][0];
 
     Manifest::Version version = Manifest::Version::parse(obj);
 
@@ -33,13 +26,9 @@ TEST(ManifestHH, VersionParsing) {
     ASSERT_EQ(version.releaseTime, "2025-01-15T14:28:04+00:00");
 }
 
-/* 
-This test has to be rewritten since I reconfigured how Manifest::parse() works!
-*/
 TEST(ManifestHH, ManifestParsing) {
   AppConfig config = initializeAppConfig();
-  Manifest::PATH =
-      "E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json";
+  Manifest::PATH = "E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json";
 
   Manifest manifest = Manifest::parse();
 

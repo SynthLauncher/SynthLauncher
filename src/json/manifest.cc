@@ -3,33 +3,39 @@
 fs::path Manifest::PATH = "";
 
 Manifest::Latest
-Manifest::Latest::parse(simdjson::ondemand::object &obj) {
-  return {
-    .release = simdjson_utils::get<std::string>(obj, "release"),
-          .snapshot = simdjson_utils::get<std::string>(obj, "snapshot")};
+Manifest::Latest::parse(const rapidjson::Value &obj) {
+  Manifest::Latest latest;
+
+  latest.release = obj.HasMember("release") ? obj["release"].GetString() : "";
+  latest.snapshot = obj.HasMember("snapshot") ? obj["snapshot"].GetString() : "";
+
+  return latest;
 }
 
 Manifest::Version
-Manifest::Version::parse(simdjson::ondemand::object &obj) {
-  return {.id = simdjson_utils::get<std::string>(obj, "id"),
-          .type = simdjson_utils::get<std::string>(obj, "type"),
-          .url = simdjson_utils::get<std::string>(obj, "url"),
-          .time = simdjson_utils::get<std::string>(obj, "time"),
-          .releaseTime = simdjson_utils::get<std::string>(obj, "releaseTime")};
+Manifest::Version::parse(const rapidjson::Value &obj) {
+  Manifest::Version version;
+
+  version.id = obj.HasMember("id") ? obj["id"].GetString() : "";
+  version.type = obj.HasMember("type") ? obj["type"].GetString() : "";
+  version.url = obj.HasMember("url") ? obj["url"].GetString() : "";
+  version.time = obj.HasMember("time") ? obj["time"].GetString() : "";
+  version.releaseTime = obj.HasMember("releaseTime") ? obj["releaseTime"].GetString() : "";
+  
+  return version;
 }
 
 Manifest Manifest::parse() {
-  simdjson::ondemand::parser parser;
-  simdjson::padded_string json = simdjson::padded_string::load(PATH.string());
-  simdjson::ondemand::document doc = parser.iterate(json);
+  Manifest manifest;
 
-  simdjson::ondemand::object latest_obj = doc["latest"].get_object().value();
-  simdjson::ondemand::array versions_arr = doc["versions"].get_array().value();
+  rapidjson::Document doc = parse_json_file(PATH.string());
 
-  std::vector<Version> versions;
-  for (simdjson::ondemand::object version_obj : versions_arr)
-    versions.push_back(Manifest::Version::parse(version_obj));
+  const rapidjson::Value &latest_obj = doc["latest"];
+  const rapidjson::Value &versions_arr = doc["versions"];
 
-  return {.latest = Manifest::Latest::parse(latest_obj),
-          .versions = versions};
+  manifest.latest = Manifest::Latest::parse(latest_obj);
+  for (const auto& version_obj : versions_arr.GetArray())
+    manifest.versions.push_back(Manifest::Version::parse(version_obj));
+
+  return manifest;
 }

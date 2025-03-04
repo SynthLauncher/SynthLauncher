@@ -2,7 +2,6 @@
 #include "include/utils/rapidjson_utils.hh"
 #include <gtest/gtest.h>
 
-
 TEST(ClientHH, FeaturesParsing) {
   rapidjson::Document doc =
       parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/features.json");

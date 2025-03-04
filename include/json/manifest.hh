@@ -4,6 +4,9 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/error/en.h"
+#include "include/utils/rapidjson_utils.hh"
 
 namespace fs = std::filesystem;
 
@@ -15,7 +18,7 @@ public:
   public:
     std::string release;
     std::string snapshot;
-    // static Latest parse(simdjson::ondemand::object &obj);
+    static Latest parse(const rapidjson::Value &obj);
   };
 
   class Version {
@@ -25,7 +28,7 @@ public:
     std::string url;
     std::string time;
     std::string releaseTime;
-    // static Version parse(simdjson::ondemand::object &obj);
+    static Version parse(const rapidjson::Value &obj);
   };
 
   Latest latest;

@@ -17,6 +17,10 @@ openssl = dependency('openssl')
 
 src = [
   'src/json/client.cc',
+  'src/json/manifest.cc',
+  'src/json/assetindex.cc',
+  'src/config/app.cc',
+  'src/config/java.cc',
   'src/entities/os.cc',
   'src/entities/arch.cc',
 ]
@@ -32,7 +36,11 @@ src = [
 test_src = [
   'test/test.cc',
   'test/utils/rapidjson_utils.cc',
-  'test/json/client.cc'
+  'test/json/client.cc',
+  'test/json/manifest.cc',
+  'test/json/assetindex.cc',
+  'test/config/app.cc',
+  'test/config/java.cc',
 ]
 
 # Test dependency
