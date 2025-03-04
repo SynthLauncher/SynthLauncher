@@ -11,7 +11,7 @@ TEST(AppHH, AppConfigInitialization) {
   ASSERT_EQ(config.DIR, "C:\\Users\\User\\AppData\\Roaming\\SynthLauncher");
 #elif __linux__
   ASSERT_EQ(config.OS, OperatingSystem::OS::Linux);
-  ASSET_EQ(config.DIR, "/usr/local/synthlauncher");
+  ASSERT_EQ(config.DIR, "/usr/local/synthlauncher");
 #elif __APPLE__
   ASSERT_EQ(config.OS, OperatingSystem::OS::OSX);
   ASSERT_EQ(config.DIR, "/usr/local/synthlauncher");

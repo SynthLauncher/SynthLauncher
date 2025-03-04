@@ -16,47 +16,34 @@ endif
 openssl = dependency('openssl')
 
 src = [
-  'src/json/manifest.cc',
-  'src/config/app.cc',
-  'src/json/assetindex.cc',
-  'src/json/client.cc',
-  'src/entities/instance.cc',
-  'src/config/config.cc',
-  'src/config/java.cc',
-  'src/entities/arch.cc',
-  'src/entities/os.cc'
+
 ]
 
+# 'test/test.cc',
+# 'test/config/app.cc',
+# 'test/config/java.cc',
+# 'test/entities/arch.cc',
+# 'test/entities/os.cc',
+# 'test/json/client.cc',
+# 'test/json/manifest.cc',
+# 'test/utils/httplib_utils.cc'
 test_src = [
   'test/test.cc',
-  'test/config/app.cc',
-  'test/config/java.cc',
-  'test/entities/arch.cc',
-  'test/entities/os.cc',
-  'test/json/client.cc',
-  'test/json/manifest.cc',
-  'test/utils/httplib_utils.cc'
+  'test/utils/rapidjson_utils.cc'
 ]
-
-# Build dependency
-simdjson = dependency('simdjson', required: false)
-if not simdjson.found()
-  simdjson = cpp.find_library('simdjson', required: true)
-endif
 
 # Test dependency
 gtest = dependency('gtest', required: false)
 if not gtest.found()
-  gtest = cpp.find_library('gtest', required: false)
+  gtest = cpp.find_library('gtest', required: true)
 endif
 
 executable('SynthLauncher', 
   [src, 'src/main.cc'], 
   include_directories: 'include',
-  dependencies: [simdjson, openssl] + platform_deps, 
-  link_args: '-static'
+  dependencies: [openssl] + platform_deps, 
 )
 
-test_exe = executable('SynthLauncherTest', [src, test_src], dependencies: [gtest, simdjson, openssl] + platform_deps)
+test_exe = executable('SynthLauncherTest', [src, test_src], dependencies: [gtest, openssl] + platform_deps)
 
 test('SynthLauncherTest', test_exe)

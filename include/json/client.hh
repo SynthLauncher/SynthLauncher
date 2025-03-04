@@ -13,6 +13,8 @@
 #include "include/httplib.h"
 #include "include/utils/httplib_utils.hh"
 #include "include/utils/simdjson_utils.hh"
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/error/en.h"
 
 namespace fs = std::filesystem;
 
@@ -26,7 +28,7 @@ public:
     bool isQuickPlayMultiplayer;
     bool isQuickPlayRealms;
 
-    static Features parse(simdjson::ondemand::object &obj);
+    static Features parse(const rapidjson::Value &obj);
   };
 
   struct OSRules {
