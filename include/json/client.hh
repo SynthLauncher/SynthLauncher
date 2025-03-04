@@ -112,7 +112,62 @@ public:
   };
 
   struct LibraryExtractRules {
-    std::string exclude;
-    std::string include;
+    std::vector<std::string> exclude;
+    std::vector<std::string> include;
+
+    static LibraryExtractRules parse(const rapidjson::Value &obj);
   };
+
+  struct Library {
+    LibraryDownloads downloads;
+    std::string name;
+    std::vector<Rule> rules;
+    std::map<OperatingSystem::OS, std::string> natives;
+    LibraryExtractRules extractRules;
+
+    static Library parse(const rapidjson::Value &obj);
+    void downloadArtifact();
+    void downloadNative();
+    void extractNative(fs::path instanceDir);
+  };
+
+  struct LoggingClient {
+    std::string argument;
+    Download file;
+    std::string type;
+
+    static LoggingClient parse(const rapidjson::Value &obj);
+  };
+
+  struct LoggingInfo {
+    LoggingClient client;
+
+    static LoggingInfo parse(const rapidjson::Value &obj);
+  };
+
+  /* 
+    The actual client.json:
+  */
+  Arguments arguments;
+  Download assetIndex;
+  std::string assets;
+  short complianceLevel;
+  ClientDownloads downloads;
+  std::string id;
+  JavaVersion javaVersion;
+  std::vector<Library> libraries;
+  LoggingInfo logging;
+  std::string mainClass;
+
+  std::string minecraftArguments;
+
+  std::string type;
+
+  static Client parse(const rapidjson::Value &obj);
+
+  void downloadAssets();
+  void downloadLibraries(fs::path instanceDir);
+  void downloadClientDownloads(fs::path instanceDir);
+  void download(fs::path instanceDir);
+  std::vector<fs::path> getLibrariesList();
 };

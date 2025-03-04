@@ -275,3 +275,21 @@ Client::LibraryDownloads Client::LibraryDownloads::parse(const rapidjson::Value 
 
   return downloads;
 }
+
+Client::LibraryExtractRules Client::LibraryExtractRules::parse(const rapidjson::Value &obj) {
+  LibraryExtractRules rules;
+
+  if (obj.HasMember("exclude")) {
+    for (const auto &rule : obj["exclude"].GetArray()) {
+      rules.exclude.push_back(rule.GetString());
+    }
+  }
+
+  if (obj.HasMember("include")) {
+    for (const auto &rule : obj["include"].GetArray()) {
+      rules.include.push_back(rule.GetString());
+    }
+  }
+
+  return rules;
+}
