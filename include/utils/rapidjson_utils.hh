@@ -1,3 +1,5 @@
+#pragma once
+
 #include "include/rapidjson/document.h"
 #include <filesystem>
 #include <fstream>

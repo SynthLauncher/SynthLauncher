@@ -56,7 +56,7 @@ TEST(ClientHH, MultipleArgumentParsing) {
 TEST(ClientHH, ArgumentsParsing) {
     rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
 
-    auto obj = doc["arguments"].GetObject();
+    const rapidjson::Value& obj = doc["arguments"];
 
     Client::Arguments args = Client::Arguments::parse(obj);
 

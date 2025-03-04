@@ -1,3 +1,5 @@
+#pragma once
+
 #include <map>
 #include <cstdint>
 #include <filesystem>
@@ -11,6 +13,10 @@
 #include "include/entities/arch.hh"
 #include "include/rapidjson/document.h"
 #include "include/rapidjson/error/en.h"
+#include "include/config/app.hh"
+#include "include/utils/httplib_utils.hh"
+
+#undef GetObject 
 
 namespace fs = std::filesystem;
 
@@ -41,8 +47,8 @@ public:
     std::optional<Features> features;
 
     static Rule parse(const rapidjson::Value &obj);
-    // bool osMatches(AppConfig &config);
-    // bool osMatches(AppConfig &config, std::vector<Rule> rules);
+    bool osMatches(AppConfig &config);
+    bool osMatches(AppConfig &config, std::vector<Rule> rules);
   };
 
   struct Argument {
@@ -69,7 +75,7 @@ public:
     std::string url;
 
     static Download parse(const rapidjson::Value &obj);
-    // std::vector<std::uint8_t> fetch();
+    std::vector<std::uint8_t> fetch();
   };
 
   struct ClientDownloads {
@@ -88,15 +94,15 @@ public:
     static JavaVersion parse(const rapidjson::Value &obj);
   };
 
-  // struct LibraryDownloads {
-  //   Download artifact;
-  //   std::map<std::string, Download> classifiers;
+  struct LibraryDownloads {
+    Download artifact;
+    std::map<std::string, Download> classifiers;
 
-  //   std::vector<uint8_t> fetchArtifact();
-  //   fs::path artifactPath(AppConfig &config);
-  //   std::vector<uint8_t> fetchNative(std::string nativeIndex);
-  //   fs::path nativePath(AppConfig &config, std::string nativeIndex);
+    std::vector<uint8_t> fetchArtifact();
+    fs::path artifactPath(AppConfig &config);
+    std::vector<uint8_t> fetchNative(std::string nativeIndex);
+    fs::path nativePath(AppConfig &config, std::string nativeIndex);
 
-  //   LibraryDownloads parse(simdjson::ondemand::object &obj);
-  // };
+    LibraryDownloads parse(rapidjson::Value &obj);
+  };
 };

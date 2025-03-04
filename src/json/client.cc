@@ -56,34 +56,34 @@ Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
   return rule;
 }
 
-// bool Client::Rule::osMatches(AppConfig &config) { 
-//   bool match = true; 
+bool Client::Rule::osMatches(AppConfig &config) { 
+  bool match = true; 
 
-//   if (os != std::nullopt) {
-//     if (os->name != std::nullopt) 
-//       match = (os->name == config.OS);
+  if (os != std::nullopt) {
+    if (os->name != std::nullopt) 
+      match = (os->name == config.OS);
     
-//     if (os->arch != std::nullopt)
-//       match = match && os->arch == config.ARCH;
+    if (os->arch != std::nullopt)
+      match = match && os->arch == config.ARCH;
 
-//     if (action == "allow")
-//       return match;
+    if (action == "allow")
+      return match;
 
-//     if (action == "disallow")
-//       return !match;
-//   }
+    if (action == "disallow")
+      return !match;
+  }
 
-//   return match;
-// }
+  return match;
+}
 
-// bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
-//   for (auto& rule : rules) {
-//     if (!rule.osMatches(config))
-//       return false;
-//   }
+bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
+  for (auto& rule : rules) {
+    if (!rule.osMatches(config))
+      return false;
+  }
 
-//   return true;
-// }
+  return true;
+}
 
 Client::Argument Client::Argument::parse(const rapidjson::Value &val) {  
   Argument arg;
@@ -93,8 +93,8 @@ Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
     return arg;
   }
 
-  auto obj = val.GetObject();
- 
+  const auto &obj = val.GetObject();
+  
   if (obj.HasMember("rules")) {
     for (const auto &rule : obj["rules"].GetArray()) {
       arg.rules.push_back(Rule::parse(rule));
@@ -110,6 +110,7 @@ Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
       }
     }
   }
+
 
   return arg;
 }
@@ -210,33 +211,33 @@ Client::JavaVersion Client::JavaVersion::parse(const rapidjson::Value &obj) {
   return version;
 }
 
-// std::vector<std::uint8_t> Client::Download::fetch() {
-//   auto [host, path] = httplib_utils::extractHostAndPath(this->url);
+std::vector<std::uint8_t> Client::Download::fetch() {
+  auto [host, path] = httplib_utils::extractHostAndPath(this->url);
 
-//   httplib::Client cli(host);
+  httplib::Client cli(host);
 
-//   auto res = cli.Get(path);
-//   if (!res || res->status != 200) 
-//     throw std::runtime_error("Failed to download " + url);
+  auto res = cli.Get(path);
+  if (!res || res->status != 200) 
+    throw std::runtime_error("Failed to download " + url);
 
-//   const auto &body = res->body;
-//   return std::vector<uint8_t>(body.begin(), body.end());
-// }
+  const auto &body = res->body;
+  return std::vector<uint8_t>(body.begin(), body.end());
+}
 
-// std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
-//   return artifact.fetch();
-// }
+std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
+  return artifact.fetch();
+}
 
-// fs::path Client::LibraryDownloads::artifactPath(AppConfig &config) {
-//   return config.LIBRARIES_DIR / artifact.path;
-// }
+fs::path Client::LibraryDownloads::artifactPath(AppConfig &config) {
+  return config.LIBRARIES_DIR / artifact.path;
+}
 
-// std::vector<uint8_t> Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
-//   return classifiers.at(nativeIndex).fetch();
-// }
+std::vector<uint8_t> Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
+  return classifiers.at(nativeIndex).fetch();
+}
 
-// fs::path Client::LibraryDownloads::nativePath(AppConfig &config, std::string nativeIndex) {
-//   Download download = classifiers.at(nativeIndex);
+fs::path Client::LibraryDownloads::nativePath(AppConfig &config, std::string nativeIndex) {
+  Download download = classifiers.at(nativeIndex);
 
-//   return config.NATIVES_DIR / download.path;
-// }
+  return config.NATIVES_DIR / download.path;
+}

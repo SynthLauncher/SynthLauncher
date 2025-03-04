@@ -25,17 +25,10 @@ src = [
   'src/entities/arch.cc',
 ]
 
-# 'test/test.cc',
-# 'test/config/app.cc',
-# 'test/config/java.cc',
-# 'test/entities/arch.cc',
-# 'test/entities/os.cc',
-# 'test/json/client.cc',
-# 'test/json/manifest.cc',
-# 'test/utils/httplib_utils.cc'
 test_src = [
   'test/test.cc',
   'test/utils/rapidjson_utils.cc',
+  'test/utils/httplib_utils.cc',
   'test/json/client.cc',
   'test/json/manifest.cc',
   'test/json/assetindex.cc',
