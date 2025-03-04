@@ -1,6 +1,5 @@
 #include "include/json/client.hh"
 
-// parses features
 Client::Features
 Client::Features::parse(const rapidjson::Value &obj) {
   Features features;
@@ -15,20 +14,26 @@ Client::Features::parse(const rapidjson::Value &obj) {
   return features;
 }
 
-// Client::OSRules Client::OSRules::parse(simdjson::ondemand::object &obj) {
-//   std::optional<OperatingSystem::OS> name;
-//   if (auto name_obj = simdjson_utils::get_optional<std::string>(obj, "name"))
-//     name = OperatingSystem::os_from_string(*name_obj);
+Client::OSRules Client::OSRules::parse(const rapidjson::Value &obj) {
+  OSRules rules;
 
-//   std::optional<Architecture::Arch> arch;
-//   if (auto arch_obj = simdjson_utils::get_optional<std::string>(obj, "arch"))
-//     arch = Architecture::arch_from_string(*arch_obj);
+  if (obj.HasMember("name")) 
+      rules.name = OperatingSystem::os_from_string(obj["name"].GetString());
+  else 
+      rules.name = std::nullopt;
 
-//   auto version =
-//       simdjson_utils::get_with_default<std::string>(obj, "version", "");
+  if (obj.HasMember("arch")) 
+      rules.arch = Architecture::arch_from_string(obj["arch"].GetString());
+  else 
+      rules.arch = std::nullopt;
 
-//   return {.name = name, .arch = arch, .version = version};
-// }
+  if (obj.HasMember("version"))
+      rules.version = obj["version"].GetString();
+  else 
+      rules.version = "";
+
+  return rules;
+}
 
 // Client::Rule Client::Rule::parse(simdjson::ondemand::object &obj) {
 //   std::string action =

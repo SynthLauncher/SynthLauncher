@@ -1,4 +1,4 @@
-project('SynthLauncher', 'cpp', license: 'aGPL-3.0', version: '1.0.0', license_files: 'LICENSE', default_options: ['cpp_std=c++20', 'warning_level=3'])
+project('SynthLauncher', 'cpp', license: 'aGPL-3.0', version: '1.0.0', license_files: 'LICENSE', default_options: ['cpp_std=c++17', 'warning_level=3'])
 
 cpp = meson.get_compiler('cpp')
 
@@ -16,7 +16,9 @@ endif
 openssl = dependency('openssl')
 
 src = [
-
+  'src/json/client.cc',
+  'src/entities/os.cc',
+  'src/entities/arch.cc',
 ]
 
 # 'test/test.cc',
@@ -29,7 +31,8 @@ src = [
 # 'test/utils/httplib_utils.cc'
 test_src = [
   'test/test.cc',
-  'test/utils/rapidjson_utils.cc'
+  'test/utils/rapidjson_utils.cc',
+  'test/json/client.cc'
 ]
 
 # Test dependency

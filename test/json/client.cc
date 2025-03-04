@@ -1,39 +1,36 @@
-#include <gtest/gtest.h>
 #include "include/json/client.hh"
+#include "include/utils/rapidjson_utils.hh"
+#include <gtest/gtest.h>
 
-TEST(ClientHH, FeaturesParsing) { 
-    // simdjson::ondemand::parser parser;
-    // simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/features.json");
-    // simdjson::ondemand::document doc = parser.iterate(json);
 
-    // simdjson::ondemand::object obj = doc["features"].get_object().value();
+TEST(ClientHH, FeaturesParsing) {
+  rapidjson::Document doc =
+      parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/features.json");
+  const rapidjson::Value &obj = doc["features"];
 
-    // Client::Features features = Client::Features::parse(obj);
+  Client::Features features = Client::Features::parse(obj);
 
-    // ASSERT_EQ(features.isDemoUser, true);
-    // ASSERT_EQ(features.hasQuickPlaysSupport, true);
-    // ASSERT_EQ(features.hasCustomResolution, false);
-
-    
+  ASSERT_EQ(features.isDemoUser, true);
+  ASSERT_EQ(features.hasQuickPlaysSupport, true);
+  ASSERT_EQ(features.hasCustomResolution, false);
 }
 
-// TEST(ClientHH, OSRulesParsing) { 
+TEST(ClientHH, OSRulesParsing) {
+  rapidjson::Document doc =
+      parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/os_rules.json");
+  const rapidjson::Value &obj = doc["os"];
+
+  Client::OSRules rules = Client::OSRules::parse(obj);
+
+  ASSERT_EQ(rules.name, OperatingSystem::OS::Windows);
+  ASSERT_EQ(rules.arch, std::nullopt);
+  ASSERT_EQ(rules.version, "");
+}
+
+// TEST(ClientHH, RuleParsing) {
 //     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/os_rules.json");
-//     simdjson::ondemand::document doc = parser.iterate(json);
-
-//     simdjson::ondemand::object obj = doc["os"].get_object().value();
-
-//     Client::OSRules rules = Client::OSRules::parse(obj);
-
-//     ASSERT_EQ(rules.name, OperatingSystem::OS::Windows);
-//     ASSERT_EQ(rules.arch, Architecture::Arch::X86);
-//     ASSERT_EQ(rules.version, "");
-// }
-
-// TEST(ClientHH, RuleParsing) { 
-//     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
+//     simdjson::padded_string json =
+//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
 //     simdjson::ondemand::document doc = parser.iterate(json);
 
 //     simdjson::ondemand::object obj = doc["rule"].get_object().value();
@@ -46,9 +43,10 @@ TEST(ClientHH, FeaturesParsing) {
 //     ASSERT_EQ(rule.features, std::nullopt);
 // }
 
-// TEST(ClientHH, MultipleArgumentParsing) { 
+// TEST(ClientHH, MultipleArgumentParsing) {
 //     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
+//     simdjson::padded_string json =
+//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
 //     simdjson::ondemand::document doc = parser.iterate(json);
 
 //     simdjson::ondemand::array arr = doc.get_array().value();
@@ -59,9 +57,10 @@ TEST(ClientHH, FeaturesParsing) {
 //     }
 // }
 
-// TEST(ClientHH, ArgumentsParsing) { 
+// TEST(ClientHH, ArgumentsParsing) {
 //     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
+//     simdjson::padded_string json =
+//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
 //     simdjson::ondemand::document doc = parser.iterate(json);
 
 //     simdjson::ondemand::object obj = doc["arguments"].get_object().value();
@@ -69,9 +68,10 @@ TEST(ClientHH, FeaturesParsing) {
 //     Client::Arguments args = Client::Arguments::parse(obj);
 // }
 
-// TEST(ClientHH, DownloadParsing) { 
-//     simdjson::ondemand::parser parser; 
-//     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
+// TEST(ClientHH, DownloadParsing) {
+//     simdjson::ondemand::parser parser;
+//     simdjson::padded_string json =
+//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
 //     simdjson::ondemand::document doc = parser.iterate(json);
 
 //     simdjson::ondemand::object obj = doc["download"].get_object().value();
@@ -79,31 +79,39 @@ TEST(ClientHH, FeaturesParsing) {
 //     Client::Download download = Client::Download::parse(obj);
 
 //     ASSERT_EQ(download.id, "");
-//     ASSERT_EQ(download.path, "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+//     ASSERT_EQ(download.path,
+//     "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
 //     ASSERT_EQ(download.sha1, "e9aca8c5479b520a2a7f0d542a118140e812c5e8");
 //     ASSERT_EQ(download.size, 133378);
-//     ASSERT_EQ(download.url, "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+//     ASSERT_EQ(download.url,
+//     "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
 //     ASSERT_EQ(download.totalSize, std::nullopt);
 // }
 
 // TEST(ClientHH, ClientDownloadParsing) {
-//     simdjson::ondemand::parser parser; 
-//     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
+//     simdjson::ondemand::parser parser;
+//     simdjson::padded_string json =
+//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
 //     simdjson::ondemand::document doc = parser.iterate(json);
 
 //     simdjson::ondemand::object obj = doc["downloads"].get_object().value();
 
 //     Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
 
-//     ASSERT_EQ(downloads.client.sha1, "9acca901e3564a91250b941cd2c55a55d0b71bca");
-//     ASSERT_EQ(downloads.client_mappings.sha1, "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
-//     ASSERT_EQ(downloads.server.sha1, "e003d151668a0eff64c1191972707655e341f8f5");
-//     ASSERT_EQ(downloads.server_mappings.sha1, "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
+//     ASSERT_EQ(downloads.client.sha1,
+//     "9acca901e3564a91250b941cd2c55a55d0b71bca");
+//     ASSERT_EQ(downloads.client_mappings.sha1,
+//     "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
+//     ASSERT_EQ(downloads.server.sha1,
+//     "e003d151668a0eff64c1191972707655e341f8f5");
+//     ASSERT_EQ(downloads.server_mappings.sha1,
+//     "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
 // }
 
 // TEST(ClientHH, JavaVersionParsing) {
-//     simdjson::ondemand::parser parser; 
-//     simdjson::padded_string json = simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
+//     simdjson::ondemand::parser parser;
+//     simdjson::padded_string json =
+//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
 //     simdjson::ondemand::document doc = parser.iterate(json);
 
 //     simdjson::ondemand::object obj = doc["javaVersion"].get_object().value();
