@@ -170,4 +170,5 @@ public:
   void downloadClientDownloads(fs::path instanceDir);
   void download(fs::path instanceDir);
   std::vector<fs::path> getLibrariesList();
-};
+};  
+

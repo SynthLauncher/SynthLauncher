@@ -293,3 +293,67 @@ Client::LibraryExtractRules Client::LibraryExtractRules::parse(const rapidjson::
 
   return rules;
 }
+
+Client::LoggingClient Client::LoggingClient::parse(const rapidjson::Value &obj) {
+  LoggingClient client;
+
+  if (obj.HasMember("argument"))
+    client.argument = obj["argument"].GetString();
+  else
+    client.argument = "";
+
+  if (obj.HasMember("file"))
+    client.file = Download::parse(obj["file"]);
+  else
+    client.file = Download();
+
+  if (obj.HasMember("type"))  
+    client.type = obj["type"].GetString();
+  else
+    client.type = "";
+
+  return client;
+}
+
+Client::LoggingInfo Client::LoggingInfo::parse(const rapidjson::Value &obj) {
+  LoggingInfo info;
+
+  if (obj.HasMember("client"))
+    info.client = LoggingClient::parse(obj["client"]);
+  else
+    info.client = LoggingClient();
+
+  return info;
+}
+
+Client Client::parse(const rapidjson::Value &obj) {
+  Client client;
+
+  if (obj.HasMember("arguments"))
+    client.arguments = Arguments::parse(obj["arguments"]);
+  else
+    client.arguments = Arguments();
+
+  if (obj.HasMember("downloads"))
+    client.downloads = ClientDownloads::parse(obj["downloads"]);
+  else
+    client.downloads = ClientDownloads();
+
+  if (obj.HasMember("javaVersion"))
+    client.javaVersion = JavaVersion::parse(obj["javaVersion"]);
+  else
+    client.javaVersion = JavaVersion();
+
+  if (obj.HasMember("libraries")) {
+    for (const auto &lib : obj["libraries"].GetArray()) {
+      client.libraries.push_back(Library::parse(lib));
+    }
+  }
+
+  if (obj.HasMember("logging"))
+    client.logging = LoggingInfo::parse(obj["logging"]);
+  else
+    client.logging = LoggingInfo();
+
+  return client;
+}
