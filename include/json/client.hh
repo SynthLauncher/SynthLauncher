@@ -16,6 +16,10 @@
 #include "include/config/app.hh"
 #include "include/utils/httplib_utils.hh"
 
+/*
+  Windows macro was intefering with the GetObject function
+  from the rapidjson library. This undefines the macro
+*/
 #undef GetObject 
 
 namespace fs = std::filesystem;
