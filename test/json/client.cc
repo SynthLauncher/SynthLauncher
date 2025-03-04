@@ -27,35 +27,32 @@ TEST(ClientHH, OSRulesParsing) {
   ASSERT_EQ(rules.version, "");
 }
 
-// TEST(ClientHH, RuleParsing) {
-//     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json =
-//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
-//     simdjson::ondemand::document doc = parser.iterate(json);
+TEST(ClientHH, RuleParsing) {
+    rapidjson::Document doc =
+        parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
+    
+    const rapidjson::Value &obj = doc["rule"];
 
-//     simdjson::ondemand::object obj = doc["rule"].get_object().value();
+    Client::Rule rule = Client::Rule::parse(obj);
 
-//     Client::Rule rule = Client::Rule::parse(obj);
+    ASSERT_EQ(rule.action, "allow");
+    ASSERT_EQ(rule.os->name, OperatingSystem::OS::OSX);
+    ASSERT_EQ(rule.os->arch, Architecture::Arch::X86_64);
+    ASSERT_EQ(rule.features, std::nullopt);
+}
 
-//     ASSERT_EQ(rule.action, "allow");
-//     ASSERT_EQ(rule.os->name, OperatingSystem::OS::OSX);
-//     ASSERT_EQ(rule.os->arch, Architecture::Arch::X86_64);
-//     ASSERT_EQ(rule.features, std::nullopt);
-// }
+TEST(ClientHH, MultipleArgumentParsing) {
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
 
-// TEST(ClientHH, MultipleArgumentParsing) {
-//     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json =
-//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
-//     simdjson::ondemand::document doc = parser.iterate(json);
+    const rapidjson::Value &arr = doc.GetArray();
 
-//     simdjson::ondemand::array arr = doc.get_array().value();
+    std::vector<Client::Argument> arguments;
+    for (rapidjson::Value::ConstValueIterator itr = arr.Begin(); itr != arr.End(); ++itr) {
+        arguments.push_back(Client::Argument::parse(*itr));
+    }
 
-//     std::vector<Client::Argument> arguments;
-//     for (auto val : arr) {
-//       arguments.push_back(Client::Argument::parse(val.value()));
-//     }
-// }
+    ASSERT_EQ(arguments.at(1).value, "--demo");
+}
 
 // TEST(ClientHH, ArgumentsParsing) {
 //     simdjson::ondemand::parser parser;

@@ -1,8 +1,9 @@
+#include <map>
 #include <cstdint>
 #include <filesystem>
-#include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
@@ -34,23 +35,23 @@ public:
     static OSRules parse(const rapidjson::Value &obj);
   };
 
-  // struct Rule {
-  //   std::string action;
-  //   std::optional<OSRules> os;
-  //   std::optional<Features> features;
+  struct Rule {
+    std::string action;
+    std::optional<OSRules> os;
+    std::optional<Features> features;
 
-  //   static Rule parse(const rapidjson::Value &obj);
-  //   bool osMatches(AppConfig &config);
-  //   bool osMatches(AppConfig &config, std::vector<Rule> rules);
-  // };
+    static Rule parse(const rapidjson::Value &obj);
+    // bool osMatches(AppConfig &config);
+    // bool osMatches(AppConfig &config, std::vector<Rule> rules);
+  };
 
-  // struct Argument {
-  //   std::string value;
-  //   std::vector<std::string> values;
-  //   std::vector<Rule> rules;
+  struct Argument {
+    std::string value;
+    std::vector<std::string> values;
+    std::vector<Rule> rules;
 
-  //   static Argument parse(simdjson::ondemand::value &val);
-  // };
+    static Argument parse(const rapidjson::Value &val);
+  };
 
   // struct Arguments {
   //   std::vector<Argument> game;

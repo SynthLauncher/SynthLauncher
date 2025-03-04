@@ -35,23 +35,26 @@ Client::OSRules Client::OSRules::parse(const rapidjson::Value &obj) {
   return rules;
 }
 
-// Client::Rule Client::Rule::parse(simdjson::ondemand::object &obj) {
-//   std::string action =
-//       simdjson_utils::get_with_default<std::string>(obj, "action", "disallow");
+Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
+  Client::Rule rule;
 
-//   std::optional<OSRules> os;
-//   if (auto os_obj =
-//           simdjson_utils::get_optional<simdjson::ondemand::object>(obj, "os"))
-//     os = OSRules::parse(*os_obj);
+  if (obj.HasMember("action")) 
+    rule.action = obj["action"].GetString();
+  else 
+    rule.action = "disallow";
+  
+  if (obj.HasMember("os"))
+    rule.os = OSRules::parse(obj["os"]);
+  else
+    rule.os = std::nullopt;
+  
+  if (obj.HasMember("features"))
+    rule.features = Features::parse(obj["features"]);
+  else
+    rule.features = std::nullopt;
 
-//   std::optional<Features> features;
-//   if (auto features_obj =
-//           simdjson_utils::get_optional<simdjson::ondemand::object>(obj,
-//                                                                    "features"))
-//     features = Features::parse(features_obj);
-
-//   return {.action = action, .os = os, .features = features};
-// }
+  return rule;
+}
 
 // bool Client::Rule::osMatches(AppConfig &config) { 
 //   bool match = true; 
@@ -82,34 +85,34 @@ Client::OSRules Client::OSRules::parse(const rapidjson::Value &obj) {
 //   return true;
 // }
 
-// Client::Argument Client::Argument::parse(simdjson::ondemand::value& val) {  
-//   Argument arg;
+Client::Argument Client::Argument::parse(const rapidjson::Value &val) {  
+  Argument arg;
 
-//   if (val.type() == simdjson::ondemand::json_type::string) {
-//     arg.value = std::string(val.get_string().value());
-//     return arg;
-//   }
+  if (val.IsString()) {
+    arg.value = val.GetString();
+    return arg;
+  }
 
-//   simdjson::ondemand::object obj = val.get_object().value();
+  auto obj = val.GetObject();
+ 
+  if (obj.HasMember("rules")) {
+    for (const auto &rule : obj["rules"].GetArray()) {
+      arg.rules.push_back(Rule::parse(rule));
+    }
+  }
 
-//   if (auto rules = simdjson_utils::get_optional<simdjson::ondemand::array>(obj, "rules")) {
-//     for (simdjson::ondemand::value rule_value : *rules) {
-//       auto rule_obj = rule_value.get_object().value();
-//       arg.rules.push_back(Rule::parse(rule_obj));
-//     }
-//   }
+  if (obj.HasMember("value")) {
+    if (obj["value"].IsString()) {
+      arg.value = obj["value"].GetString();
+    } else if (obj["value"].IsArray()) {
+      for (const auto &val : obj["value"].GetArray()) {
+        arg.values.push_back(val.GetString());
+      }
+    }
+  }
 
-//   if (auto value = obj["value"]; !value.error()) {
-//     if (value.type() == simdjson::ondemand::json_type::string) 
-//       arg.value = std::string(value.get_string().value());
-//     else if (value.type() == simdjson::ondemand::json_type::array) {
-//       for (simdjson::ondemand::value elem : value.get_array())   
-//         arg.values.push_back(std::string(elem.get_string().value()));
-//     }
-//   }
-
-//   return arg;
-// }
+  return arg;
+}
 
 // Client::Arguments Client::Arguments::parse(simdjson::ondemand::object &obj) {
 //   Arguments args;
