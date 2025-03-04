@@ -6,6 +6,8 @@
 #include <vector>
 #include "include/json/manifest.hh"
 #include "include/config/app.hh"
+#include "include/httplib.h"
+#include "include/utils/httplib_utils.hh"
 
 namespace fs = std::filesystem;
 
