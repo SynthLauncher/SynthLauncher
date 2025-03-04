@@ -10,10 +10,12 @@
 
 namespace fs = std::filesystem;
 
+/// @brief Manifest for the game
 class Manifest {
 public:
   static fs::path PATH;
 
+  /// @brief Latest version of the game
   class Latest {
   public:
     std::string release;
@@ -21,6 +23,7 @@ public:
     static Latest parse(const rapidjson::Value &obj);
   };
 
+  /// @brief Version of the game
   class Version {
   public:
     std::string id;
@@ -33,5 +36,6 @@ public:
 
   Latest latest;
   std::vector<Version> versions;
+  /// @brief Parses the manifest
   static Manifest parse();
 };

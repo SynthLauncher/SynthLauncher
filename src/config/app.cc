@@ -64,7 +64,7 @@ void initializeLauncherDir(AppConfig &config) {
 
   if (res && res->status == 200) {
     std::ofstream out(Manifest::PATH, std::ios::binary);
-    
+
     out.write(res->body.c_str(), res->body.size());
     out.close();
   } else {

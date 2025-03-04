@@ -22,9 +22,9 @@
 */
 #undef GetObject
 
-
 namespace fs = std::filesystem;
 
+/// @brief Client JSON
 class Client {
 public:
   struct Features {
@@ -145,7 +145,7 @@ public:
     static LoggingInfo parse(const rapidjson::Value &obj);
   };
 
-  /* 
+  /*
     The actual client.json:
   */
   Arguments arguments;
@@ -170,5 +170,4 @@ public:
   void downloadClientDownloads(fs::path instanceDir);
   void download(fs::path instanceDir);
   std::vector<fs::path> getLibrariesList();
-};  
-
+};

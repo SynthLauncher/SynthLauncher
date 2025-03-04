@@ -1,7 +1,7 @@
 #include "include/config/java.hh"
 
 Java::Java(std::string version, std::string path)
-    : version(version), path(path) {};
+    : version(version), path(path){};
 
 std::vector<Java> Java::getAvaliableJavaCups() {
   std::vector<Java> cups;
@@ -27,8 +27,7 @@ std::vector<Java> Java::getAvaliableJavaCups() {
         it = cups.erase(it);
       else
         ++it;
-    } 
-    else
+    } else
       ++it;
   }
 
@@ -168,7 +167,7 @@ bool Java::extractJavaVersion(Java &cup) {
 
   std::regex pattern(R"(version\s\"(\d+\.\d+\.\d+)_?(\d+)?\")");
   std::smatch match;
-  
+
   if (std::regex_search(result, match, pattern)) {
     cup.version = match[1];
 
