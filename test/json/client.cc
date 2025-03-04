@@ -54,67 +54,54 @@ TEST(ClientHH, MultipleArgumentParsing) {
     ASSERT_EQ(arguments.at(1).value, "--demo");
 }
 
-// TEST(ClientHH, ArgumentsParsing) {
-//     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json =
-//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
-//     simdjson::ondemand::document doc = parser.iterate(json);
+TEST(ClientHH, ArgumentsParsing) {
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
 
-//     simdjson::ondemand::object obj = doc["arguments"].get_object().value();
+    auto obj = doc["arguments"].GetObject();
 
-//     Client::Arguments args = Client::Arguments::parse(obj);
-// }
+    Client::Arguments args = Client::Arguments::parse(obj);
 
-// TEST(ClientHH, DownloadParsing) {
-//     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json =
-//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
-//     simdjson::ondemand::document doc = parser.iterate(json);
+    ASSERT_EQ(args.game.at(0).value, "--username");
+}
 
-//     simdjson::ondemand::object obj = doc["download"].get_object().value();
+TEST(ClientHH, DownloadParsing) {
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
+    const rapidjson::Value &obj = doc["download"];
+   
+    Client::Download download = Client::Download::parse(obj);
 
-//     Client::Download download = Client::Download::parse(obj);
+    ASSERT_EQ(download.id, "");
+    ASSERT_EQ(download.path,
+    "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+    ASSERT_EQ(download.sha1, "e9aca8c5479b520a2a7f0d542a118140e812c5e8");
+    ASSERT_EQ(download.size, 133378);
+    ASSERT_EQ(download.url,
+    "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+    ASSERT_EQ(download.totalSize, std::nullopt);
+}
 
-//     ASSERT_EQ(download.id, "");
-//     ASSERT_EQ(download.path,
-//     "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
-//     ASSERT_EQ(download.sha1, "e9aca8c5479b520a2a7f0d542a118140e812c5e8");
-//     ASSERT_EQ(download.size, 133378);
-//     ASSERT_EQ(download.url,
-//     "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
-//     ASSERT_EQ(download.totalSize, std::nullopt);
-// }
+TEST(ClientHH, ClientDownloadParsing) {
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
+    const rapidjson::Value &obj = doc["downloads"];
 
-// TEST(ClientHH, ClientDownloadParsing) {
-//     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json =
-//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
-//     simdjson::ondemand::document doc = parser.iterate(json);
+    Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
 
-//     simdjson::ondemand::object obj = doc["downloads"].get_object().value();
+    ASSERT_EQ(downloads.client.sha1,
+    "9acca901e3564a91250b941cd2c55a55d0b71bca");
+    ASSERT_EQ(downloads.client_mappings.sha1,
+    "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
+    ASSERT_EQ(downloads.server.sha1,
+    "e003d151668a0eff64c1191972707655e341f8f5");
+    ASSERT_EQ(downloads.server_mappings.sha1,
+    "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
+}
 
-//     Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
+TEST(ClientHH, JavaVersionParsing) {
+    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
+    const rapidjson::Value &obj = doc["javaVersion"];
 
-//     ASSERT_EQ(downloads.client.sha1,
-//     "9acca901e3564a91250b941cd2c55a55d0b71bca");
-//     ASSERT_EQ(downloads.client_mappings.sha1,
-//     "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
-//     ASSERT_EQ(downloads.server.sha1,
-//     "e003d151668a0eff64c1191972707655e341f8f5");
-//     ASSERT_EQ(downloads.server_mappings.sha1,
-//     "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
-// }
+    Client::JavaVersion version = Client::JavaVersion::parse(obj);
 
-// TEST(ClientHH, JavaVersionParsing) {
-//     simdjson::ondemand::parser parser;
-//     simdjson::padded_string json =
-//     simdjson::padded_string::load("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
-//     simdjson::ondemand::document doc = parser.iterate(json);
-
-//     simdjson::ondemand::object obj = doc["javaVersion"].get_object().value();
-
-//     Client::JavaVersion version = Client::JavaVersion::parse(obj);
-
-//     ASSERT_EQ(version.component, "java-runtime-delta");
-//     ASSERT_EQ(version.majorVersion, 21);
-// }
+    ASSERT_EQ(version.component, "java-runtime-delta");
+    ASSERT_EQ(version.majorVersion, 21);
+}

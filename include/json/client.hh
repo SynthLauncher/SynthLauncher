@@ -53,40 +53,40 @@ public:
     static Argument parse(const rapidjson::Value &val);
   };
 
-  // struct Arguments {
-  //   std::vector<Argument> game;
-  //   std::vector<Argument> jvm;
+  struct Arguments {
+    std::vector<Argument> game;
+    std::vector<Argument> jvm;
 
-  //   static Arguments parse(simdjson::ondemand::object &obj);
-  // };
+    static Arguments parse(const rapidjson::Value &obj);
+  };
 
-  // struct Download {
-  //   std::string id;
-  //   std::string path;
-  //   std::string sha1;
-  //   int64_t size;
-  //   std::optional<int64_t> totalSize;
-  //   std::string url;
+  struct Download {
+    std::string id;
+    std::string path;
+    std::string sha1;
+    int64_t size;
+    std::optional<int64_t> totalSize;
+    std::string url;
 
-  //   static Download parse(simdjson::ondemand::object &obj);
-  //   std::vector<std::uint8_t> fetch();
-  // };
+    static Download parse(const rapidjson::Value &obj);
+    // std::vector<std::uint8_t> fetch();
+  };
 
-  // struct ClientDownloads {
-  //   Download client;
-  //   Download client_mappings;
-  //   Download server;
-  //   Download server_mappings;
+  struct ClientDownloads {
+    Download client;
+    Download client_mappings;
+    Download server;
+    Download server_mappings;
 
-  //   static ClientDownloads parse(simdjson::ondemand::object &obj);
-  // };
+    static ClientDownloads parse(const rapidjson::Value &obj);
+  };
 
-  // struct JavaVersion {
-  //   std::string component;
-  //   int majorVersion;
+  struct JavaVersion {
+    std::string component;
+    int majorVersion;
 
-  //   static JavaVersion parse(simdjson::ondemand::object &obj);
-  // };
+    static JavaVersion parse(const rapidjson::Value &obj);
+  };
 
   // struct LibraryDownloads {
   //   Download artifact;
@@ -99,5 +99,4 @@ public:
 
   //   LibraryDownloads parse(simdjson::ondemand::object &obj);
   // };
-
 };

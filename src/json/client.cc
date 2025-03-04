@@ -114,76 +114,101 @@ Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
   return arg;
 }
 
-// Client::Arguments Client::Arguments::parse(simdjson::ondemand::object &obj) {
-//   Arguments args;
+Client::Arguments Client::Arguments::parse(const rapidjson::Value &obj) {
+  Arguments args;
 
-//   if (auto game = obj["game"].get_array(); !game.error()) {
-//     for (simdjson::ondemand::value arg : game)   
-//       args.game.push_back(Argument::parse(arg));
-//   }
+  if (obj.HasMember("game")) {
+    for (const auto &arg : obj["game"].GetArray()) {
+      args.game.push_back(Argument::parse(arg));
+    }
+  }
 
-//   if (auto jvm = obj["jvm"].get_array(); !jvm.error()) {
-//     for (simdjson::ondemand::value arg : jvm)
-//       args.jvm.push_back(Argument::parse(arg));
-//   }
+  if (obj.HasMember("jvm")) {
+    for (const auto &arg : obj["jvm"].GetArray()) {
+      args.jvm.push_back(Argument::parse(arg));
+    }
+  }
 
-//   return args;
-// }
+  return args;
+}
 
-// /*
-//   This function works properly I tested it in test/client.cc!
-//   The reason that this didn't work with the ClientDownloads parsing is because
-//   json is deformed for some reason
-// */
-// Client::Download Client::Download::parse(simdjson::ondemand::object &obj) {
-//   auto sha1 = obj["sha1"].get_string().value();
-//   auto size = obj["size"].get_int64().value();
-//   auto url = obj["url"].get_string().value();
+Client::Download Client::Download::parse(const rapidjson::Value &obj) {
+  Client::Download download;
 
-//   auto id = simdjson_utils::get_with_default<std::string>(obj, "id", "");
-//   auto path = simdjson_utils::get_with_default<std::string>(obj, "path", "");
-//   auto totalSize = simdjson_utils::get_optional<int64_t>(obj, "totalSize");
+  if (obj.HasMember("id")) 
+    download.id = obj["id"].GetString();
+  else 
+    download.id = "";
 
-//   return {
-//     .id = id,
-//     .path = path,
-//     .sha1 = std::string(sha1),
-//     .size = size,
-//     .totalSize = totalSize,
-//     .url = std::string(url)
-//   };
-// }
+  if (obj.HasMember("path"))
+    download.path = obj["path"].GetString();
+  else 
+    download.path = "";
 
-// /*
-//   Debugging purposes for now
-// */
-// Client::ClientDownloads Client::ClientDownloads::parse(simdjson::ondemand::object &obj) {
-//   Client::ClientDownloads download;
+  if (obj.HasMember("totalSize"))
+    download.totalSize = obj["totalSize"].GetInt64();
+  else 
+    download.totalSize = std::nullopt;
 
-//   auto client_obj = obj["client"].get_object().value(); 
-//   auto client_mappings_obj = obj["client_mappings"].get_object().value();
-//   auto server_obj = obj["server"].get_object().value();
-//   auto server_mappings_obj = obj["server_mappings"].get_object().value();
-  
-//   /*
-//     Problem arrises here, for some reason the simdjson parser says that the json is deformed in some way
-//     which causes it to not be able to parse
-//   */
-//   /*
-//     Another weird notice: on top if I don't do std::cout then this fails entirely 
-//   */
-//   auto client = Client::Download::parse(client_obj);
-//   auto client_mappings = Client::Download::parse(client_mappings_obj);
-//   auto server = Client::Download::parse(server_obj);
-//   auto server_mappings = Client::Download::parse(server_mappings_obj);
+  if (obj.HasMember("sha1"))
+    download.sha1 = obj["sha1"].GetString();
+  else 
+    download.sha1 = "";
 
-//   download.client = client;
-//   download.client_mappings = client_mappings;
-//   download.server = server;
-//   download.server_mappings = server_mappings;
+  if (obj.HasMember("size")) 
+    download.size = obj["size"].GetInt64();
+  else 
+    download.size = 0;
 
-//   return download;
-// }
+  if (obj.HasMember("url"))
+    download.url = obj["url"].GetString();
+  else 
+    download.url = "";
+
+  return download;
+}
+
+Client::ClientDownloads Client::ClientDownloads::parse(const rapidjson::Value &obj) {
+  Client::ClientDownloads download;
+
+  if (obj.HasMember("client")) 
+    download.client = Download::parse(obj["client"]);
+  else 
+    download.client = Download();
+
+  if (obj.HasMember("client_mappings"))
+    download.client_mappings = Download::parse(obj["client_mappings"]);
+  else 
+    download.client_mappings = Download();
+
+  if (obj.HasMember("server"))  
+    download.server = Download::parse(obj["server"]);
+  else 
+    download.server = Download();
+
+  if (obj.HasMember("server_mappings"))
+    download.server_mappings = Download::parse(obj["server_mappings"]);
+  else 
+    download.server_mappings = Download();
+
+  return download;
+}
+
+Client::JavaVersion Client::JavaVersion::parse(const rapidjson::Value &obj) {
+  Client::JavaVersion version;
+
+  if (obj.HasMember("component"))
+    version.component = obj["component"].GetString();
+  else 
+    version.component = "";
+
+  if (obj.HasMember("majorVersion"))
+    version.majorVersion = obj["majorVersion"].GetInt();
+  else 
+    version.majorVersion = 0;
+
+  return version;
+}
 
 // std::vector<std::uint8_t> Client::Download::fetch() {
 //   auto [host, path] = httplib_utils::extractHostAndPath(this->url);
@@ -196,13 +221,6 @@ Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
 
 //   const auto &body = res->body;
 //   return std::vector<uint8_t>(body.begin(), body.end());
-// }
-
-// Client::JavaVersion Client::JavaVersion::parse(simdjson::ondemand::object &obj) {
-//   return { 
-//     .component = simdjson_utils::get<std::string>(obj, "component"),
-//     .majorVersion = simdjson_utils::get<int>(obj, "majorVersion") 
-//   };
 // }
 
 // std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
