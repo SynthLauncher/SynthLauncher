@@ -1,10 +1,17 @@
 #include "include/entities/instance.hh"
+#include <rapidjson/istreamwrapper.h>
 
 fs::path Instance::PARENT_DIR;
 fs::path Instance::INSTANCE_FILE;
 
 Instance::Instance(const std::string &name, const std::string &version)
     : name(name), version(version) {}
+
+Instance Instance::parse(const rapidjson::Value &obj) {
+  Instance instance(obj["name"].GetString(), obj["version"].GetString());
+
+  return instance;
+}
 
 void Instance::init(AppConfig &config) {
   PARENT_DIR = config.DIR + "instances/";
@@ -57,4 +64,25 @@ Instance Instance::createInstance(const std::string &name,
     outFile << res->body;
   } else 
     throw std::runtime_error("Failed to download client.json!");
+
+  // addInstance(instance);
+
+  return instance;
+}
+
+std::vector<Instance> Instance::readInstances() {
+  std::vector<Instance> instances;
+
+  std::string instances_json = read_file_to_string(INSTANCE_FILE);
+
+  rapidjson::Document doc;
+  doc.Parse(instances_json.c_str());
+
+  if (doc.HasParseError())
+    throw std::runtime_error("Failed to parse instances.json");
+
+  for (const auto &instance : doc.GetArray())
+    instances.push_back(Instance::parse(instance));
+
+  return instances;
 }
