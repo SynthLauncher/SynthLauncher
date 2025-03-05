@@ -1,5 +1,7 @@
 #include "include/config/java.hh"
 
+Java::Java() : version(""), path("") {}
+
 Java::Java(std::string version, std::string path)
     : version(version), path(path){};
 

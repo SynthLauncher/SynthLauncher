@@ -25,3 +25,30 @@ uint64_t Config::getTotalPhysicalMemory() {
     #endif
 }
 
+Config::Config(fs::path path) : java(), path(path.string()), min_ram(0), max_ram(0) {}
+
+Config::Config() { 
+    uint64_t total = getTotalPhysicalMemory();
+
+    this->max_ram = total / 4 / 1024 / 1024;
+    this->min_ram = this->max_ram / 2;
+
+    this->java = Java::getAvaliableJavaCups()[0];
+    this->path = MAIN_PATH.string();
+}
+
+uint64_t Config::getMinRam() const {
+    return this->min_ram;
+}
+
+uint64_t Config::getMaxRam() const {
+    return this->max_ram;
+}
+
+uint64_t Config::getMinRam() const {
+    return this->min_ram;
+}
+
+Java Config::getJava() const {
+    return this->java;
+}

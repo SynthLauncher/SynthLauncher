@@ -34,6 +34,7 @@ public:
   std::string version;
   std::string path;
 
+  Java();
   Java(std::string version, std::string path);
 
   /// @brief Gets all available Java versions

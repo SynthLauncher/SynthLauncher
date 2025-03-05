@@ -22,6 +22,9 @@ public:
   uint64_t getMinRam() const;
   uint64_t getMaxRam() const;
   Java getJava() const;
+  void setMinRam(uint64_t min_ram);
+  void setMaxRam(uint64_t max_ram);
+  void setJava(Java java);
   Config(fs::path path);
 
 private:
@@ -29,7 +32,6 @@ private:
   uint64_t min_ram;
   uint64_t max_ram;
   Java java;
-
 
   static uint64_t getTotalPhysicalMemory();
   Config();
