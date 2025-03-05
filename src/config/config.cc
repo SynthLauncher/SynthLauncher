@@ -60,3 +60,9 @@ void Config::setMaxRam(uint64_t max_ram) {
 void Config::setJava(Java java) {
     this->java = java;
 }
+
+void Config::writeConfig() { return; }
+
+Config Config::readMainConfig() { 
+    return Config(); 
+};

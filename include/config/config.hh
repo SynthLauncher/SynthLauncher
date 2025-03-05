@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <filesystem>
+#include "include/rapidjson/document.h"
 #include "include/config/java.hh"
 
 #ifdef _WIN32
@@ -18,6 +19,8 @@ namespace fs = std::filesystem;
 class Config {
 public:
   static fs::path MAIN_PATH;
+  std::string toJson(Config &config);
+  Config parse(rapidjson::Value &obj);
 
   uint64_t getMinRam() const;
   uint64_t getMaxRam() const;
