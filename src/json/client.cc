@@ -294,6 +294,41 @@ Client::LibraryExtractRules Client::LibraryExtractRules::parse(const rapidjson::
   return rules;
 }
 
+Client::Library Client::Library::parse(const rapidjson::Value &obj) {
+  Library library;
+
+  if (obj.HasMember("downloads")) {
+    library.downloads = LibraryDownloads::parse(obj);
+  } else {
+    library.downloads = LibraryDownloads();
+  }
+
+  if (obj.HasMember("name"))
+    library.name = obj["name"].GetString();
+  else
+    library.name = "";
+
+  if (obj.HasMember("rules")) {
+    for (const auto &rule : obj["rules"].GetArray()) {
+      library.rules.push_back(Rule::parse(rule));
+    }
+  }
+
+  if (obj.HasMember("natives")) {
+    for (auto itr = obj["natives"].MemberBegin(); itr != obj["natives"].MemberEnd(); ++itr) {
+      auto& key = itr->name;
+      auto& val = itr->value;
+      library.natives[OperatingSystem::os_from_string(key.GetString())] = val.GetString();
+    }
+  }
+
+  if (obj.HasMember("extract")) {
+    library.extractRules = LibraryExtractRules::parse(obj["extract"]);
+  } else {
+    library.extractRules = LibraryExtractRules();
+  } 
+}
+
 Client::LoggingClient Client::LoggingClient::parse(const rapidjson::Value &obj) {
   LoggingClient client;
 
@@ -356,4 +391,18 @@ Client Client::parse(const rapidjson::Value &obj) {
     client.logging = LoggingInfo();
 
   return client;
+}
+
+void Client::Library::downloadArtifact(AppConfig &config) {
+  fs::path artifactPath = downloads.artifactPath(config);
+
+  if (!fs::exists(artifactPath)) {
+    auto artifact = downloads.fetchArtifact();
+
+    fs::create_directories(artifactPath.parent_path());
+    std::ofstream file(artifactPath, std::ios::binary);
+    file.write(reinterpret_cast<const char*>(artifact.data()), artifact.size());
+  }
+
+  return;
 }
