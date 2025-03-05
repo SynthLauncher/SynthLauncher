@@ -1,5 +1,4 @@
 #include "include/json/client.hh"
-
 Client::Features Client::Features::parse(const rapidjson::Value &obj) {
   Features features;
 
@@ -541,4 +540,5 @@ void Client::downloadAssets(AppConfig &config) {
   }
 
   auto json = parse_json_file(indexPath);
+
 }

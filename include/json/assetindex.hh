@@ -28,5 +28,6 @@ public:
     void fetch(AppConfig &config);
   };
 
+  static 
   std::map<std::string, AssetObject> objects;
 };

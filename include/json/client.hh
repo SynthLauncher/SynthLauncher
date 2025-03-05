@@ -19,6 +19,7 @@
 #include "include/rapidjson/document.h"
 #include "include/rapidjson/error/en.h"
 #include "include/utils/httplib_utils.hh"
+#include "include/json/assetindex.hh"
 
 /*
   Windows macro was intefering with the GetObject function
