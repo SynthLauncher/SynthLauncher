@@ -9,6 +9,7 @@
 
 namespace fs = std::filesystem;
 
+/// @brief Converts a file data into a string 
 inline std::string read_file_to_string(const fs::path &path) {
   std::ifstream file(path);
   if (!file)

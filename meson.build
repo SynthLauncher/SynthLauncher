@@ -23,6 +23,7 @@ src = [
   'src/config/java.cc',
   'src/entities/os.cc',
   'src/entities/arch.cc',
+  'src/entities/instance.cc',
 ]
 
 test_src = [
@@ -34,6 +35,7 @@ test_src = [
   'test/json/assetindex.cc',
   'test/config/app.cc',
   'test/config/java.cc',
+  'test/entities/instance.cc'
 ]
 
 # Test dependency
