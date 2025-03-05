@@ -7,5 +7,7 @@ TEST(JavaHH, VersionExtraction) {
   auto cup = cups[0];
   Java::extractJavaVersion(cup);
 
+  std::cout << cup.toJson() << std::endl;
+
   ASSERT_EQ(cup.version, "21.0.5");
 }

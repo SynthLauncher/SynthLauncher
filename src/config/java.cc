@@ -5,6 +5,14 @@ Java::Java() : version(""), path("") {}
 Java::Java(std::string version, std::string path)
     : version(version), path(path){};
 
+std::string Java::toJson() const {
+  std::string json = "java: {";
+  json += "\"version\":\"" + this->version + "\",";
+  json += "\"path\":\"" + this->path + "\"";
+  json += "}";
+  return json;
+}
+
 std::vector<Java> Java::getAvaliableJavaCups() {
   std::vector<Java> cups;
 
@@ -44,8 +52,8 @@ std::vector<Java> Java::getCommonWindowsCups() {
   fs::path systemDrive(std::getenv("SystemDrive"));
 
   std::vector<fs::path> paths = {
-      fs::path(systemDrive) / "Program Files" / "Java",
-      fs::path(systemDrive) / "Program Files (x86)" / "Java"};
+      fs::path(systemDrive) / "\\Program Files" / "Java",
+      fs::path(systemDrive) / "\\Program Files (x86)" / "Java"};
 
   for (const auto &path : paths) {
     if (fs::exists(path))

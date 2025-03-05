@@ -37,6 +37,7 @@ public:
   Java();
   Java(std::string version, std::string path);
 
+  std::string toJson() const;
   /// @brief Gets all available Java versions
   static std::vector<Java> getAvaliableJavaCups();
   /// @brief Sors Java cups by version
