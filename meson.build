@@ -6,11 +6,14 @@ cpp = meson.get_compiler('cpp')
 if host_machine.system() == 'windows'
   ws2_32 = cpp.find_library('ws2_32')
   crypt32 = cpp.find_library('crypt32')
-  platform_deps = [ws2_32, crypt32]
+  minizip = cpp.find_library('minizip', required: true)
+  platform_deps = [ws2_32, crypt32, minizip]
 elif host_machine.system() == 'darwin'
-  platform_deps = []
+  minizip = cpp.find_library('minizip', required: true)
+  platform_deps = [minizip]
 else
-  platform_deps = []
+  minizip = cpp.find_library('minizip', required: true)
+  platform_deps = [minizip]
 endif
 
 openssl = dependency('openssl')
@@ -38,7 +41,7 @@ test_src = [
   'test/entities/instance.cc'
 ]
 
-# Build dependency
+# Build dependencies
 zlib = dependency('zlib', required: false)
 if not zlib.found()
   zlib = cpp.find_library('z', required: true)

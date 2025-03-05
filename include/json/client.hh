@@ -6,7 +6,9 @@
 #include <optional>
 #include <string>
 #include <vector>
-
+#include <minizip/unzip.h>
+#include <minizip/zip.h>
+#include <zlib.h>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
@@ -125,7 +127,7 @@ public:
     std::string name;
     std::vector<Rule> rules;
     std::map<OperatingSystem::OS, std::string> natives;
-    LibraryExtractRules extractRules;
+    LibraryExtractRules extract;
 
     static Library parse(const rapidjson::Value &obj);
     void downloadArtifact(AppConfig &config);

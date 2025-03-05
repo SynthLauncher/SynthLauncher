@@ -329,9 +329,9 @@ Client::Library Client::Library::parse(const rapidjson::Value &obj) {
   }
 
   if (obj.HasMember("extract")) {
-    library.extractRules = LibraryExtractRules::parse(obj["extract"]);
+    library.extract = LibraryExtractRules::parse(obj["extract"]);
   } else {
-    library.extractRules = LibraryExtractRules();
+    library.extract = LibraryExtractRules();
   }
 }
 
@@ -434,21 +434,94 @@ void Client::Library::downloadNative(AppConfig &config) {
 void Client::Library::extractNative(AppConfig &config, fs::path instanceDir) {
   std::string nativeIndex = natives[config.OS];
 
-  if (nativeIndex != "") {
-    fs::path nativeZipPath = downloads.nativePath(config, nativeIndex);
+  fs::path nativeZipPath = downloads.nativePath(config, nativeIndex);
 
-    if (nativeZipPath.empty())
-      return;
+  if (nativeZipPath.empty())
+    return;
 
-    fs::path nativeDestDir = instanceDir / ".natives";
+  fs::path nativeDestDir = instanceDir / ".natives";
 
-    if (!fs::exists(nativeDestDir))
-      fs::create_directories(nativeDestDir);
+  if (!fs::exists(nativeDestDir))
+    fs::create_directories(nativeDestDir);
 
-    /* 
-      Zip stuff need to be written here
-    */
+  unzFile zipfile = unzOpen(nativeZipPath.string().c_str());
+  if (!zipfile)
+    throw std::runtime_error("Failed to open " + nativeZipPath.string());
+
+  if (unzGoToFirstFile(zipfile) != UNZ_OK) {
+    unzClose(zipfile);
+    throw std::runtime_error("Failed to go to first file in " +
+                             nativeZipPath.string());
   }
+
+  std::vector<char> buffer(1024);
+
+  do {
+    unz_file_info fileInfo;
+    char filename[256];
+
+    if (unzGetCurrentFileInfo(zipfile, &fileInfo, filename, sizeof(filename),
+                              nullptr, 0, nullptr, 0) != UNZ_OK) {
+      break;
+    }
+
+    fs::path entryPath(filename);
+
+    bool excluded = false;
+    for (const auto &rule : extract.exclude) {
+      fs::path excludePath(rule.c_str());
+
+      if (entryPath.lexically_relative(excludePath) == excludePath) {
+        excluded = true;
+        break;
+      }
+    }
+    if (excluded)
+      continue;
+
+    fs::path targetPath = nativeDestDir / entryPath;
+
+    if (fs::exists(targetPath))
+      continue;
+
+    if (!fileInfo.uncompressed_size) {
+      fs::create_directories(targetPath);
+    } else {
+      fs::create_directories(targetPath.parent_path());
+
+      if (unzOpenCurrentFile(zipfile) != UNZ_OK) {
+        unzClose(zipfile);
+        throw std::runtime_error("Failed to open current file in " +
+                                 nativeZipPath.string());
+      }
+
+      std::ofstream outFile(targetPath, std::ios::binary);
+      if (!outFile) {
+        unzCloseCurrentFile(zipfile);
+        unzClose(zipfile);
+        throw std::runtime_error("Failed to open " + targetPath.string());
+      }
+
+      int readBytes;
+      while ((readBytes =
+                  unzReadCurrentFile(zipfile, buffer.data(), buffer.size()))) {
+        if (readBytes < 0) {
+          unzCloseCurrentFile(zipfile);
+          unzClose(zipfile);
+          throw std::runtime_error("Failed to read current file in " +
+                                   nativeZipPath.string());
+        }
+
+        outFile.write(buffer.data(), readBytes);
+      }
+
+      unzCloseCurrentFile(zipfile);
+      outFile.close();
+    }
+  } while (unzGoToNextFile(zipfile) == UNZ_OK);
+
+  unzClose(zipfile);
+  return;
 }
 
 void Client::downloadAssets(AppConfig &config) {
@@ -463,7 +536,8 @@ void Client::downloadAssets(AppConfig &config) {
     auto indexFile = this->assetIndex.fetch();
 
     std::ofstream file(indexPath);
-    file.write(reinterpret_cast<const char *>(indexFile.data()), indexFile.size());
+    file.write(reinterpret_cast<const char *>(indexFile.data()),
+               indexFile.size());
   }
 
   auto json = parse_json_file(indexPath);
