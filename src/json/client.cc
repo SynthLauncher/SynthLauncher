@@ -430,3 +430,41 @@ void Client::Library::downloadNative(AppConfig &config) {
     }
   }
 }
+
+void Client::Library::extractNative(AppConfig &config, fs::path instanceDir) {
+  std::string nativeIndex = natives[config.OS];
+
+  if (nativeIndex != "") {
+    fs::path nativeZipPath = downloads.nativePath(config, nativeIndex);
+
+    if (nativeZipPath.empty())
+      return;
+
+    fs::path nativeDestDir = instanceDir / ".natives";
+
+    if (!fs::exists(nativeDestDir))
+      fs::create_directories(nativeDestDir);
+
+    /* 
+      Zip stuff need to be written here
+    */
+  }
+}
+
+void Client::downloadAssets(AppConfig &config) {
+  fs::path indexesDir = config.ASSETS_DIR / "indexes";
+
+  if (!fs::exists(indexesDir))
+    fs::create_directories(indexesDir);
+
+  fs::path indexPath = indexesDir / this->assets / ".json";
+
+  if (!fs::exists(indexPath)) {
+    auto indexFile = this->assetIndex.fetch();
+
+    std::ofstream file(indexPath);
+    file.write(reinterpret_cast<const char *>(indexFile.data()), indexFile.size());
+  }
+
+  auto json = parse_json_file(indexPath);
+}

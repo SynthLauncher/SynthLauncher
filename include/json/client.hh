@@ -7,11 +7,13 @@
 #include <string>
 #include <vector>
 
+
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include "include/config/app.hh"
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"
+#include "include/utils/rapidjson_utils.hh"
 #include "include/rapidjson/document.h"
 #include "include/rapidjson/error/en.h"
 #include "include/utils/httplib_utils.hh"
@@ -128,7 +130,7 @@ public:
     static Library parse(const rapidjson::Value &obj);
     void downloadArtifact(AppConfig &config);
     void downloadNative(AppConfig &config);
-    void extractNative(fs::path instanceDir);
+    void extractNative(AppConfig &config, fs::path instanceDir);
   };
 
   struct LoggingClient {
@@ -165,7 +167,7 @@ public:
 
   static Client parse(const rapidjson::Value &obj);
 
-  void downloadAssets();
+  void downloadAssets(AppConfig &config);
   void downloadLibraries(fs::path instanceDir);
   void downloadClientDownloads(fs::path instanceDir);
   void download(fs::path instanceDir);
