@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include "include/config/app.hh"
@@ -128,7 +127,7 @@ public:
 
     static Library parse(const rapidjson::Value &obj);
     void downloadArtifact(AppConfig &config);
-    void downloadNative();
+    void downloadNative(AppConfig &config);
     void extractNative(fs::path instanceDir);
   };
 

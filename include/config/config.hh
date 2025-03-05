@@ -29,6 +29,7 @@ public:
   void setMaxRam(uint64_t max_ram);
   void setJava(Java java);
   Config(fs::path path);
+  static Config getConfig(fs::path);
   Config readMainConfig();
 
 private:

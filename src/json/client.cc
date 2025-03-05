@@ -253,7 +253,8 @@ fs::path Client::LibraryDownloads::nativePath(AppConfig &config,
   return config.NATIVES_DIR / download.path;
 }
 
-Client::LibraryDownloads Client::LibraryDownloads::parse(const rapidjson::Value &obj) {
+Client::LibraryDownloads
+Client::LibraryDownloads::parse(const rapidjson::Value &obj) {
   LibraryDownloads downloads;
 
   if (obj.HasMember("downloads")) {
@@ -262,13 +263,15 @@ Client::LibraryDownloads Client::LibraryDownloads::parse(const rapidjson::Value 
     }
   }
 
-  /* 
-    This field doesn't always show up in the JSON, so we need to check if it exists before parsing it.
+  /*
+    This field doesn't always show up in the JSON, so we need to check if it
+    exists before parsing it.
   */
   if (obj.HasMember("classifiers")) {
-    for (auto itr = obj["classifiers"].MemberBegin(); itr != obj["classifiers"].MemberEnd(); ++itr) {
-      auto& key = itr->name;
-      auto& val = itr->value;
+    for (auto itr = obj["classifiers"].MemberBegin();
+         itr != obj["classifiers"].MemberEnd(); ++itr) {
+      auto &key = itr->name;
+      auto &val = itr->value;
       downloads.classifiers[key.GetString()] = Download::parse(val);
     }
   }
@@ -276,7 +279,8 @@ Client::LibraryDownloads Client::LibraryDownloads::parse(const rapidjson::Value 
   return downloads;
 }
 
-Client::LibraryExtractRules Client::LibraryExtractRules::parse(const rapidjson::Value &obj) {
+Client::LibraryExtractRules
+Client::LibraryExtractRules::parse(const rapidjson::Value &obj) {
   LibraryExtractRules rules;
 
   if (obj.HasMember("exclude")) {
@@ -315,10 +319,12 @@ Client::Library Client::Library::parse(const rapidjson::Value &obj) {
   }
 
   if (obj.HasMember("natives")) {
-    for (auto itr = obj["natives"].MemberBegin(); itr != obj["natives"].MemberEnd(); ++itr) {
-      auto& key = itr->name;
-      auto& val = itr->value;
-      library.natives[OperatingSystem::os_from_string(key.GetString())] = val.GetString();
+    for (auto itr = obj["natives"].MemberBegin();
+         itr != obj["natives"].MemberEnd(); ++itr) {
+      auto &key = itr->name;
+      auto &val = itr->value;
+      library.natives[OperatingSystem::os_from_string(key.GetString())] =
+          val.GetString();
     }
   }
 
@@ -326,10 +332,11 @@ Client::Library Client::Library::parse(const rapidjson::Value &obj) {
     library.extractRules = LibraryExtractRules::parse(obj["extract"]);
   } else {
     library.extractRules = LibraryExtractRules();
-  } 
+  }
 }
 
-Client::LoggingClient Client::LoggingClient::parse(const rapidjson::Value &obj) {
+Client::LoggingClient
+Client::LoggingClient::parse(const rapidjson::Value &obj) {
   LoggingClient client;
 
   if (obj.HasMember("argument"))
@@ -342,7 +349,7 @@ Client::LoggingClient Client::LoggingClient::parse(const rapidjson::Value &obj) 
   else
     client.file = Download();
 
-  if (obj.HasMember("type"))  
+  if (obj.HasMember("type"))
     client.type = obj["type"].GetString();
   else
     client.type = "";
@@ -401,8 +408,25 @@ void Client::Library::downloadArtifact(AppConfig &config) {
 
     fs::create_directories(artifactPath.parent_path());
     std::ofstream file(artifactPath, std::ios::binary);
-    file.write(reinterpret_cast<const char*>(artifact.data()), artifact.size());
+    file.write(reinterpret_cast<const char *>(artifact.data()),
+               artifact.size());
   }
 
   return;
+}
+
+void Client::Library::downloadNative(AppConfig &config) {
+  std::string nativeIndex = natives[config.OS];
+
+  if (nativeIndex != "") {
+    fs::path nativePath = downloads.nativePath(config, nativeIndex);
+
+    if (!nativePath.empty() && !fs::exists(nativePath)) {
+      auto fetched = downloads.fetchNative(nativeIndex);
+      fs::create_directories(nativePath.parent_path());
+      std::ofstream file(nativePath, std::ios::binary);
+      file.write(reinterpret_cast<const char *>(fetched.data()),
+                 fetched.size());
+    }
+  }
 }

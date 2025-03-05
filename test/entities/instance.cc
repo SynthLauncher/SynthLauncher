@@ -11,5 +11,5 @@ TEST(InstanceHH, InstanceParsing) {
   Instance instance = Instance::parse(arr[0]);
 
   EXPECT_EQ(instance.name, "test");
-  EXPECT_EQ(instance.version, "1.0.0");
+  EXPECT_EQ(instance.version, "1.21.1");
 }
