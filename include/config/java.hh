@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "include/rapidjson/document.h"
 
 #ifdef _WIN32
 #include <shlobj.h>
@@ -38,6 +39,7 @@ public:
   Java(std::string version, std::string path);
 
   std::string toJson() const;
+  static Java parse(const rapidjson::Value &obj);
   /// @brief Gets all available Java versions
   static std::vector<Java> getAvaliableJavaCups();
   /// @brief Sors Java cups by version

@@ -13,6 +13,15 @@ std::string Java::toJson() const {
   return json;
 }
 
+Java Java::parse(const rapidjson::Value &obj) {
+  Java java;
+  if (obj.HasMember("version"))
+    java.version = obj["version"].GetString();
+  if (obj.HasMember("path"))
+    java.path = obj["path"].GetString();
+  return java;
+}
+
 std::vector<Java> Java::getAvaliableJavaCups() {
   std::vector<Java> cups;
 

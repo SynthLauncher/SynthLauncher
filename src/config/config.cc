@@ -27,6 +27,37 @@ uint64_t Config::getTotalPhysicalMemory() {
 
 Config::Config(fs::path path) : java(), path(path.string()), min_ram(0), max_ram(0) {}
 
+std::string Config::toJson() { 
+    std::string json = "\"path\": ";
+    json += this->path + ", ";
+    json += "\"min_ram\": " + std::to_string(this->min_ram) + ", ";
+    json += "\"max_ram\": " + std::to_string(this->max_ram) + ", ";
+    json += this->java.toJson();
+    return json;
+}
+
+Config Config::parse(const rapidjson::Value &obj) {
+    Config config;
+    if (obj.HasMember("path"))
+        config.path = obj["path"].GetString();
+    if (obj.HasMember("min_ram")) 
+        config.min_ram = obj["min_ram"].GetUint64();
+    if (obj.HasMember("max_ram")) 
+        config.max_ram = obj["max_ram"].GetUint64();
+    if (obj.HasMember("java")) 
+        config.java = Java::parse(obj["java"]);
+
+    return config;
+}
+
+Config Config::getConfig(fs::path path) {
+  auto json = parse_json_file(path);
+  Config config = Config::parse(json);
+  config.path = path.string();
+
+  return config;
+}
+
 Config::Config() { 
     uint64_t total = getTotalPhysicalMemory();
 
@@ -61,8 +92,19 @@ void Config::setJava(Java java) {
     this->java = java;
 }
 
-void Config::writeConfig() { return; }
+void Config::writeConfig() { 
+    std::string json = this->toJson();
+
+    std::ofstream file(this->path, std::ios::out | std::ios::trunc);
+    if (!file) {
+        throw std::runtime_error("Failed to open file: " + this->path);
+    }
+
+    file << json;
+
+    return; 
+}
 
 Config Config::readMainConfig() { 
-    return Config(); 
+    return getConfig(MAIN_PATH);
 };

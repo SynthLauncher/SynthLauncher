@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "include/rapidjson/document.h"
 #include "include/config/java.hh"
+#include "include/utils/rapidjson_utils.hh"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -19,8 +20,8 @@ namespace fs = std::filesystem;
 class Config {
 public:
   static fs::path MAIN_PATH;
-  std::string toJson(Config &config);
-  Config parse(rapidjson::Value &obj);
+  std::string toJson();
+  static Config parse(const rapidjson::Value &obj);
 
   uint64_t getMinRam() const;
   uint64_t getMaxRam() const;
