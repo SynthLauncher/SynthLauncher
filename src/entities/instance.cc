@@ -86,3 +86,14 @@ std::vector<Instance> Instance::readInstances() {
 
   return instances;
 }
+
+Instance Instance::getInstance(const std::string &name) {
+  std::vector<Instance> instances = readInstances();
+
+  for (Instance instance : instances) {
+    if (instance.name == name)
+      return instance;
+  }
+
+  throw std::runtime_error("Instance not found!");
+}
