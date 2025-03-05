@@ -26,6 +26,7 @@ public:
   void setMaxRam(uint64_t max_ram);
   void setJava(Java java);
   Config(fs::path path);
+  Config readMainConfig();
 
 private:
   std::string path;
@@ -33,6 +34,7 @@ private:
   uint64_t max_ram;
   Java java;
 
+  void writeConfig(); 
   static uint64_t getTotalPhysicalMemory();
   Config();
 };

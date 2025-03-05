@@ -45,10 +45,18 @@ uint64_t Config::getMaxRam() const {
     return this->max_ram;
 }
 
-uint64_t Config::getMinRam() const {
-    return this->min_ram;
-}
-
 Java Config::getJava() const {
     return this->java;
+}
+
+void Config::setMinRam(uint64_t min_ram) {
+    this->min_ram = min_ram;
+}
+
+void Config::setMaxRam(uint64_t max_ram) {
+    this->max_ram = max_ram;
+}
+
+void Config::setJava(Java java) {
+    this->java = java;
 }
