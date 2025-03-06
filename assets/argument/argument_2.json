@@ -1,0 +1,6 @@
+[
+  {
+    "rules": [{ "action": "allow", "features": { "is_demo_user": true } }],
+    "value": "--demo"
+  }
+]

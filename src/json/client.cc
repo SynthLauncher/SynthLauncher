@@ -1,4 +1,5 @@
 #include "include/json/client.hh"
+#undef GetObject
 
 Client::Features Client::Features::fromJson(const rapidjson::Value &obj) {
   Features features;
@@ -61,35 +62,6 @@ Client::Rule Client::Rule::fromJson(const rapidjson::Value &obj) {
     rule.features = std::nullopt;
 
   return rule;
-}
-
-bool Client::Rule::osMatches(App::AppConfig &config) {
-  bool match = true;
-
-  if (os != std::nullopt) {
-    if (os->name != std::nullopt)
-      match = (os->name == config.OS);
-
-    if (os->arch != std::nullopt)
-      match = match && os->arch == config.ARCH;
-
-    if (action == "allow")
-      return match;
-
-    if (action == "disallow")
-      return !match;
-  }
-
-  return match;
-}
-
-bool Client::Rule::osMatches(App::AppConfig &config, std::vector<Rule> rules) {
-  for (auto &rule : rules) {
-    if (!rule.osMatches(config))
-      return false;
-  }
-
-  return true;
 }
 
 Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
@@ -598,4 +570,33 @@ std::vector<fs::path> Client::getLibrariesList(App::AppConfig &config) {
   }
 
   return pathList;
+}
+
+bool Client::Rule::osMatches(App::AppConfig &config) {
+  bool match = false;
+
+  if (os != std::nullopt) {
+    if (os->name != std::nullopt)
+      match = (os->name == config.OS);
+
+    if (os->arch != std::nullopt)
+      match = match && (os->arch == config.ARCH);
+
+    if (action == "allow")
+      return match;
+
+    if (action == "disallow")
+      return !match;
+  }
+
+  return match;
+}
+
+bool Client::Rule::osMatches(App::AppConfig &config, std::vector<Rule> rules) {
+  for (auto &rule : rules) {
+    if (!rule.osMatches(config))
+      return false;
+  }
+
+  return true;
 }
