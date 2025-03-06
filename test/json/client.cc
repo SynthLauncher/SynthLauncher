@@ -2,9 +2,9 @@
 #include "include/utils/rapidjson_utils.hh"
 #include <gtest/gtest.h>
 
-TEST(ClientHH, FeaturesParsing) {
-  rapidjson::Document doc =
-      rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/features.json");
+TEST(ClientHH, FeaturesParsing_1) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/features/features_1.json");
   const rapidjson::Value &obj = doc["features"];
 
   Client::Features features = Client::Features::fromJson(obj);
@@ -17,22 +17,76 @@ TEST(ClientHH, FeaturesParsing) {
   ASSERT_EQ(features.isQuickPlaySingleplayer, false);
 }
 
-// TEST(ClientHH, OSRulesParsing) {
-//   rapidjson::Document doc =
-//       rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/os_rules.json");
-//   const rapidjson::Value &obj = doc["os"];
+TEST(ClientHH, FeaturesParsing_2) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/features/features_2.json");
+  const rapidjson::Value &obj = doc["features"];
 
-//   Client::OSRules rules = Client::OSRules::parse(obj);
+  Client::Features features = Client::Features::fromJson(obj);
 
-//   ASSERT_EQ(rules.name, OperatingSystem::OS::Windows);
-//   ASSERT_EQ(rules.arch, std::nullopt);
-//   ASSERT_EQ(rules.version, "");
-// }
+  ASSERT_EQ(features.isDemoUser, false);
+  ASSERT_EQ(features.hasQuickPlaysSupport, true);
+  ASSERT_EQ(features.hasCustomResolution, false);
+  ASSERT_EQ(features.isQuickPlayMultiplayer, true);
+  ASSERT_EQ(features.isQuickPlayRealms, true);
+  ASSERT_EQ(features.isQuickPlaySingleplayer, false);
+}
+
+TEST(ClientHH, FeaturesParsing_3) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/features/features_3.json");
+  const rapidjson::Value &obj = doc["features"];
+
+  Client::Features features = Client::Features::fromJson(obj);
+
+  ASSERT_EQ(features.isDemoUser, false);
+  ASSERT_EQ(features.hasQuickPlaysSupport, true);
+  ASSERT_EQ(features.hasCustomResolution, false);
+  ASSERT_EQ(features.isQuickPlayMultiplayer, true);
+  ASSERT_EQ(features.isQuickPlayRealms, false);
+  ASSERT_EQ(features.isQuickPlaySingleplayer, false);
+}
+
+TEST(ClientHH, OSRulesParsing_1) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/os_rules/os_rules_1.json");
+  const rapidjson::Value &obj = doc["os"];
+
+  Client::OSRules rules = Client::OSRules::fromJson(obj);
+
+  ASSERT_EQ(rules.name, OperatingSystem::OS::Windows);
+  ASSERT_EQ(rules.arch, std::nullopt);
+  ASSERT_EQ(rules.version, "");
+}
+
+TEST(ClientHH, OSRulesParsing_2) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/os_rules/os_rules_2.json");
+  const rapidjson::Value &obj = doc["os"];
+
+  Client::OSRules rules = Client::OSRules::fromJson(obj);
+
+  ASSERT_EQ(rules.arch, Architecture::Arch::X86);
+  ASSERT_EQ(rules.version, "1.21");
+  ASSERT_EQ(rules.name, std::nullopt);
+}
+
+TEST(ClientHH, OSRulesParsing_3) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/os_rules/os_rules_3.json");
+  const rapidjson::Value &obj = doc["os"];
+
+  Client::OSRules rules = Client::OSRules::fromJson(obj);
+
+  ASSERT_EQ(rules.name, OperatingSystem::OS::Linux);
+  ASSERT_EQ(rules.arch, Architecture::Arch::Arm);
+  ASSERT_EQ(rules.version, "");
+}
 
 // TEST(ClientHH, RuleParsing) {
 //     rapidjson::Document doc =
 //         rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
-    
+
 //     const rapidjson::Value &obj = doc["rule"];
 
 //     Client::Rule rule = Client::Rule::parse(obj);
@@ -44,12 +98,14 @@ TEST(ClientHH, FeaturesParsing) {
 // }
 
 // TEST(ClientHH, MultipleArgumentParsing) {
-//     rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
+//     rapidjson::Document doc =
+//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
 
 //     const rapidjson::Value &arr = doc.GetArray();
 
 //     std::vector<Client::Argument> arguments;
-//     for (rapidjson::Value::ConstValueIterator itr = arr.Begin(); itr != arr.End(); ++itr) {
+//     for (rapidjson::Value::ConstValueIterator itr = arr.Begin(); itr !=
+//     arr.End(); ++itr) {
 //         arguments.push_back(Client::Argument::parse(*itr));
 //     }
 
@@ -57,7 +113,8 @@ TEST(ClientHH, FeaturesParsing) {
 // }
 
 // TEST(ClientHH, ArgumentsParsing) {
-//     rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
+//     rapidjson::Document doc =
+//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
 
 //     const rapidjson::Value& obj = doc["arguments"];
 
@@ -67,9 +124,10 @@ TEST(ClientHH, FeaturesParsing) {
 // }
 
 // TEST(ClientHH, DownloadParsing) {
-//     rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
+//     rapidjson::Document doc =
+//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
 //     const rapidjson::Value &obj = doc["download"];
-   
+
 //     Client::Download download = Client::Download::parse(obj);
 
 //     ASSERT_EQ(download.id, "");
@@ -83,7 +141,8 @@ TEST(ClientHH, FeaturesParsing) {
 // }
 
 // TEST(ClientHH, ClientDownloadParsing) {
-//     rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
+//     rapidjson::Document doc =
+//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
 //     const rapidjson::Value &obj = doc["downloads"];
 
 //     Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
@@ -99,7 +158,8 @@ TEST(ClientHH, FeaturesParsing) {
 // }
 
 // TEST(ClientHH, JavaVersionParsing) {
-//     rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
+//     rapidjson::Document doc =
+//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
 //     const rapidjson::Value &obj = doc["javaVersion"];
 
 //     Client::JavaVersion version = Client::JavaVersion::parse(obj);
@@ -109,10 +169,13 @@ TEST(ClientHH, FeaturesParsing) {
 // }
 
 // TEST(ClientHH, LibraryDownloadParsing) {
-//     rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/library_download.json");
+//     rapidjson::Document doc =
+//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/library_download.json");
 //     const rapidjson::Value &obj = doc;
 
-//     Client::LibraryDownloads downloads = Client::LibraryDownloads::parse(obj);
+//     Client::LibraryDownloads downloads =
+//     Client::LibraryDownloads::parse(obj);
 
-//     ASSERT_EQ(downloads.artifact.sha1, "1227f9e0666314f9de41477e3ec277e542ed7f7b");
+//     ASSERT_EQ(downloads.artifact.sha1,
+//     "1227f9e0666314f9de41477e3ec277e542ed7f7b");
 // }

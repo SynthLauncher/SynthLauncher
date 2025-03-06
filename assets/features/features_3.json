@@ -1,0 +1,7 @@
+{
+  "features": {
+    "is_demo_user": false,
+    "has_quick_plays_support": true,
+    "is_quick_play_multiplayer": true
+  }
+}
