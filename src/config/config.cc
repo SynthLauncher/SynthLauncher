@@ -54,7 +54,7 @@ Config Config::parse(const rapidjson::Value &obj) {
 }
 
 Config Config::getConfig(fs::path path) {
-  auto json = parse_json_file(path);
+  auto json = rapidjson_utils::fromJson(path);
   Config config = Config::parse(json);
   config.path = path.string();
 
@@ -96,7 +96,7 @@ void Config::writeConfig() {
 
 Config Config::readMainConfig() { return getConfig(MAIN_PATH); };
 
-void Config::launch(AppConfig &config, Instance &instance) {
+void Config::launch(App::AppConfig &config, Instance &instance) {
   Client client = instance.readClient();
   std::vector<fs::path> paths = client.getLibrariesList(config);
 

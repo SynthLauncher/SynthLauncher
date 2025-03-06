@@ -8,9 +8,9 @@ TEST(OsHH, OsFromString) {
     std::string str2 = "windows";
     std::string str3 = "osx";
 
-    OperatingSystem::OS linux = OperatingSystem::os_from_string(str1);
-    OperatingSystem::OS windows = OperatingSystem::os_from_string(str2);
-    OperatingSystem::OS osx = OperatingSystem::os_from_string(str3);
+    OperatingSystem::OS linux = OperatingSystem::fromString(str1);
+    OperatingSystem::OS windows = OperatingSystem::fromString(str2);
+    OperatingSystem::OS osx = OperatingSystem::fromString(str3);
 
     ASSERT_EQ(linux, OperatingSystem::OS::Linux);
     ASSERT_EQ(windows, OperatingSystem::OS::Windows);

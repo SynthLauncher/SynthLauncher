@@ -1,5 +1,6 @@
 #pragma once
 
+#include "include/rapidjson/document.h"
 #include <algorithm>
 #include <array>
 #include <cstdlib>
@@ -11,7 +12,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include "include/rapidjson/document.h"
 
 #ifdef _WIN32
 #include <shlobj.h>
@@ -39,25 +39,35 @@ public:
   Java(std::string version, std::string path);
 
   std::string toJson() const;
-  static Java parse(const rapidjson::Value &obj);
+  static Java fromJson(const rapidjson::Value &obj);
+
   /// @brief Gets all available Java versions
   static std::vector<Java> getAvaliableJavaCups();
+
   /// @brief Sors Java cups by version
   static void sortCups(std::vector<Java> &cups);
+
   /// @brief Gets the Java home cup
-  static std::unique_ptr<Java> getJavaHomeCup();
+  static Java getJavaHomeCup();
+
   /// @brief Extracts the Java version from the Java cup
   static bool extractJavaVersion(Java &cup);
 
+  /// @brief Checks if the Java cup is valid or not 
+  static bool isValid(const Java& cup);
 private:
   /// @brief Compares two Java versions
   static int compareVersions(const std::string &v1, const std::string &v2);
+
   /// @brief Gets the common Linux Java cups
   static std::vector<Java> getCommonLinuxCups();
+
   /// @brief Gets the common Windows Java cups
   static std::vector<Java> getCommonWindowsCups();
+
   /// @brief Finds Java binaries in a directory
   static void findJavaBinaries(const fs::path &dir, std::vector<Java> &cups);
+
   /// @brief Gets Java cups from the PATH environment variable
   static std::vector<Java> getCupsFromPath();
 };

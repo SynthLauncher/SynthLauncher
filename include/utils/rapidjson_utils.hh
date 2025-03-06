@@ -9,8 +9,9 @@
 
 namespace fs = std::filesystem;
 
-/// @brief Converts a file data into a string 
-inline std::string read_file_to_string(const fs::path &path) {
+namespace rapidjson_utils {
+/// @brief Converts a file data into a string
+inline std::string toString(const fs::path &path) {
   std::ifstream file(path);
   if (!file)
     throw std::runtime_error("Failed to open file: " + path.string());
@@ -21,7 +22,7 @@ inline std::string read_file_to_string(const fs::path &path) {
   return buffer.str();
 }
 
-inline rapidjson::Document parse_json_file(const fs::path &path) {
+inline rapidjson::Document fromJson(const fs::path &path) {
   std::string json_string = read_file_to_string(path);
 
   rapidjson::Document doc;
@@ -31,3 +32,4 @@ inline rapidjson::Document parse_json_file(const fs::path &path) {
 
   return doc;
 }
+} // namespace rapidjson_utils

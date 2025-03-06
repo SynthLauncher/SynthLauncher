@@ -29,7 +29,7 @@ public:
   Instance(const std::string &name, const std::string &version);
   fs::path dir();
   void initDir();
-  void init(AppConfig &config);
+  void init(App::AppConfig &config);
   static Instance createInstance(const std::string &name,
                                  const std::string &version);
   static std::vector<Instance> readInstances();
@@ -39,8 +39,8 @@ public:
   static void addInstance(Instance& instance);
   Config getConfig();
   Client readClient();
-  void install(AppConfig &config);
-  void launch(AppConfig &config);
+  void install(App::AppConfig &config);
+  void launch(App::AppConfig &config);
   static Instance parse(const rapidjson::Value &obj);
   static std::string toJson(Instance &instance);
 };

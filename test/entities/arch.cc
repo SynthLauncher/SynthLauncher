@@ -9,10 +9,10 @@ TEST(ArchHH, ArchFromString) {
   std::string str3 = "x86";
   std::string str4 = "x86_64";
 
-  Architecture::Arch arm64 = Architecture::arch_from_string(str1);
-  Architecture::Arch arm = Architecture::arch_from_string(str2);
-  Architecture::Arch x86 = Architecture::arch_from_string(str3);
-  Architecture::Arch x86_64 = Architecture::arch_from_string(str4);
+  Architecture::Arch arm64 = Architecture::fromString(str1);
+  Architecture::Arch arm = Architecture::fromString(str2);
+  Architecture::Arch x86 = Architecture::fromString(str3);
+  Architecture::Arch x86_64 = Architecture::fromString(str4);
 
   ASSERT_EQ(arm64, Architecture::Arch::Arm64);
   ASSERT_EQ(arm, Architecture::Arch::Arm);

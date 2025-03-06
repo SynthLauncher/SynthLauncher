@@ -57,8 +57,8 @@ public:
     std::optional<Features> features;
 
     static Rule parse(const rapidjson::Value &obj);
-    bool osMatches(AppConfig &config);
-    static bool osMatches(AppConfig &config, std::vector<Rule> rules);
+    bool osMatches(App::AppConfig &config);
+    static bool osMatches(App::AppConfig &config, std::vector<Rule> rules);
   };
 
   struct Argument {
@@ -109,9 +109,9 @@ public:
     std::map<std::string, Download> classifiers;
 
     std::vector<uint8_t> fetchArtifact();
-    fs::path artifactPath(AppConfig &config);
+    fs::path artifactPath(App::AppConfig &config);
     std::vector<uint8_t> fetchNative(std::string nativeIndex);
-    fs::path nativePath(AppConfig &config, std::string nativeIndex);
+    fs::path nativePath(App::AppConfig &config, std::string nativeIndex);
 
     static LibraryDownloads parse(const rapidjson::Value &obj);
   };
@@ -131,9 +131,9 @@ public:
     LibraryExtractRules extract;
 
     static Library parse(const rapidjson::Value &obj);
-    void downloadArtifact(AppConfig &config);
-    void downloadNative(AppConfig &config);
-    void extractNative(AppConfig &config, fs::path instanceDir);
+    void downloadArtifact(App::AppConfig &config);
+    void downloadNative(App::AppConfig &config);
+    void extractNative(App::AppConfig &config, fs::path instanceDir);
   };
 
   struct LoggingClient {
@@ -170,9 +170,9 @@ public:
 
   static Client parse(const rapidjson::Value &obj);
 
-  void downloadAssets(AppConfig &config);
-  void downloadLibraries(AppConfig &config, fs::path instanceDir);
+  void downloadAssets(App::AppConfig &config);
+  void downloadLibraries(App::AppConfig &config, fs::path instanceDir);
   void downloadClientDownloads(fs::path instanceDir);
-  void download(AppConfig &config, fs::path instanceDir);
-  std::vector<fs::path> getLibrariesList(AppConfig &config);
+  void download(App::AppConfig &config, fs::path instanceDir);
+  std::vector<fs::path> getLibrariesList(App::AppConfig &config);
 };

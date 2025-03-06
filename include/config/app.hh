@@ -1,7 +1,5 @@
 #pragma once
 
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"
 #include "include/httplib.h"
@@ -11,7 +9,8 @@
 
 namespace fs = std::filesystem;
 
-
+/// @brief Contains the struct for the application config and functions to initialize the app
+namespace App {
 /// @brief Configuration for the application (folder structure, OS,
 /// architecture)
 struct AppConfig {
@@ -26,4 +25,5 @@ struct AppConfig {
 /// @brief Initializes the application configuration
 AppConfig initAppConfig();
 /// @brief Initializes the launcher directory
-void initLauncherDir(AppConfig &config);
+void initLauncherDir(const AppConfig &config);
+} // namespace App

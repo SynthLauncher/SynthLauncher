@@ -12,7 +12,7 @@ Instance Instance::parse(const rapidjson::Value &obj) {
   return instance;
 }
 
-std::string Instance::toJson(Instance &instance) { 
+std::string Instance::toJson(Instance &instance) {
   std::string json = "{";
   json += "\"name\": ";
   json += instance.name + ",";
@@ -22,7 +22,7 @@ std::string Instance::toJson(Instance &instance) {
   return json;
 }
 
-void Instance::init(AppConfig &config) {
+void Instance::init(App::AppConfig &config) {
   PARENT_DIR = config.DIR + "instances/";
   INSTANCE_FILE = config.DIR + "instances.json";
 }
@@ -38,7 +38,7 @@ Instance Instance::createInstance(const std::string &name,
                                   const std::string &version) {
   Instance instance = Instance(name, version);
 
-  Manifest manifest = Manifest::parse();
+  Manifest manifest = Manifest::fromJson();
 
   std::string url = "";
 
@@ -71,7 +71,7 @@ Instance Instance::createInstance(const std::string &name,
       throw std::runtime_error("Failed to open file for writing.");
 
     outFile << res->body;
-  } else 
+  } else
     throw std::runtime_error("Failed to download client.json!");
 
   // addInstance(instance);
@@ -82,15 +82,9 @@ Instance Instance::createInstance(const std::string &name,
 std::vector<Instance> Instance::readInstances() {
   std::vector<Instance> instances;
 
-  std::string instances_json = read_file_to_string(INSTANCE_FILE);
+  auto json = rapidjson_utils::fromJson(INSTANCE_FILE);
 
-  rapidjson::Document doc;
-  doc.Parse(instances_json.c_str());
-
-  if (doc.HasParseError())
-    throw std::runtime_error("Failed to parse instances.json");
-
-  for (const auto &instance : doc.GetArray())
+  for (const auto &instance : json.GetArray())
     instances.push_back(Instance::parse(instance));
 
   return instances;
@@ -114,33 +108,31 @@ void Instance::writeInstance(Instance &instance) {
   file.write(json.c_str(), sizeof(json));
 }
 
-void Instance::updateInstance(Instance &instance) { 
-  /* 
+void Instance::updateInstance(Instance &instance) {
+  /*
     I'll implement this later :)
   */
 }
 
-void Instance::addInstance(Instance& instance) {
+void Instance::addInstance(Instance &instance) {
   /*
     I'll implement this later
   */
 }
 
-Config Instance::getConfig() {
-
-}
+Config Instance::getConfig() {}
 
 Client Instance::readClient() {
   fs::path path = this->dir() / "client.json";
-  auto json = parse_json_file(path);
+  auto json = rapidjson_utils::fromJson(path);
 
-  return Client::parse(json); 
+  return Client::parse(json);
 }
 
-void Instance::install(AppConfig& config) {
+void Instance::install(App::AppConfig &config) {
   this->readClient().download(config, this->dir());
 }
 
-void Instance::launch(AppConfig &config) {
-  this->getConfig().launch(config, *this); 
+void Instance::launch(App::AppConfig &config) {
+  this->getConfig().launch(config, *this);
 }

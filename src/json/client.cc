@@ -1,4 +1,5 @@
 #include "include/json/client.hh"
+
 Client::Features Client::Features::parse(const rapidjson::Value &obj) {
   Features features;
 
@@ -24,12 +25,12 @@ Client::OSRules Client::OSRules::parse(const rapidjson::Value &obj) {
   OSRules rules;
 
   if (obj.HasMember("name"))
-    rules.name = OperatingSystem::os_from_string(obj["name"].GetString());
+    rules.name = OperatingSystem::fromString(obj["name"].GetString());
   else
     rules.name = std::nullopt;
 
   if (obj.HasMember("arch"))
-    rules.arch = Architecture::arch_from_string(obj["arch"].GetString());
+    rules.arch = Architecture::fromString(obj["arch"].GetString());
   else
     rules.arch = std::nullopt;
 
@@ -62,7 +63,7 @@ Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
   return rule;
 }
 
-bool Client::Rule::osMatches(AppConfig &config) {
+bool Client::Rule::osMatches(App::AppConfig &config) {
   bool match = true;
 
   if (os != std::nullopt) {
@@ -82,7 +83,7 @@ bool Client::Rule::osMatches(AppConfig &config) {
   return match;
 }
 
-bool Client::Rule::osMatches(AppConfig &config, std::vector<Rule> rules) {
+bool Client::Rule::osMatches(App::AppConfig &config, std::vector<Rule> rules) {
   for (auto &rule : rules) {
     if (!rule.osMatches(config))
       return false;
@@ -236,7 +237,7 @@ std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
   return artifact.fetch();
 }
 
-fs::path Client::LibraryDownloads::artifactPath(AppConfig &config) {
+fs::path Client::LibraryDownloads::artifactPath(App::AppConfig &config) {
   return config.LIBRARIES_DIR / artifact.path;
 }
 
@@ -245,7 +246,7 @@ Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
   return classifiers.at(nativeIndex).fetch();
 }
 
-fs::path Client::LibraryDownloads::nativePath(AppConfig &config,
+fs::path Client::LibraryDownloads::nativePath(App::AppConfig &config,
                                               std::string nativeIndex) {
   Download download = classifiers.at(nativeIndex);
 
@@ -322,7 +323,7 @@ Client::Library Client::Library::parse(const rapidjson::Value &obj) {
          itr != obj["natives"].MemberEnd(); ++itr) {
       auto &key = itr->name;
       auto &val = itr->value;
-      library.natives[OperatingSystem::os_from_string(key.GetString())] =
+      library.natives[OperatingSystem::fromString(key.GetString())] =
           val.GetString();
     }
   }
@@ -399,7 +400,7 @@ Client Client::parse(const rapidjson::Value &obj) {
   return client;
 }
 
-void Client::Library::downloadArtifact(AppConfig &config) {
+void Client::Library::downloadArtifact(App::AppConfig &config) {
   fs::path artifactPath = downloads.artifactPath(config);
 
   if (!fs::exists(artifactPath)) {
@@ -414,7 +415,7 @@ void Client::Library::downloadArtifact(AppConfig &config) {
   return;
 }
 
-void Client::Library::downloadNative(AppConfig &config) {
+void Client::Library::downloadNative(App::AppConfig &config) {
   std::string nativeIndex = natives[config.OS];
 
   if (nativeIndex != "") {
@@ -430,7 +431,8 @@ void Client::Library::downloadNative(AppConfig &config) {
   }
 }
 
-void Client::Library::extractNative(AppConfig &config, fs::path instanceDir) {
+void Client::Library::extractNative(App::AppConfig &config,
+                                    fs::path instanceDir) {
   std::string nativeIndex = natives[config.OS];
 
   fs::path nativeZipPath = downloads.nativePath(config, nativeIndex);
@@ -523,7 +525,7 @@ void Client::Library::extractNative(AppConfig &config, fs::path instanceDir) {
   return;
 }
 
-void Client::downloadAssets(AppConfig &config) {
+void Client::downloadAssets(App::AppConfig &config) {
   fs::path indexesDir = config.ASSETS_DIR / "indexes";
 
   if (!fs::exists(indexesDir))
@@ -539,11 +541,11 @@ void Client::downloadAssets(AppConfig &config) {
                indexFile.size());
   }
 
-  auto json = parse_json_file(indexPath);
-  AssetIndex asset = AssetIndex::parse(json);
+  auto json = rapidjson_utils::fromJson(indexPath);
+  AssetIndex asset = AssetIndex::fromJson(json);
 
   std::vector<AssetIndex::AssetObject> values;
-  for (const auto& pair : asset.objects) {
+  for (const auto &pair : asset.objects) {
     values.push_back(pair.second);
   }
 
@@ -552,7 +554,7 @@ void Client::downloadAssets(AppConfig &config) {
   }
 }
 
-void Client::downloadLibraries(AppConfig &config, fs::path instanceDir) {
+void Client::downloadLibraries(App::AppConfig &config, fs::path instanceDir) {
   for (Client::Library library : libraries) {
     if (!library.rules.empty()) {
       if (!Client::Rule::osMatches(config, library.rules))
@@ -572,17 +574,17 @@ void Client::downloadClientDownloads(fs::path instanceDir) {
     auto fetched = downloads.client.fetch();
 
     std::ofstream file(clientJarPath);
-    file.write(reinterpret_cast<const char*>(fetched.data()), fetched.size());
+    file.write(reinterpret_cast<const char *>(fetched.data()), fetched.size());
   }
 }
 
-void Client::download(AppConfig& config, fs::path instanceDir) {
+void Client::download(App::AppConfig &config, fs::path instanceDir) {
   downloadAssets(config);
   downloadLibraries(config, instanceDir);
   downloadClientDownloads(instanceDir);
 }
 
-std::vector<fs::path> Client::getLibrariesList(AppConfig &config) {
+std::vector<fs::path> Client::getLibrariesList(App::AppConfig &config) {
   std::vector<fs::path> pathList;
 
   for (Client::Library library : libraries) {

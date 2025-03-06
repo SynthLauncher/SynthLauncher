@@ -1,7 +1,7 @@
 #include "include/config/app.hh"
 
-AppConfig initAppConfig() {
-  AppConfig config;
+App::AppConfig initAppConfig() {
+  App::AppConfig config;
 
 // OS Configuration
 #ifdef _WIN32
@@ -46,7 +46,7 @@ AppConfig initAppConfig() {
   return config;
 }
 
-void initLauncherDir(AppConfig &config) {
+void App::initLauncherDir(const App::AppConfig &config) {
   if (!fs::exists(config.DIR))
     fs::create_directories(config.DIR);
   if (!fs::exists(config.ASSETS_DIR))

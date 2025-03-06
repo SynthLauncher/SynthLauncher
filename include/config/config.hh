@@ -37,7 +37,7 @@ public:
   Config(fs::path path);
   static Config getConfig(fs::path);
   Config readMainConfig();
-  void launch(AppConfig &config, Instance &instance);
+  void launch(App::AppConfig &config, Instance &instance);
 
 private:
   std::string path;

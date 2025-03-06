@@ -11,11 +11,11 @@ std::string AssetIndex::AssetObject::url() {
   return "https://resources.download.minecraft.net/" + this->id() + "/" + hash;
 }
 
-fs::path AssetIndex::AssetObject::path(AppConfig &config) {
+fs::path AssetIndex::AssetObject::path(App::AppConfig &config) {
   return config.ASSETS_DIR / "objects" / this->id() / hash;
 }
 
-void AssetIndex::AssetObject::fetch(AppConfig &config) {
+void AssetIndex::AssetObject::fetch(App::AppConfig &config) {
   fs::path asset_path = this->path(config);
 
   if (!fs::exists(asset_path)) {
@@ -31,23 +31,22 @@ void AssetIndex::AssetObject::fetch(AppConfig &config) {
         throw std::runtime_error("Failed to open file for writing.");
 
       outFile.write(res->body.data(), res->body.size());
-    } 
-    else 
+    } else
       throw std::runtime_error("Failed to download asset: " + hash);
   }
 }
 
-AssetIndex::AssetObject AssetIndex::AssetObject::parse(const rapidjson::Value &obj) {
+AssetIndex::AssetObject
+AssetIndex::AssetObject::fromJson(const rapidjson::Value &obj) {
   AssetIndex::AssetObject object;
 
-  if (obj.HasMember("hash")) {
+  if (obj.HasMember("hash"))
     object.hash = obj["hash"].GetString();
-  }
 
   return object;
 }
 
-AssetIndex AssetIndex::parse(const rapidjson::Value &obj) {
+AssetIndex AssetIndex::fromJson(const rapidjson::Value &obj) {
   AssetIndex idx;
 
   if (obj.IsObject()) {

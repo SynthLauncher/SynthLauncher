@@ -20,7 +20,7 @@ public:
   public:
     std::string release;
     std::string snapshot;
-    static Latest parse(const rapidjson::Value &obj);
+    static Latest fromJson(const rapidjson::Value &obj);
   };
 
   /// @brief Version of the game
@@ -31,11 +31,11 @@ public:
     std::string url;
     std::string time;
     std::string releaseTime;
-    static Version parse(const rapidjson::Value &obj);
+    static Version fromJson(const rapidjson::Value &obj);
   };
 
   Latest latest;
   std::vector<Version> versions;
   /// @brief Parses the manifest
-  static Manifest parse();
+  static Manifest fromJson();
 };

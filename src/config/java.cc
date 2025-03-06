@@ -3,7 +3,7 @@
 Java::Java() : version(""), path("") {}
 
 Java::Java(std::string version, std::string path)
-    : version(version), path(path){};
+    : version(version), path(path) {};
 
 std::string Java::toJson() const {
   std::string json = "java: {";
@@ -13,7 +13,7 @@ std::string Java::toJson() const {
   return json;
 }
 
-Java Java::parse(const rapidjson::Value &obj) {
+Java Java::fromJson(const rapidjson::Value &obj) {
   Java java;
   if (obj.HasMember("version"))
     java.version = obj["version"].GetString();
@@ -37,8 +37,8 @@ std::vector<Java> Java::getAvaliableJavaCups() {
   cups.insert(cups.end(), pathCups.begin(), pathCups.end());
 
   auto javaHome = getJavaHomeCup();
-  if (javaHome)
-    cups.push_back(*javaHome);
+  if (Java::isValid(javaHome))
+    cups.push_back(javaHome);
 
   for (auto it = cups.begin(); it != cups.end();) {
     if (it->version.empty()) {
@@ -147,21 +147,20 @@ int Java::compareVersions(const std::string &v1, const std::string &v2) {
   return 0;
 }
 
-std::unique_ptr<Java> Java::getJavaHomeCup() {
-  const char *javaHome = std::getenv("JAVA_HOME");
+Java Java::getJavaHomeCup() {
+  std::string javaHome = std::getenv("JAVA_HOME");
 
-  if (javaHome) {
+  if (!javaHome.empty()) {
     fs::path path =
         fs::path(javaHome) / "bin" / (IS_WINDOWS ? "java.exe" : "java");
 
     if (fs::exists(path)) {
-      std::unique_ptr<Java> result = std::make_unique<Java>("", path.string());
-
+      Java result = Java("", path.string());
       return result;
     }
   }
 
-  return nullptr;
+  return Java();
 }
 
 bool Java::extractJavaVersion(Java &cup) {
@@ -197,4 +196,10 @@ bool Java::extractJavaVersion(Java &cup) {
   }
 
   return false;
+}
+
+bool Java::isValid(const Java& cup) {
+  if (cup.path == "")
+    return false;
+  return true;
 }
