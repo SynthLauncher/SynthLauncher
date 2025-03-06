@@ -1,0 +1,8 @@
+{
+  "rules": [
+    {
+      "action": "allow",
+      "features": { "has_custom_resolution": true, "is_demo_user": true }
+    }
+  ]
+}

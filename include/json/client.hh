@@ -57,7 +57,8 @@ public:
     std::optional<OSRules> os;
     std::optional<Features> features;
 
-    static Rule parse(const rapidjson::Value &obj);
+    static Rule fromJson(const rapidjson::Value &obj);
+
     bool osMatches(App::AppConfig &config);
     static bool osMatches(App::AppConfig &config, std::vector<Rule> rules);
   };

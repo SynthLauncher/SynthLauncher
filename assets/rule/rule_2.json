@@ -1,0 +1,3 @@
+{
+  "rules": [{ "os": { "name": "windows", "version": "1.21" } }]
+}

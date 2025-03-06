@@ -83,19 +83,70 @@ TEST(ClientHH, OSRulesParsing_3) {
   ASSERT_EQ(rules.version, "");
 }
 
-// TEST(ClientHH, RuleParsing) {
-//     rapidjson::Document doc =
-//         rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
+TEST(ClientHH, RuleParsing_1) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/rule/rule_1.json");
 
-//     const rapidjson::Value &obj = doc["rule"];
+  const rapidjson::Value &arr = doc["rules"];
 
-//     Client::Rule rule = Client::Rule::parse(obj);
+  /*
+    !!! Important: "rules" has only 1 rule object and that is why we do it in
+    this hard coded way
+  */
+  for (const auto &obj : arr.GetArray()) {
+    Client::Rule rule = Client::Rule::fromJson(obj);
 
-//     ASSERT_EQ(rule.action, "allow");
-//     ASSERT_EQ(rule.os->name, OperatingSystem::OS::OSX);
-//     ASSERT_EQ(rule.os->arch, Architecture::Arch::X86_64);
-//     ASSERT_EQ(rule.features, std::nullopt);
-// }
+    ASSERT_EQ(rule.action, "allow");
+    ASSERT_EQ(rule.os->name, OperatingSystem::OS::OSX);
+    ASSERT_EQ(rule.os->arch, Architecture::Arch::X86_64);
+    ASSERT_EQ(rule.features, std::nullopt);
+  }
+}
+
+TEST(ClientHH, RuleParsing_2) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/rule/rule_2.json");
+
+  const rapidjson::Value &arr = doc["rules"];
+
+  /*
+    !!! Important: "rules" has only 1 rule object and that is why we do it in
+    this hard coded way
+  */
+  for (const auto &obj : arr.GetArray()) {
+    Client::Rule rule = Client::Rule::fromJson(obj);
+
+    ASSERT_EQ(rule.action, "disallow");
+    ASSERT_EQ(rule.os->name, OperatingSystem::OS::Windows);
+    ASSERT_EQ(rule.os->version, "1.21");
+    ASSERT_EQ(rule.os->arch, std::nullopt);
+    ASSERT_EQ(rule.features, std::nullopt);
+  }
+}
+
+TEST(ClientHH, RuleParsing_3) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/rule/rule_3.json");
+
+  const rapidjson::Value &arr = doc["rules"];
+
+  /*
+    !!! Important: "rules" has only 1 rule object and that is why we do it in
+    this hard coded way
+  */
+  for (const auto &obj : arr.GetArray()) {
+    Client::Rule rule = Client::Rule::fromJson(obj);
+
+    ASSERT_EQ(rule.action, "allow");
+    ASSERT_EQ(rule.features->isDemoUser, true);
+    ASSERT_EQ(rule.features->hasCustomResolution, true);
+    ASSERT_EQ(rule.features->hasQuickPlaysSupport, false);
+    ASSERT_EQ(rule.features->isQuickPlayMultiplayer, false);
+    ASSERT_EQ(rule.features->isQuickPlayRealms, false);
+    ASSERT_EQ(rule.features->isQuickPlaySingleplayer, false);
+    ASSERT_EQ(rule.os, std::nullopt);
+  }
+}
 
 // TEST(ClientHH, MultipleArgumentParsing) {
 //     rapidjson::Document doc =

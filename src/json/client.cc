@@ -42,7 +42,7 @@ Client::OSRules Client::OSRules::fromJson(const rapidjson::Value &obj) {
   return rules;
 }
 
-Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
+Client::Rule Client::Rule::fromJson(const rapidjson::Value &obj) {
   Client::Rule rule;
 
   if (obj.HasMember("action"))
@@ -105,7 +105,7 @@ Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
 
     if (obj.HasMember("rules")) {
       for (const auto &rule : obj["rules"].GetArray()) {
-        arg.rules.push_back(Rule::parse(rule));
+        arg.rules.push_back(Rule::fromJson(rule));
       }
     }
 
@@ -314,7 +314,7 @@ Client::Library Client::Library::parse(const rapidjson::Value &obj) {
 
   if (obj.HasMember("rules")) {
     for (const auto &rule : obj["rules"].GetArray()) {
-      library.rules.push_back(Rule::parse(rule));
+      library.rules.push_back(Rule::fromJson(rule));
     }
   }
 
