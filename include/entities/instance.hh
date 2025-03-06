@@ -10,8 +10,8 @@
 #include "include/config/app.hh"
 #include "include/httplib.h"
 #include "include/utils/httplib_utils.hh"
-#include "include/json/client.hh"
 #include "include/config/config.hh"
+#include "include/json/client.hh"
 
 namespace fs = std::filesystem;
 
@@ -38,7 +38,7 @@ public:
   Config getConfig();
   Client readClient();
   void install(AppConfig &config);
-  void launch();
+  void launch(AppConfig &config);
   static Instance parse(const rapidjson::Value &obj);
   static std::string toJson(Instance &instance);
 };

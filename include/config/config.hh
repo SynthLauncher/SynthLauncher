@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 #include <stdexcept>
 #include <filesystem>
 #include "include/rapidjson/document.h"
@@ -33,7 +34,7 @@ public:
   Config(fs::path path);
   static Config getConfig(fs::path);
   Config readMainConfig();
-  void launch(Instance &instance);
+  void launch(AppConfig &config, Instance &instance);
 
 private:
   std::string path;

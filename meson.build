@@ -24,6 +24,7 @@ src = [
   'src/json/assetindex.cc',
   'src/config/app.cc',
   'src/config/java.cc',
+  'src/config/config.cc',
   'src/entities/os.cc',
   'src/entities/arch.cc',
   'src/entities/instance.cc',

@@ -1,5 +1,4 @@
 #include "include/entities/instance.hh"
-#include <rapidjson/istreamwrapper.h>
 
 fs::path Instance::PARENT_DIR;
 fs::path Instance::INSTANCE_FILE;
@@ -142,6 +141,6 @@ void Instance::install(AppConfig& config) {
   this->readClient().download(config, this->dir());
 }
 
-void Instance::launch() {
-  this->getConfig().launch(*this); 
+void Instance::launch(AppConfig &config) {
+  this->getConfig().launch(config, *this); 
 }

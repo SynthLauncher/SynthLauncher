@@ -1,5 +1,6 @@
 #include "include/config/config.hh"
 
+
 uint64_t Config::getTotalPhysicalMemory() {
     #ifdef _WIN32
         MEMORYSTATUSEX status;
@@ -106,3 +107,79 @@ void Config::writeConfig() {
 Config Config::readMainConfig() { 
     return getConfig(MAIN_PATH);
 };
+
+
+void Config::launch(AppConfig &config, Instance &instance) {
+  Client client = instance.readClient();
+  std::vector<fs::path> paths = client.getLibrariesList(config);
+
+  std::string classpath;
+  char seperator =
+#ifdef _WIN32
+      ';';
+#else
+      ':';
+#endif
+
+    for (const auto& path : paths) {
+      classpath += path.string() + seperator;
+    }
+
+    classpath += (instance.dir() / "client.jar").string();
+
+    std::vector<std::string> args = {
+        getJava().path,
+        "-Djava.library.path=" + (instance.dir() / "natives").string(),
+        "-Xms" + std::to_string(getMinRam()) + "M",
+        "-Xmx" + std::to_string(getMaxRam()) + "M",
+        "-cp", classpath,
+        client.mainClass,
+        "--username", "testUser",
+        "--skinURL", "https://live.staticflickr.com/65535/53083566002_ae3333d694.jpg",
+        "--gameDir", instance.dir().string(),
+        "--assetsDir", config.ASSETS_DIR.string(),
+        "--assetIndex", client.assets,
+        "--version", client.id,
+        "--accessToken", "0"
+    };
+
+    std::cout << "Running:\n";
+    for (const auto& arg : args)
+      std::cout << arg << " ";
+    std::cout << '\n';
+
+/*
+    Maybe move this into a separate function?
+*/
+#ifdef _WIN32
+  std::string cmd;
+  for (const auto& arg : args) {
+    if (arg.find(' ') != std::string::npos) {
+      cmd += '"' + arg + "\" ";
+    }
+    else {
+      cmd += arg + " ";
+    }
+  }
+
+  STARTUPINFO si = {sizeof(si)};
+  PROCESS_INFORMATION pi;
+  si.dwFlags = STARTF_USESTDHANDLES;
+  si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+  si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+  si.hStdError = GetStdHandle(STD_OUTPUT_HANDLE);
+
+  if (!CreateProcess(nullptr, (wchar_t*)cmd.data(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &si, &pi)) {
+    std::cerr << "CreateProcess failed (" << GetLastError() << ")\n";
+    return;
+  }
+
+  WaitForSingleObject(pi.hProcess, INFINITE);
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+#else
+  /*
+    I'll write this later
+  */
+#endif
+}
