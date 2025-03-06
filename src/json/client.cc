@@ -1,6 +1,6 @@
 #include "include/json/client.hh"
 
-Client::Features Client::Features::parse(const rapidjson::Value &obj) {
+Client::Features Client::Features::fromJson(const rapidjson::Value &obj) {
   Features features;
 
   features.isDemoUser =
@@ -56,7 +56,7 @@ Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
     rule.os = std::nullopt;
 
   if (obj.HasMember("features"))
-    rule.features = Features::parse(obj["features"]);
+    rule.features = Features::fromJson(obj["features"]);
   else
     rule.features = std::nullopt;
 

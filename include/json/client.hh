@@ -1,4 +1,5 @@
 #pragma once
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include <cstdint>
 #include <filesystem>
@@ -30,14 +31,17 @@ namespace fs = std::filesystem;
 class Client {
 public:
   struct Features {
-    bool isDemoUser;
-    bool hasCustomResolution;
-    bool hasQuickPlaysSupport;
-    bool isQuickPlaySingleplayer;
-    bool isQuickPlayMultiplayer;
-    bool isQuickPlayRealms;
+    /* 
+      By default all of these must be false`
+    */
+    bool isDemoUser = false;
+    bool hasCustomResolution = false;
+    bool hasQuickPlaysSupport = false;
+    bool isQuickPlaySingleplayer = false;
+    bool isQuickPlayMultiplayer = false;
+    bool isQuickPlayRealms = false;
 
-    static Features parse(const rapidjson::Value &obj);
+    static Features fromJson(const rapidjson::Value &obj);
   };
 
   struct OSRules {
