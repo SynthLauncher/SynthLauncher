@@ -3,23 +3,20 @@
 #include <cstdint>
 #include <filesystem>
 #include <map>
+#include <minizip/unzip.h>
+#include <minizip/zip.h>
 #include <optional>
 #include <string>
 #include <vector>
-#include <minizip/unzip.h>
-#include <minizip/zip.h>
-#include <zlib.h>
-
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include "include/config/app.hh"
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"
-#include "include/utils/rapidjson_utils.hh"
+#include "include/json/assetindex.hh"
 #include "include/rapidjson/document.h"
 #include "include/rapidjson/error/en.h"
 #include "include/utils/httplib_utils.hh"
-#include "include/json/assetindex.hh"
+#include "include/utils/rapidjson_utils.hh"
 
 /*
   Windows macro was intefering with the GetObject function

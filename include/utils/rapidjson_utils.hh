@@ -23,7 +23,7 @@ inline std::string toString(const fs::path &path) {
 }
 
 inline rapidjson::Document fromJson(const fs::path &path) {
-  std::string json_string = read_file_to_string(path);
+  std::string json_string = toString(path);
 
   rapidjson::Document doc;
   doc.Parse(json_string.c_str());

@@ -42,12 +42,6 @@ test_src = [
   'test/entities/instance.cc'
 ]
 
-# Build dependencies
-zlib = dependency('zlib', required: false)
-if not zlib.found()
-  zlib = cpp.find_library('z', required: true)
-endif
-
 # Test dependency
 gtest = dependency('gtest', required: false)
 if not gtest.found()

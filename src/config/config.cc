@@ -48,7 +48,7 @@ Config Config::parse(const rapidjson::Value &obj) {
   if (obj.HasMember("max_ram"))
     config.max_ram = obj["max_ram"].GetUint64();
   if (obj.HasMember("java"))
-    config.java = Java::parse(obj["java"]);
+    config.java = Java::fromJson(obj["java"]);
 
   return config;
 }

@@ -4,11 +4,9 @@
 #include <gtest/gtest.h>
 
 TEST(InstanceHH, InstanceParsing) {
-  std::string json = read_file_to_string("E:/OneDrive/Desktop/SynthLauncher/assets/instances.json");
-  rapidjson::Document doc;
-  rapidjson::Value &arr = doc.Parse(json.c_str());
+  auto doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/instances.json");
 
-  Instance instance = Instance::parse(arr[0]);
+  Instance instance = Instance::parse(doc[0]);
 
   EXPECT_EQ(instance.name, "test");
   EXPECT_EQ(instance.version, "1.21.1");

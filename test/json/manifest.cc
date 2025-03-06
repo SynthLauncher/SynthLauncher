@@ -4,20 +4,20 @@
 #include "include/config/app.hh"
 
 TEST(ManifestHH, LatestParsing) { 
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
     const rapidjson::Value &obj = doc["latest"];
 
-    Manifest::Latest latest = Manifest::Latest::parse(obj);
+    Manifest::Latest latest = Manifest::Latest::fromJson(obj);
 
     ASSERT_EQ(latest.release, "1.21.4");
     ASSERT_EQ(latest.snapshot, "25w03a");
 }
 
 TEST(ManifestHH, VersionParsing) {
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json");
     const rapidjson::Value &obj = doc["versions"][0];
 
-    Manifest::Version version = Manifest::Version::parse(obj);
+    Manifest::Version version = Manifest::Version::fromJson(obj);
 
     ASSERT_EQ(version.id, "25w03a");
     ASSERT_EQ(version.type, "snapshot");
@@ -27,10 +27,10 @@ TEST(ManifestHH, VersionParsing) {
 }
 
 TEST(ManifestHH, ManifestParsing) {
-  AppConfig config = initAppConfig();
+  App::AppConfig config = App::initAppConfig();
   Manifest::PATH = "E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json";
 
-  Manifest manifest = Manifest::parse();
+  Manifest manifest = Manifest::fromJson();
 
   ASSERT_EQ(manifest.latest.release, "1.21.4");
   ASSERT_EQ(manifest.latest.snapshot, "25w03a");

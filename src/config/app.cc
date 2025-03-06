@@ -1,6 +1,6 @@
 #include "include/config/app.hh"
 
-App::AppConfig initAppConfig() {
+App::AppConfig App::initAppConfig() {
   App::AppConfig config;
 
 // OS Configuration

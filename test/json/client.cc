@@ -4,7 +4,7 @@
 
 TEST(ClientHH, FeaturesParsing) {
   rapidjson::Document doc =
-      parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/features.json");
+      rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/features.json");
   const rapidjson::Value &obj = doc["features"];
 
   Client::Features features = Client::Features::parse(obj);
@@ -16,7 +16,7 @@ TEST(ClientHH, FeaturesParsing) {
 
 TEST(ClientHH, OSRulesParsing) {
   rapidjson::Document doc =
-      parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/os_rules.json");
+      rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/os_rules.json");
   const rapidjson::Value &obj = doc["os"];
 
   Client::OSRules rules = Client::OSRules::parse(obj);
@@ -28,7 +28,7 @@ TEST(ClientHH, OSRulesParsing) {
 
 TEST(ClientHH, RuleParsing) {
     rapidjson::Document doc =
-        parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
+        rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/rule.json");
     
     const rapidjson::Value &obj = doc["rule"];
 
@@ -41,7 +41,7 @@ TEST(ClientHH, RuleParsing) {
 }
 
 TEST(ClientHH, MultipleArgumentParsing) {
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
 
     const rapidjson::Value &arr = doc.GetArray();
 
@@ -54,7 +54,7 @@ TEST(ClientHH, MultipleArgumentParsing) {
 }
 
 TEST(ClientHH, ArgumentsParsing) {
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
 
     const rapidjson::Value& obj = doc["arguments"];
 
@@ -64,7 +64,7 @@ TEST(ClientHH, ArgumentsParsing) {
 }
 
 TEST(ClientHH, DownloadParsing) {
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
     const rapidjson::Value &obj = doc["download"];
    
     Client::Download download = Client::Download::parse(obj);
@@ -80,7 +80,7 @@ TEST(ClientHH, DownloadParsing) {
 }
 
 TEST(ClientHH, ClientDownloadParsing) {
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
     const rapidjson::Value &obj = doc["downloads"];
 
     Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
@@ -96,7 +96,7 @@ TEST(ClientHH, ClientDownloadParsing) {
 }
 
 TEST(ClientHH, JavaVersionParsing) {
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
     const rapidjson::Value &obj = doc["javaVersion"];
 
     Client::JavaVersion version = Client::JavaVersion::parse(obj);
@@ -106,7 +106,7 @@ TEST(ClientHH, JavaVersionParsing) {
 }
 
 TEST(ClientHH, LibraryDownloadParsing) {
-    rapidjson::Document doc = parse_json_file("E:/OneDrive/Desktop/SynthLauncher/assets/library_download.json");
+    rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/library_download.json");
     const rapidjson::Value &obj = doc;
 
     Client::LibraryDownloads downloads = Client::LibraryDownloads::parse(obj);
