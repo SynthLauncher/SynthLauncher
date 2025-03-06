@@ -4,9 +4,11 @@
 
 #include "include/config/app.hh"
 #include "include/httplib.h"
+#include "include/rapidjson/document.h"
 #include <filesystem>
 #include <map>
 #include <string>
+
 
 namespace fs = std::filesystem;
 
@@ -26,8 +28,9 @@ public:
     fs::path path(AppConfig &config);
     /// @brief Fetches the asset
     void fetch(AppConfig &config);
+    static AssetObject parse(const rapidjson::Value &obj);
   };
 
-  static 
+  static AssetIndex parse(const rapidjson::Value &obj);
   std::map<std::string, AssetObject> objects;
 };

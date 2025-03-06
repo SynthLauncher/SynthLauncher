@@ -36,3 +36,25 @@ void AssetIndex::AssetObject::fetch(AppConfig &config) {
       throw std::runtime_error("Failed to download asset: " + hash);
   }
 }
+
+AssetIndex::AssetObject AssetIndex::AssetObject::parse(const rapidjson::Value &obj) {
+  AssetIndex::AssetObject object;
+
+  if (obj.HasMember("hash")) {
+    object.hash = obj["hash"].GetString();
+  }
+
+  return object;
+}
+
+AssetIndex AssetIndex::parse(const rapidjson::Value &obj) {
+  AssetIndex idx;
+
+  if (obj.IsObject()) {
+    AssetIndex::AssetObject assetObject;
+    assetObject.hash = obj["hash"].GetString();
+    idx.objects[obj.GetString()] = assetObject;
+  }
+
+  return idx;
+}

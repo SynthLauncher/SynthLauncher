@@ -540,5 +540,60 @@ void Client::downloadAssets(AppConfig &config) {
   }
 
   auto json = parse_json_file(indexPath);
+  AssetIndex asset = AssetIndex::parse(json);
 
+  std::vector<AssetIndex::AssetObject> values;
+  for (const auto& pair : asset.objects) {
+    values.push_back(pair.second);
+  }
+
+  for (AssetIndex::AssetObject object : values) {
+    object.fetch(config);
+  }
+}
+
+void Client::downloadLibraries(AppConfig &config, fs::path instanceDir) {
+  for (Client::Library library : libraries) {
+    if (!library.rules.empty()) {
+      if (!Client::Rule::osMatches(config, library.rules))
+        continue;
+    }
+
+    library.downloadArtifact(config);
+    library.downloadNative(config);
+    library.extractNative(config, instanceDir);
+  }
+}
+
+void Client::downloadClientDownloads(fs::path instanceDir) {
+  fs::path clientJarPath = instanceDir / "client.jar";
+
+  if (!fs::exists(clientJarPath)) {
+    auto fetched = downloads.client.fetch();
+
+    std::ofstream file(clientJarPath);
+    file.write(reinterpret_cast<const char*>(fetched.data()), fetched.size());
+  }
+}
+
+void Client::download(AppConfig& config, fs::path instanceDir) {
+  downloadAssets(config);
+  downloadLibraries(config, instanceDir);
+  downloadClientDownloads(instanceDir);
+}
+
+std::vector<fs::path> Client::getLibrariesList(AppConfig &config) {
+  std::vector<fs::path> pathList;
+
+  for (Client::Library library : libraries) {
+    if (!library.rules.empty()) {
+      if (!Rule::osMatches(config, library.rules)) {
+        continue;
+      }
+
+      pathList.push_back(library.downloads.artifactPath(config));
+    }
+  }
+
+  return pathList;
 }

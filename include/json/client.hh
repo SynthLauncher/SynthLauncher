@@ -58,7 +58,7 @@ public:
 
     static Rule parse(const rapidjson::Value &obj);
     bool osMatches(AppConfig &config);
-    bool osMatches(AppConfig &config, std::vector<Rule> rules);
+    static bool osMatches(AppConfig &config, std::vector<Rule> rules);
   };
 
   struct Argument {
@@ -171,8 +171,8 @@ public:
   static Client parse(const rapidjson::Value &obj);
 
   void downloadAssets(AppConfig &config);
-  void downloadLibraries(fs::path instanceDir);
+  void downloadLibraries(AppConfig &config, fs::path instanceDir);
   void downloadClientDownloads(fs::path instanceDir);
-  void download(fs::path instanceDir);
-  std::vector<fs::path> getLibrariesList();
+  void download(AppConfig &config, fs::path instanceDir);
+  std::vector<fs::path> getLibrariesList(AppConfig &config);
 };
