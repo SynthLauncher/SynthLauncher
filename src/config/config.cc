@@ -1,54 +1,56 @@
 #include "include/config/config.hh"
 
+fs::path Config::MAIN_PATH = "";
 
 uint64_t Config::getTotalPhysicalMemory() {
-    #ifdef _WIN32
-        MEMORYSTATUSEX status;
-        status.dwLength = sizeof(status);
-        if (!GlobalMemoryStatusEx(&status)) {
-            throw std::runtime_error("Failed to get memory status");
-        }
-        return status.ullTotalPhys;
-    #elif defined(__APPLE__)
-        uint64_t mem;
-        size_t len = sizeof(mem);
-        int mib[2] = {CTL_HW, HW_MEMSIZE};
-        if (sysctl(mib, 2, &mem, &len, NULL, 0) == -1) {
-            throw std::runtime_error("Failed to get memory status");
-        }
-        return mem;
-    #else
-        struct sysinfo info;
-        if (sysinfo(&info) != 0) {
-            throw std::runtime_error("Failed to get memory status");
-        }
-        return static_cast<uint64_t>(info.totalram) * info.mem_unit;
-    #endif
+#ifdef _WIN32
+  MEMORYSTATUSEX status;
+  status.dwLength = sizeof(status);
+  if (!GlobalMemoryStatusEx(&status)) {
+    throw std::runtime_error("Failed to get memory status");
+  }
+  return status.ullTotalPhys;
+#elif defined(__APPLE__)
+  uint64_t mem;
+  size_t len = sizeof(mem);
+  int mib[2] = {CTL_HW, HW_MEMSIZE};
+  if (sysctl(mib, 2, &mem, &len, NULL, 0) == -1) {
+    throw std::runtime_error("Failed to get memory status");
+  }
+  return mem;
+#else
+  struct sysinfo info;
+  if (sysinfo(&info) != 0) {
+    throw std::runtime_error("Failed to get memory status");
+  }
+  return static_cast<uint64_t>(info.totalram) * info.mem_unit;
+#endif
 }
 
-Config::Config(fs::path path) : java(), path(path.string()), min_ram(0), max_ram(0) {}
+Config::Config(fs::path path)
+    : java(), path(path.string()), min_ram(0), max_ram(0) {}
 
-std::string Config::toJson() { 
-    std::string json = "\"path\": ";
-    json += this->path + ", ";
-    json += "\"min_ram\": " + std::to_string(this->min_ram) + ", ";
-    json += "\"max_ram\": " + std::to_string(this->max_ram) + ", ";
-    json += this->java.toJson();
-    return json;
+std::string Config::toJson() {
+  std::string json = "\"path\": ";
+  json += this->path + ", ";
+  json += "\"min_ram\": " + std::to_string(this->min_ram) + ", ";
+  json += "\"max_ram\": " + std::to_string(this->max_ram) + ", ";
+  json += this->java.toJson();
+  return json;
 }
 
 Config Config::parse(const rapidjson::Value &obj) {
-    Config config;
-    if (obj.HasMember("path"))
-        config.path = obj["path"].GetString();
-    if (obj.HasMember("min_ram")) 
-        config.min_ram = obj["min_ram"].GetUint64();
-    if (obj.HasMember("max_ram")) 
-        config.max_ram = obj["max_ram"].GetUint64();
-    if (obj.HasMember("java")) 
-        config.java = Java::parse(obj["java"]);
+  Config config;
+  if (obj.HasMember("path"))
+    config.path = obj["path"].GetString();
+  if (obj.HasMember("min_ram"))
+    config.min_ram = obj["min_ram"].GetUint64();
+  if (obj.HasMember("max_ram"))
+    config.max_ram = obj["max_ram"].GetUint64();
+  if (obj.HasMember("java"))
+    config.java = Java::parse(obj["java"]);
 
-    return config;
+  return config;
 }
 
 Config Config::getConfig(fs::path path) {
@@ -59,55 +61,40 @@ Config Config::getConfig(fs::path path) {
   return config;
 }
 
-Config::Config() { 
-    uint64_t total = getTotalPhysicalMemory();
+Config::Config() {
+  uint64_t total = getTotalPhysicalMemory();
 
-    this->max_ram = total / 4 / 1024 / 1024;
-    this->min_ram = this->max_ram / 2;
+  this->max_ram = total / 4 / 1024 / 1024;
+  this->min_ram = this->max_ram / 2;
 
-    this->java = Java::getAvaliableJavaCups()[0];
-    this->path = MAIN_PATH.string();
+  this->java = Java::getAvaliableJavaCups()[0];
+  this->path = MAIN_PATH.string();
 }
 
-uint64_t Config::getMinRam() const {
-    return this->min_ram;
+uint64_t Config::getMinRam() const { return this->min_ram; }
+
+uint64_t Config::getMaxRam() const { return this->max_ram; }
+
+Java Config::getJava() const { return this->java; }
+
+void Config::setMinRam(uint64_t min_ram) { this->min_ram = min_ram; }
+
+void Config::setMaxRam(uint64_t max_ram) { this->max_ram = max_ram; }
+
+void Config::setJava(Java java) { this->java = java; }
+
+void Config::writeConfig() {
+  std::string json = this->toJson();
+
+  std::ofstream file(this->path, std::ios::out | std::ios::trunc);
+  if (!file) {
+    throw std::runtime_error("Failed to open file: " + this->path);
+  }
+
+  file << json;
 }
 
-uint64_t Config::getMaxRam() const {
-    return this->max_ram;
-}
-
-Java Config::getJava() const {
-    return this->java;
-}
-
-void Config::setMinRam(uint64_t min_ram) {
-    this->min_ram = min_ram;
-}
-
-void Config::setMaxRam(uint64_t max_ram) {
-    this->max_ram = max_ram;
-}
-
-void Config::setJava(Java java) {
-    this->java = java;
-}
-
-void Config::writeConfig() { 
-    std::string json = this->toJson();
-
-    std::ofstream file(this->path, std::ios::out | std::ios::trunc);
-    if (!file) {
-        throw std::runtime_error("Failed to open file: " + this->path);
-    }
-
-    file << json;
-}
-
-Config Config::readMainConfig() { 
-    return getConfig(MAIN_PATH);
-};
-
+Config Config::readMainConfig() { return getConfig(MAIN_PATH); };
 
 void Config::launch(AppConfig &config, Instance &instance) {
   Client client = instance.readClient();
@@ -121,55 +108,80 @@ void Config::launch(AppConfig &config, Instance &instance) {
       ':';
 #endif
 
-    for (const auto& path : paths) {
-      classpath += path.string() + seperator;
-    }
+  for (const auto &path : paths) {
+    classpath += path.string() + seperator;
+  }
 
-    classpath += (instance.dir() / "client.jar").string();
+  classpath += (instance.dir() / "client.jar").string();
 
-    std::vector<std::string> args = {
-        getJava().path,
-        "-Djava.library.path=" + (instance.dir() / "natives").string(),
-        "-Xms" + std::to_string(getMinRam()) + "M",
-        "-Xmx" + std::to_string(getMaxRam()) + "M",
-        "-cp", classpath,
-        client.mainClass,
-        "--username", "testUser",
-        "--skinURL", "https://live.staticflickr.com/65535/53083566002_ae3333d694.jpg",
-        "--gameDir", instance.dir().string(),
-        "--assetsDir", config.ASSETS_DIR.string(),
-        "--assetIndex", client.assets,
-        "--version", client.id,
-        "--accessToken", "0"
-    };
+  std::vector<std::string> args = {
+      getJava().path,
+      "-Djava.library.path=" + (instance.dir() / "natives").string(),
+      "-Xms" + std::to_string(getMinRam()) + "M",
+      "-Xmx" + std::to_string(getMaxRam()) + "M",
+      "-cp",
+      classpath,
+      client.mainClass,
+      "--username",
+      "testUser",
+      "--skinURL",
+      "https://live.staticflickr.com/65535/53083566002_ae3333d694.jpg",
+      "--gameDir",
+      instance.dir().string(),
+      "--assetsDir",
+      config.ASSETS_DIR.string(),
+      "--assetIndex",
+      client.assets,
+      "--version",
+      client.id,
+      "--accessToken",
+      "0"};
 
-    std::cout << "Running:\n";
-    for (const auto& arg : args)
-      std::cout << arg << " ";
-    std::cout << '\n';
+  std::cout << "Running:\n";
+  for (const auto &arg : args)
+    std::cout << arg << " ";
+  std::cout << '\n';
 
 /*
     Maybe move this into a separate function?
 */
 #ifdef _WIN32
   std::string cmd;
-  for (const auto& arg : args) {
+  for (const auto &arg : args) {
     if (arg.find(' ') != std::string::npos) {
       cmd += '"' + arg + "\" ";
-    }
-    else {
+    } else {
       cmd += arg + " ";
     }
   }
 
-  STARTUPINFO si = {sizeof(si)};
+  // Convert UTF-8 command line to UTF-16
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, cmd.c_str(), -1, nullptr, 0);
+  std::wstring wcmd;
+  wcmd.resize(wlen);
+  MultiByteToWideChar(CP_UTF8, 0, cmd.c_str(), -1, wcmd.data(), wlen);
+
+  // Create modifiable buffer for Windows API
+  std::vector<wchar_t> cmdLine(wcmd.size() + 1);
+  std::copy(wcmd.begin(), wcmd.end(), cmdLine.begin());
+  cmdLine[wcmd.size()] = L'\0';
+
+  STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi;
   si.dwFlags = STARTF_USESTDHANDLES;
   si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
   si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
   si.hStdError = GetStdHandle(STD_OUTPUT_HANDLE);
 
-  if (!CreateProcess(nullptr, (wchar_t*)cmd.data(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &si, &pi)) {
+  if (!CreateProcessW(nullptr,        // Application name
+                      cmdLine.data(), // Command line (wide version)
+                      nullptr,        // Process attributes
+                      nullptr,        // Thread attributes
+                      TRUE,           // Inherit handles
+                      0,              // Creation flags
+                      nullptr,        // Environment
+                      nullptr,        // Current directory
+                      &si, &pi)) {
     std::cerr << "CreateProcess failed (" << GetLastError() << ")\n";
     return;
   }

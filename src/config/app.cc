@@ -1,6 +1,6 @@
 #include "include/config/app.hh"
 
-AppConfig initializeAppConfig() {
+AppConfig initAppConfig() {
   AppConfig config;
 
 // OS Configuration
@@ -46,7 +46,7 @@ AppConfig initializeAppConfig() {
   return config;
 }
 
-void initializeLauncherDir(AppConfig &config) {
+void initLauncherDir(AppConfig &config) {
   if (!fs::exists(config.DIR))
     fs::create_directories(config.DIR);
   if (!fs::exists(config.ASSETS_DIR))

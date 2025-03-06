@@ -15,6 +15,8 @@
 
 namespace fs = std::filesystem;
 
+class Config;
+
 class Instance {
 public:
   static fs::path PARENT_DIR;

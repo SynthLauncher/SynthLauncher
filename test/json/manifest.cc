@@ -27,7 +27,7 @@ TEST(ManifestHH, VersionParsing) {
 }
 
 TEST(ManifestHH, ManifestParsing) {
-  AppConfig config = initializeAppConfig();
+  AppConfig config = initAppConfig();
   Manifest::PATH = "E:/OneDrive/Desktop/SynthLauncher/assets/version_manifest.json";
 
   Manifest manifest = Manifest::parse();

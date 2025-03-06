@@ -10,6 +10,7 @@
 #include "include/entities/instance.hh"
 
 #ifdef _WIN32
+#include <winsock2.h>
 #include <windows.h>
 #elif defined(__APPLE__)
 #include <sys/sysctl.h>
@@ -18,6 +19,8 @@
 #endif
 
 namespace fs = std::filesystem;
+
+class Instance;
 
 class Config {
 public:

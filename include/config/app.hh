@@ -9,8 +9,8 @@
 #include <filesystem>
 #include <string>
 
-
 namespace fs = std::filesystem;
+
 
 /// @brief Configuration for the application (folder structure, OS,
 /// architecture)
@@ -24,6 +24,6 @@ struct AppConfig {
 };
 
 /// @brief Initializes the application configuration
-AppConfig initializeAppConfig();
+AppConfig initAppConfig();
 /// @brief Initializes the launcher directory
-void initializeLauncherDir(AppConfig &config);
+void initLauncherDir(AppConfig &config);

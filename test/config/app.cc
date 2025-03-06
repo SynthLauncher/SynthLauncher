@@ -4,7 +4,7 @@
 #include <iostream>
 
 TEST(AppHH, AppConfigInitialization) {
-  AppConfig config = initializeAppConfig();
+  AppConfig config = initAppConfig();
 
 #ifdef _WIN32
   ASSERT_EQ(config.OS, OperatingSystem::OS::Windows);
@@ -29,8 +29,8 @@ TEST(AppHH, AppConfigInitialization) {
 }
 
 TEST(AppHH, LauncherDirectoryInitialization) {
-  AppConfig config = initializeAppConfig();
-  initializeLauncherDir(config);
+  AppConfig config = initAppConfig();
+  initLauncherDir(config);
 
   ASSERT_TRUE(fs::exists(config.DIR));
   ASSERT_TRUE(fs::exists(config.ASSETS_DIR));
