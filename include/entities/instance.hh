@@ -11,6 +11,7 @@
 #include "include/httplib.h"
 #include "include/utils/httplib_utils.hh"
 #include "include/json/client.hh"
+#include "include/config/config.hh"
 
 namespace fs = std::filesystem;
 
@@ -31,11 +32,13 @@ public:
                                  const std::string &version);
   static std::vector<Instance> readInstances();
   static Instance getInstance(const std::string &name);
-  static void writeInstance(std::vector<Instance>& instances);
+  static void writeInstance(Instance& instance);
   static void updateInstance(Instance& instance);
   static void addInstance(Instance& instance);
+  Config getConfig();
   Client readClient();
-  void install();
+  void install(AppConfig &config);
   void launch();
   static Instance parse(const rapidjson::Value &obj);
+  static std::string toJson(Instance &instance);
 };

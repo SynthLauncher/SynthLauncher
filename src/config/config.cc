@@ -101,8 +101,6 @@ void Config::writeConfig() {
     }
 
     file << json;
-
-    return; 
 }
 
 Config Config::readMainConfig() { 

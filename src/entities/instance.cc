@@ -13,6 +13,16 @@ Instance Instance::parse(const rapidjson::Value &obj) {
   return instance;
 }
 
+std::string Instance::toJson(Instance &instance) { 
+  std::string json = "{";
+  json += "\"name\": ";
+  json += instance.name + ",";
+  json += "\"version\": ";
+  json += instance.version;
+
+  return json;
+}
+
 void Instance::init(AppConfig &config) {
   PARENT_DIR = config.DIR + "instances/";
   INSTANCE_FILE = config.DIR + "instances.json";
@@ -96,4 +106,42 @@ Instance Instance::getInstance(const std::string &name) {
   }
 
   throw std::runtime_error("Instance not found!");
+}
+
+void Instance::writeInstance(Instance &instance) {
+  std::string json = Instance::toJson(instance);
+
+  std::ofstream file(INSTANCE_FILE);
+  file.write(json.c_str(), sizeof(json));
+}
+
+void Instance::updateInstance(Instance &instance) { 
+  /* 
+    I'll implement this later :)
+  */
+}
+
+void Instance::addInstance(Instance& instance) {
+  /*
+    I'll implement this later
+  */
+}
+
+Config Instance::getConfig() {
+
+}
+
+Client Instance::readClient() {
+  fs::path path = this->dir() / "client.json";
+  auto json = parse_json_file(path);
+
+  return Client::parse(json); 
+}
+
+void Instance::install(AppConfig& config) {
+  this->readClient().download(config, this->dir());
+}
+
+void Instance::launch() {
+  this->getConfig().launch(*this); 
 }

@@ -6,6 +6,7 @@
 #include "include/rapidjson/document.h"
 #include "include/config/java.hh"
 #include "include/utils/rapidjson_utils.hh"
+#include "include/entities/instance.hh"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -32,6 +33,7 @@ public:
   Config(fs::path path);
   static Config getConfig(fs::path);
   Config readMainConfig();
+  void launch(Instance &instance);
 
 private:
   std::string path;
