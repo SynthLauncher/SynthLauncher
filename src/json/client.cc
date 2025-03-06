@@ -21,7 +21,7 @@ Client::Features Client::Features::fromJson(const rapidjson::Value &obj) {
   return features;
 }
 
-Client::OSRules Client::OSRules::parse(const rapidjson::Value &obj) {
+Client::OSRules Client::OSRules::fromJson(const rapidjson::Value &obj) {
   OSRules rules;
 
   if (obj.HasMember("name"))
@@ -51,7 +51,7 @@ Client::Rule Client::Rule::parse(const rapidjson::Value &obj) {
     rule.action = "disallow";
 
   if (obj.HasMember("os"))
-    rule.os = OSRules::parse(obj["os"]);
+    rule.os = OSRules::fromJson(obj["os"]);
   else
     rule.os = std::nullopt;
 

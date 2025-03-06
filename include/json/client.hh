@@ -49,7 +49,7 @@ public:
     std::optional<Architecture::Arch> arch;
     std::string version;
 
-    static OSRules parse(const rapidjson::Value &obj);
+    static OSRules fromJson(const rapidjson::Value &obj);
   };
 
   struct Rule {
