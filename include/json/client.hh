@@ -19,11 +19,7 @@
 #include "include/utils/httplib_utils.hh"
 #include "include/utils/rapidjson_utils.hh"
 
-/*
-  Windows macro was intefering with the GetObject function
-  from the rapidjson library. This undefines the macro
-*/
-#undef GetObject
+
 
 namespace fs = std::filesystem;
 
@@ -112,17 +108,21 @@ public:
 
     std::vector<uint8_t> fetchArtifact();
     fs::path artifactPath(App::AppConfig &config);
+
     std::vector<uint8_t> fetchNative(std::string nativeIndex);
     fs::path nativePath(App::AppConfig &config, std::string nativeIndex);
 
-    static LibraryDownloads parse(const rapidjson::Value &obj);
+    static LibraryDownloads fromJson(const rapidjson::Value &obj);
   };
 
+  /*
+    I have to further investigate about this
+  */
   struct LibraryExtractRules {
     std::vector<std::string> exclude;
     std::vector<std::string> include;
 
-    static LibraryExtractRules parse(const rapidjson::Value &obj);
+    static LibraryExtractRules fromJson(const rapidjson::Value &obj);
   };
 
   struct Library {
@@ -132,7 +132,7 @@ public:
     std::map<OperatingSystem::OS, std::string> natives;
     LibraryExtractRules extract;
 
-    static Library parse(const rapidjson::Value &obj);
+    static Library fromJson(const rapidjson::Value &obj);
     void downloadArtifact(App::AppConfig &config);
     void downloadNative(App::AppConfig &config);
     void extractNative(App::AppConfig &config, fs::path instanceDir);
@@ -143,13 +143,13 @@ public:
     Download file;
     std::string type;
 
-    static LoggingClient parse(const rapidjson::Value &obj);
+    static LoggingClient fromJson(const rapidjson::Value &obj);
   };
 
   struct LoggingInfo {
     LoggingClient client;
 
-    static LoggingInfo parse(const rapidjson::Value &obj);
+    static LoggingInfo fromJson(const rapidjson::Value &obj);
   };
 
   /*
@@ -170,7 +170,7 @@ public:
 
   std::string type;
 
-  static Client parse(const rapidjson::Value &obj);
+  static Client fromJson(const rapidjson::Value &obj);
 
   void downloadAssets(App::AppConfig &config);
   void downloadLibraries(App::AppConfig &config, fs::path instanceDir);

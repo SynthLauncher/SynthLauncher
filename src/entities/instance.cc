@@ -126,7 +126,7 @@ Client Instance::readClient() {
   fs::path path = this->dir() / "client.json";
   auto json = rapidjson_utils::fromJson(path);
 
-  return Client::parse(json);
+  return Client::fromJson(json);
 }
 
 void Instance::install(App::AppConfig &config) {

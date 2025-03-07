@@ -296,4 +296,30 @@ TEST(ClientHH, JavaVersionParsing) {
     ASSERT_EQ(version.majorVersion, 21);
 }
 
+TEST(ClientHH, LibraryDownloadsParsing) {
+  rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/library_download/library_download.json");
+  const rapidjson::Value &obj = doc["downloads"];
 
+  Client::LibraryDownloads downloads = Client::LibraryDownloads::fromJson(obj);
+
+  ASSERT_EQ(downloads.classifiers["natives-linux"].path, "net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-linux.jar");
+  ASSERT_EQ(downloads.classifiers["natives-linux"].sha1, "7ff832a6eb9ab6a767f1ade2b548092d0fa64795");
+  ASSERT_EQ(downloads.classifiers["natives-linux"].size, 10362);
+  ASSERT_EQ(downloads.classifiers["natives-linux"].url, "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-linux.jar");
+
+  ASSERT_EQ(downloads.classifiers["natives-osx"].path, "net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-osx.jar");
+  ASSERT_EQ(downloads.classifiers["natives-osx"].sha1, "53f9c919f34d2ca9de8c51fc4e1e8282029a9232");
+  ASSERT_EQ(downloads.classifiers["natives-osx"].size, 12186);
+  ASSERT_EQ(downloads.classifiers["natives-osx"].url, "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-osx.jar");
+
+  ASSERT_EQ(downloads.classifiers["natives-windows"].path, "net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar");
+  ASSERT_EQ(downloads.classifiers["natives-windows"].sha1, "385ee093e01f587f30ee1c8a2ee7d408fd732e16");
+  ASSERT_EQ(downloads.classifiers["natives-windows"].size, 155179);
+  ASSERT_EQ(downloads.classifiers["natives-windows"].url, "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar");
+
+  ASSERT_EQ(downloads.artifact.path, "ca/weblite/java-objc-bridge/1.1/java-objc-bridge-1.1.jar");
+  ASSERT_EQ(downloads.artifact.sha1,
+            "1227f9e0666314f9de41477e3ec277e542ed7f7b");
+  ASSERT_EQ(downloads.artifact.size, 1330045);
+  ASSERT_EQ(downloads.artifact.url, "https://libraries.minecraft.net/ca/weblite/java-objc-bridge/1.1/java-objc-bridge-1.1.jar");
+}

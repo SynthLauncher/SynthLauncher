@@ -76,15 +76,15 @@ Client::Argument Client::Argument::fromJson(const rapidjson::Value &val) {
     const auto &obj = val;
 
     if (obj.HasMember("rules")) {
-      for (const auto &rule : obj["rules"].GetArray()) 
+      for (const auto &rule : obj["rules"].GetArray())
         arg.rules.push_back(Rule::fromJson(rule));
     }
 
     if (obj.HasMember("value")) {
-      if (obj["value"].IsString()) 
+      if (obj["value"].IsString())
         arg.value = obj["value"].GetString();
       else if (obj["value"].IsArray()) {
-        for (const auto &val : obj["value"].GetArray()) 
+        for (const auto &val : obj["value"].GetArray())
           arg.values.push_back(val.GetString());
       }
     }
@@ -97,13 +97,13 @@ Client::Arguments Client::Arguments::fromJson(const rapidjson::Value &obj) {
   Arguments args;
 
   if (obj.HasMember("game")) {
-    for (const auto &arg : obj["game"].GetArray()) 
+    for (const auto &arg : obj["game"].GetArray())
       args.game.push_back(Argument::fromJson(arg));
   }
 
   if (obj.HasMember("jvm")) {
-    for (const auto &arg : obj["jvm"].GetArray()) 
-      args.jvm.push_back(Argument::fromJson(arg));    
+    for (const auto &arg : obj["jvm"].GetArray())
+      args.jvm.push_back(Argument::fromJson(arg));
   }
 
   return args;
@@ -189,25 +189,19 @@ Client::JavaVersion Client::JavaVersion::fromJson(const rapidjson::Value &obj) {
 }
 
 Client::LibraryDownloads
-Client::LibraryDownloads::parse(const rapidjson::Value &obj) {
+Client::LibraryDownloads::fromJson(const rapidjson::Value &obj) {
   LibraryDownloads downloads;
 
-  if (obj.HasMember("downloads")) {
-    if (obj["downloads"].HasMember("artifact")) {
-      downloads.artifact = Download::fromJson(obj["downloads"]["artifact"]);
-    }
-  }
+  if (obj.HasMember("artifact"))
+    downloads.artifact = Download::fromJson(obj["artifact"]);
 
-  /*
-    This field doesn't always show up in the JSON, so we need to check if it
-    exists before parsing it.
-  */
-  if (obj.HasMember("classifiers")) {
+  if (obj.HasMember("classifiers") && obj["classifiers"].IsObject()) {
     for (auto itr = obj["classifiers"].MemberBegin();
          itr != obj["classifiers"].MemberEnd(); ++itr) {
-      auto &key = itr->name;
-      auto &val = itr->value;
-      downloads.classifiers[key.GetString()] = Download::fromJson(val);
+      const std::string key = itr->name.GetString();
+      const rapidjson::Value &val = itr->value;
+
+      downloads.classifiers[key] = Download::fromJson(val);
     }
   }
 
@@ -215,29 +209,27 @@ Client::LibraryDownloads::parse(const rapidjson::Value &obj) {
 }
 
 Client::LibraryExtractRules
-Client::LibraryExtractRules::parse(const rapidjson::Value &obj) {
+Client::LibraryExtractRules::fromJson(const rapidjson::Value &obj) {
   LibraryExtractRules rules;
 
   if (obj.HasMember("exclude")) {
-    for (const auto &rule : obj["exclude"].GetArray()) {
+    for (const auto &rule : obj["exclude"].GetArray()) 
       rules.exclude.push_back(rule.GetString());
-    }
   }
 
   if (obj.HasMember("include")) {
-    for (const auto &rule : obj["include"].GetArray()) {
+    for (const auto &rule : obj["include"].GetArray()) 
       rules.include.push_back(rule.GetString());
-    }
   }
 
   return rules;
 }
 
-Client::Library Client::Library::parse(const rapidjson::Value &obj) {
+Client::Library Client::Library::fromJson(const rapidjson::Value &obj) {
   Library library;
 
   if (obj.HasMember("downloads")) {
-    library.downloads = LibraryDownloads::parse(obj);
+    library.downloads = LibraryDownloads::fromJson(obj["downloads"]);
   } else {
     library.downloads = LibraryDownloads();
   }
@@ -264,14 +256,16 @@ Client::Library Client::Library::parse(const rapidjson::Value &obj) {
   }
 
   if (obj.HasMember("extract")) {
-    library.extract = LibraryExtractRules::parse(obj["extract"]);
+    library.extract = LibraryExtractRules::fromJson(obj["extract"]);
   } else {
     library.extract = LibraryExtractRules();
   }
+
+  return library;
 }
 
 Client::LoggingClient
-Client::LoggingClient::parse(const rapidjson::Value &obj) {
+Client::LoggingClient::fromJson(const rapidjson::Value &obj) {
   LoggingClient client;
 
   if (obj.HasMember("argument"))
@@ -292,45 +286,76 @@ Client::LoggingClient::parse(const rapidjson::Value &obj) {
   return client;
 }
 
-Client::LoggingInfo Client::LoggingInfo::parse(const rapidjson::Value &obj) {
+Client::LoggingInfo Client::LoggingInfo::fromJson(const rapidjson::Value &obj) {
   LoggingInfo info;
 
   if (obj.HasMember("client"))
-    info.client = LoggingClient::parse(obj["client"]);
+    info.client = LoggingClient::fromJson(obj["client"]);
   else
     info.client = LoggingClient();
 
   return info;
 }
 
-Client Client::parse(const rapidjson::Value &obj) {
+Client Client::fromJson(const rapidjson::Value &obj) {
   Client client;
 
-  if (obj.HasMember("arguments"))
-    client.arguments = Arguments::fromJson(obj["arguments"]);
+  if (obj.HasMember("arguments")) 
+    client.arguments = Client::Arguments::fromJson(obj["arguments"]);
   else
-    client.arguments = Arguments();
+    client.arguments = Client::Arguments();
 
-  if (obj.HasMember("downloads"))
-    client.downloads = ClientDownloads::fromJson(obj["downloads"]);
+  if (obj.HasMember("assetIndex"))
+    client.assetIndex = Client::Download::fromJson(obj["assetIndex"]);
   else
-    client.downloads = ClientDownloads();
+    client.assetIndex = Client::Download();
+
+  if (obj.HasMember("assets"))
+    client.assets = obj["assets"].GetString();
+  else
+    client.assets = "";
+
+  if (obj.HasMember("complianceLevel"))
+    client.complianceLevel = obj["complianceLevel"].GetInt();
+  else
+    client.complianceLevel = 0;
+
+  if (obj.HasMember("downloads")) 
+    client.downloads = Client::ClientDownloads::fromJson(obj["downloads"]);
+  else
+    client.downloads = Client::ClientDownloads();
+
+  if (obj.HasMember("id"))
+    client.id = obj["id"].GetString();
+  else
+    client.id = "";
 
   if (obj.HasMember("javaVersion"))
-    client.javaVersion = JavaVersion::fromJson(obj["javaVersion"]);
+    client.javaVersion = Client::JavaVersion::fromJson(obj["javaVersion"]);
   else
-    client.javaVersion = JavaVersion();
+    client.javaVersion = Client::JavaVersion();
 
   if (obj.HasMember("libraries")) {
-    for (const auto &lib : obj["libraries"].GetArray()) {
-      client.libraries.push_back(Library::parse(lib));
-    }
+    for (const auto& val : obj["libraries"].GetArray())
+      client.libraries.push_back(Client::Library::fromJson(val));
   }
-
-  if (obj.HasMember("logging"))
-    client.logging = LoggingInfo::parse(obj["logging"]);
   else
-    client.logging = LoggingInfo();
+    client.libraries;
+
+  if (obj.HasMember("logging")) 
+    client.logging = Client::LoggingInfo::fromJson(obj["logging"]);
+  else
+    client.logging = Client::LoggingInfo();
+
+  if (obj.HasMember("mainClass"))
+    client.mainClass = obj["mainClass"].GetString();
+  else
+    client.mainClass = "";
+
+  if (obj.HasMember("type"))
+    client.type = obj["type"].GetString();
+  else
+    client.type = "";
 
   return client;
 }
@@ -339,15 +364,15 @@ void Client::Library::downloadArtifact(App::AppConfig &config) {
   fs::path artifactPath = downloads.artifactPath(config);
 
   if (!fs::exists(artifactPath)) {
-    auto artifact = downloads.fetchArtifact();
+      auto artifact = downloads.fetchArtifact();
 
-    fs::create_directories(artifactPath.parent_path());
-    std::ofstream file(artifactPath, std::ios::binary);
-    file.write(reinterpret_cast<const char *>(artifact.data()),
-               artifact.size());
+      fs::create_directories(artifactPath.parent_path());
+      std::ofstream file(artifactPath, std::ios::binary);
+      file.write(reinterpret_cast<const char *>(artifact.data()),
+                artifact.size());
+  } else {
+    std::cout << "Artifact already exists\n";
   }
-
-  return;
 }
 
 void Client::Library::downloadNative(App::AppConfig &config) {
@@ -582,7 +607,9 @@ std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
 }
 
 fs::path Client::LibraryDownloads::artifactPath(App::AppConfig &config) {
-  return config.LIBRARIES_DIR / artifact.path;
+  fs::path fullPath = config.LIBRARIES_DIR / artifact.path;
+  
+  return fullPath;
 }
 
 std::vector<uint8_t>
