@@ -215,22 +215,53 @@ TEST(ClientHH, ArgumentsParsing) {
     ASSERT_EQ(args.jvm[1].value, "-Djava.library.path=${natives_directory}");
 }
 
-// TEST(ClientHH, DownloadParsing) {
-//     rapidjson::Document doc =
-//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download.json");
-//     const rapidjson::Value &obj = doc["download"];
+TEST(ClientHH, DownloadParsing_1) {
+    rapidjson::Document doc =
+    rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download/download_1.json");
+    const rapidjson::Value &obj = doc["download"];
 
-//     Client::Download download = Client::Download::parse(obj);
+    Client::Download download = Client::Download::fromJson(obj);
 
-//     ASSERT_EQ(download.id, "");
-//     ASSERT_EQ(download.path,
-//     "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
-//     ASSERT_EQ(download.sha1, "e9aca8c5479b520a2a7f0d542a118140e812c5e8");
-//     ASSERT_EQ(download.size, 133378);
-//     ASSERT_EQ(download.url,
-//     "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
-//     ASSERT_EQ(download.totalSize, std::nullopt);
-// }
+    ASSERT_EQ(download.path, "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+    ASSERT_EQ(download.sha1, "e9aca8c5479b520a2a7f0d542a118140e812c5e8");
+    ASSERT_EQ(download.size, 133378);
+    ASSERT_EQ(download.url, "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+    ASSERT_EQ(download.id, "");
+    ASSERT_EQ(download.totalSize, 0);
+}
+
+TEST(ClientHH, DownloadParsing_2) {
+  rapidjson::Document doc =
+  rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download/download_2.json");
+  const rapidjson::Value &obj = doc["download"];
+
+  Client::Download download = Client::Download::fromJson(obj);
+
+  ASSERT_EQ(download.sha1, "e003d151668a0eff64c1191972707655e341f8f5");
+  ASSERT_EQ(download.size, 57017689);
+  ASSERT_EQ(download.url, "https://piston-data.mojang.com/v1/objects/e003d151668a0eff64c1191972707655e341f8f5/server.jar");
+  ASSERT_EQ(download.id, "123k");
+  ASSERT_EQ(download.totalSize, 0);
+  ASSERT_EQ(download.path, "");
+}
+
+TEST(ClientHH, DownloadParsing_3) {
+  rapidjson::Document doc =
+  rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download/download_3.json");
+  const rapidjson::Value &obj = doc["download"];
+
+  Client::Download download = Client::Download::fromJson(obj);
+
+  ASSERT_EQ(
+    download.path,
+      "com/fasterxml/jackson/core/jackson-core/2.13.4/jackson-core-2.13.4.jar");
+  ASSERT_EQ(download.sha1, "0cf934c681294b97ef6d80082faeefbe1edadf56");
+  ASSERT_EQ(download.totalSize, 29323);
+  ASSERT_EQ(download.id, "");
+  ASSERT_EQ(download.size, 0);
+  ASSERT_EQ(download.url, "");
+}
+
 
 // TEST(ClientHH, ClientDownloadParsing) {
 //     rapidjson::Document doc =

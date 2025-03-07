@@ -83,10 +83,10 @@ public:
     std::string path;
     std::string sha1;
     int64_t size;
-    std::optional<int64_t> totalSize;
+    int64_t totalSize;
     std::string url;
 
-    static Download parse(const rapidjson::Value &obj);
+    static Download fromJson(const rapidjson::Value &obj);
     std::vector<std::uint8_t> fetch();
   };
 

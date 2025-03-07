@@ -109,7 +109,7 @@ Client::Arguments Client::Arguments::fromJson(const rapidjson::Value &obj) {
   return args;
 }
 
-Client::Download Client::Download::parse(const rapidjson::Value &obj) {
+Client::Download Client::Download::fromJson(const rapidjson::Value &obj) {
   Client::Download download;
 
   if (obj.HasMember("id"))
@@ -125,7 +125,7 @@ Client::Download Client::Download::parse(const rapidjson::Value &obj) {
   if (obj.HasMember("totalSize"))
     download.totalSize = obj["totalSize"].GetInt64();
   else
-    download.totalSize = std::nullopt;
+    download.totalSize = 0;
 
   if (obj.HasMember("sha1"))
     download.sha1 = obj["sha1"].GetString();
@@ -150,22 +150,22 @@ Client::ClientDownloads::parse(const rapidjson::Value &obj) {
   Client::ClientDownloads download;
 
   if (obj.HasMember("client"))
-    download.client = Download::parse(obj["client"]);
+    download.client = Download::fromJson(obj["client"]);
   else
     download.client = Download();
 
   if (obj.HasMember("client_mappings"))
-    download.client_mappings = Download::parse(obj["client_mappings"]);
+    download.client_mappings = Download::fromJson(obj["client_mappings"]);
   else
     download.client_mappings = Download();
 
   if (obj.HasMember("server"))
-    download.server = Download::parse(obj["server"]);
+    download.server = Download::fromJson(obj["server"]);
   else
     download.server = Download();
 
   if (obj.HasMember("server_mappings"))
-    download.server_mappings = Download::parse(obj["server_mappings"]);
+    download.server_mappings = Download::fromJson(obj["server_mappings"]);
   else
     download.server_mappings = Download();
 
@@ -227,7 +227,7 @@ Client::LibraryDownloads::parse(const rapidjson::Value &obj) {
 
   if (obj.HasMember("downloads")) {
     if (obj["downloads"].HasMember("artifact")) {
-      downloads.artifact = Download::parse(obj["downloads"]["artifact"]);
+      downloads.artifact = Download::fromJson(obj["downloads"]["artifact"]);
     }
   }
 
@@ -240,7 +240,7 @@ Client::LibraryDownloads::parse(const rapidjson::Value &obj) {
          itr != obj["classifiers"].MemberEnd(); ++itr) {
       auto &key = itr->name;
       auto &val = itr->value;
-      downloads.classifiers[key.GetString()] = Download::parse(val);
+      downloads.classifiers[key.GetString()] = Download::fromJson(val);
     }
   }
 
@@ -313,7 +313,7 @@ Client::LoggingClient::parse(const rapidjson::Value &obj) {
     client.argument = "";
 
   if (obj.HasMember("file"))
-    client.file = Download::parse(obj["file"]);
+    client.file = Download::fromJson(obj["file"]);
   else
     client.file = Download();
 
