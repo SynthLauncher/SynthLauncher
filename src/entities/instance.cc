@@ -3,7 +3,7 @@
 fs::path Instance::PARENT_DIR;
 fs::path Instance::INSTANCE_FILE;
 
-Instance::Instance(const std::string &name, const std::string &version)
+Instance::Instance(const std::string_view name, const std::string_view version)
     : name(name), version(version) {}
 
 Instance Instance::parse(const rapidjson::Value &obj) {
@@ -23,7 +23,7 @@ std::string Instance::toJson(Instance &instance) {
 }
 
 void Instance::init(App::AppConfig &config) {
-  PARENT_DIR = config.DIR + "instances/";
+  PARENT_DIR = config.DIR + "\\instances\\";
   INSTANCE_FILE = config.DIR + "instances.json";
 }
 
@@ -31,50 +31,55 @@ fs::path Instance::dir() { return this->PARENT_DIR / this->name; }
 
 void Instance::initDir() {
   if (!fs::exists(this->dir()))
-    fs::create_directory(this->dir());
+    fs::create_directories(this->dir());
 }
 
 Instance Instance::createInstance(const std::string &name,
                                   const std::string &version) {
   Instance instance = Instance(name, version);
-
   Manifest manifest = Manifest::fromJson();
-
   std::string url = "";
 
   for (Manifest::Version manifest_version : manifest.versions) {
     if (manifest_version.id == version) {
       url = manifest_version.url;
-
       break;
     }
   }
 
-  if (url == "")
-    throw std::runtime_error(
-        "Unexpected version occured while creating an instance!");
+  if (url.empty()) {
+    throw std::runtime_error("Version '" + version +
+                             "' not found in manifest!");
+  }
 
   instance.initDir();
-
   fs::path client_path = instance.dir() / "client.json";
 
-  if (fs::exists(client_path))
-    throw std::runtime_error("Instance already exists!");
+  std::cout << client_path;
+  if (fs::exists(client_path)) {
+    throw std::runtime_error("Instance already exists at: " +
+                             client_path.string());
+  }
 
   auto [host, path] = httplib_utils::extractHostAndPath(url);
 
   httplib::Client cli(host);
-  auto res = cli.Get(path.c_str());
-  if (res && res->status == 200) {
-    std::ofstream outFile(client_path);
-    if (!outFile)
-      throw std::runtime_error("Failed to open file for writing.");
 
-    outFile << res->body;
-  } else
-    throw std::runtime_error("Failed to download client.json!");
-
-  // addInstance(instance);
+  if (auto res = cli.Get(path)) {
+    if (res->status == 200) {
+      std::ofstream outFile(client_path);
+      if (!outFile) 
+        throw std::runtime_error("Failed to open " + client_path.string());
+  
+      outFile << res->body;
+    } else {
+      throw std::runtime_error("Unexpected HTTP status: " +
+                               std::to_string(res->status));
+    }
+  } else {
+    auto err = res.error();
+    throw std::runtime_error("HTTP request failed: " + httplib::to_string(err));
+  }
 
   return instance;
 }

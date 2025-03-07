@@ -1,4 +1,5 @@
 #pragma once
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include <filesystem>
 #include <stdexcept>
@@ -26,10 +27,10 @@ public:
   std::string version;
   fs::path icon;
 
-  Instance(const std::string &name, const std::string &version);
+  Instance(const std::string_view name, const std::string_view version);
   fs::path dir();
   void initDir();
-  void init(App::AppConfig &config);
+  static void init(App::AppConfig &config);
   static Instance createInstance(const std::string &name,
                                  const std::string &version);
   static std::vector<Instance> readInstances();
