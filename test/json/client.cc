@@ -262,43 +262,38 @@ TEST(ClientHH, DownloadParsing_3) {
   ASSERT_EQ(download.url, "");
 }
 
+TEST(ClientHH, ClientDownloadsParsing) {
+  rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/client_download/client_download.json");
+  rapidjson::Value &obj = doc["downloads"];
 
-// TEST(ClientHH, ClientDownloadParsing) {
-//     rapidjson::Document doc =
-//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/client_download.json");
-//     const rapidjson::Value &obj = doc["downloads"];
+  Client::ClientDownloads downloads = Client::ClientDownloads::fromJson(obj);
 
-//     Client::ClientDownloads downloads = Client::ClientDownloads::parse(obj);
+  ASSERT_EQ(downloads.client.sha1, "9acca901e3564a91250b941cd2c55a55d0b71bca");
+  ASSERT_EQ(downloads.client.size, 28534222);
+  ASSERT_EQ(downloads.client.url, "https://piston-data.mojang.com/v1/objects/9acca901e3564a91250b941cd2c55a55d0b71bca/client.jar");
+  
+  ASSERT_EQ(downloads.client_mappings.sha1, "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
+  ASSERT_EQ(downloads.client_mappings.size, 10413606);
+  ASSERT_EQ(downloads.client_mappings.url, "https://piston-data.mojang.com/v1/objects/94b753018a4683ec7c25a33c9048d46fbf9a5db0/client.txt");
 
-//     ASSERT_EQ(downloads.client.sha1,
-//     "9acca901e3564a91250b941cd2c55a55d0b71bca");
-//     ASSERT_EQ(downloads.client_mappings.sha1,
-//     "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
-//     ASSERT_EQ(downloads.server.sha1,
-//     "e003d151668a0eff64c1191972707655e341f8f5");
-//     ASSERT_EQ(downloads.server_mappings.sha1,
-//     "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
-// }
+  ASSERT_EQ(downloads.server.sha1, "e003d151668a0eff64c1191972707655e341f8f5");
+  ASSERT_EQ(downloads.server.size, 57017689);
+  ASSERT_EQ(downloads.server.url, "https://piston-data.mojang.com/v1/objects/e003d151668a0eff64c1191972707655e341f8f5/server.jar");
 
-// TEST(ClientHH, JavaVersionParsing) {
-//     rapidjson::Document doc =
-//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/java_version.json");
-//     const rapidjson::Value &obj = doc["javaVersion"];
+  ASSERT_EQ(downloads.server_mappings.sha1, "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
+  ASSERT_EQ(downloads.server_mappings.size, 7824495);
+  ASSERT_EQ(downloads.server_mappings.url,  "https://piston-data.mojang.com/v1/objects/ad7bb6cf9bdb85fd561981e2c4634a9d3292592d/server.txt");
+}
 
-//     Client::JavaVersion version = Client::JavaVersion::parse(obj);
+TEST(ClientHH, JavaVersionParsing) {
+    rapidjson::Document doc =
+    rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/java_version/java_version.json");
+    const rapidjson::Value &obj = doc["javaVersion"];
 
-//     ASSERT_EQ(version.component, "java-runtime-delta");
-//     ASSERT_EQ(version.majorVersion, 21);
-// }
+    Client::JavaVersion version = Client::JavaVersion::fromJson(obj);
 
-// TEST(ClientHH, LibraryDownloadParsing) {
-//     rapidjson::Document doc =
-//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/library_download.json");
-//     const rapidjson::Value &obj = doc;
+    ASSERT_EQ(version.component, "java-runtime-delta");
+    ASSERT_EQ(version.majorVersion, 21);
+}
 
-//     Client::LibraryDownloads downloads =
-//     Client::LibraryDownloads::parse(obj);
 
-//     ASSERT_EQ(downloads.artifact.sha1,
-//     "1227f9e0666314f9de41477e3ec277e542ed7f7b");
-// }

@@ -146,7 +146,7 @@ Client::Download Client::Download::fromJson(const rapidjson::Value &obj) {
 }
 
 Client::ClientDownloads
-Client::ClientDownloads::parse(const rapidjson::Value &obj) {
+Client::ClientDownloads::fromJson(const rapidjson::Value &obj) {
   Client::ClientDownloads download;
 
   if (obj.HasMember("client"))
@@ -172,7 +172,7 @@ Client::ClientDownloads::parse(const rapidjson::Value &obj) {
   return download;
 }
 
-Client::JavaVersion Client::JavaVersion::parse(const rapidjson::Value &obj) {
+Client::JavaVersion Client::JavaVersion::fromJson(const rapidjson::Value &obj) {
   Client::JavaVersion version;
 
   if (obj.HasMember("component"))
@@ -186,39 +186,6 @@ Client::JavaVersion Client::JavaVersion::parse(const rapidjson::Value &obj) {
     version.majorVersion = 0;
 
   return version;
-}
-
-std::vector<std::uint8_t> Client::Download::fetch() {
-  auto [host, path] = httplib_utils::extractHostAndPath(this->url);
-
-  httplib::Client cli(host);
-
-  auto res = cli.Get(path);
-  if (!res || res->status != 200)
-    throw std::runtime_error("Failed to download " + url);
-
-  const auto &body = res->body;
-  return std::vector<uint8_t>(body.begin(), body.end());
-}
-
-std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
-  return artifact.fetch();
-}
-
-fs::path Client::LibraryDownloads::artifactPath(App::AppConfig &config) {
-  return config.LIBRARIES_DIR / artifact.path;
-}
-
-std::vector<uint8_t>
-Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
-  return classifiers.at(nativeIndex).fetch();
-}
-
-fs::path Client::LibraryDownloads::nativePath(App::AppConfig &config,
-                                              std::string nativeIndex) {
-  Download download = classifiers.at(nativeIndex);
-
-  return config.NATIVES_DIR / download.path;
 }
 
 Client::LibraryDownloads
@@ -345,12 +312,12 @@ Client Client::parse(const rapidjson::Value &obj) {
     client.arguments = Arguments();
 
   if (obj.HasMember("downloads"))
-    client.downloads = ClientDownloads::parse(obj["downloads"]);
+    client.downloads = ClientDownloads::fromJson(obj["downloads"]);
   else
     client.downloads = ClientDownloads();
 
   if (obj.HasMember("javaVersion"))
-    client.javaVersion = JavaVersion::parse(obj["javaVersion"]);
+    client.javaVersion = JavaVersion::fromJson(obj["javaVersion"]);
   else
     client.javaVersion = JavaVersion();
 
@@ -595,4 +562,37 @@ bool Client::Rule::osMatches(App::AppConfig &config, std::vector<Rule> rules) {
   }
 
   return true;
+}
+
+std::vector<std::uint8_t> Client::Download::fetch() {
+  auto [host, path] = httplib_utils::extractHostAndPath(this->url);
+
+  httplib::Client cli(host);
+
+  auto res = cli.Get(path);
+  if (!res || res->status != 200)
+    throw std::runtime_error("Failed to download " + url);
+
+  const auto &body = res->body;
+  return std::vector<uint8_t>(body.begin(), body.end());
+}
+
+std::vector<uint8_t> Client::LibraryDownloads::fetchArtifact() {
+  return artifact.fetch();
+}
+
+fs::path Client::LibraryDownloads::artifactPath(App::AppConfig &config) {
+  return config.LIBRARIES_DIR / artifact.path;
+}
+
+std::vector<uint8_t>
+Client::LibraryDownloads::fetchNative(std::string nativeIndex) {
+  return classifiers.at(nativeIndex).fetch();
+}
+
+fs::path Client::LibraryDownloads::nativePath(App::AppConfig &config,
+                                              std::string nativeIndex) {
+  Download download = classifiers.at(nativeIndex);
+
+  return config.NATIVES_DIR / download.path;
 }

@@ -96,14 +96,14 @@ public:
     Download server;
     Download server_mappings;
 
-    static ClientDownloads parse(const rapidjson::Value &obj);
+    static ClientDownloads fromJson(const rapidjson::Value &obj);
   };
 
   struct JavaVersion {
     std::string component;
     int majorVersion;
 
-    static JavaVersion parse(const rapidjson::Value &obj);
+    static JavaVersion fromJson(const rapidjson::Value &obj);
   };
 
   struct LibraryDownloads {
