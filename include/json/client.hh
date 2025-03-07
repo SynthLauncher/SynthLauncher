@@ -68,7 +68,7 @@ public:
     std::vector<std::string> values;
     std::vector<Rule> rules;
 
-    static Argument parse(const rapidjson::Value &val);
+    static Argument fromJson(const rapidjson::Value &val);
   };
 
   struct Arguments {

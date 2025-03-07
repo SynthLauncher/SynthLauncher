@@ -64,7 +64,7 @@ Client::Rule Client::Rule::fromJson(const rapidjson::Value &obj) {
   return rule;
 }
 
-Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
+Client::Argument Client::Argument::fromJson(const rapidjson::Value &val) {
   Argument arg;
 
   if (val.IsString()) {
@@ -76,18 +76,16 @@ Client::Argument Client::Argument::parse(const rapidjson::Value &val) {
     const auto &obj = val;
 
     if (obj.HasMember("rules")) {
-      for (const auto &rule : obj["rules"].GetArray()) {
+      for (const auto &rule : obj["rules"].GetArray()) 
         arg.rules.push_back(Rule::fromJson(rule));
-      }
     }
 
     if (obj.HasMember("value")) {
-      if (obj["value"].IsString()) {
+      if (obj["value"].IsString()) 
         arg.value = obj["value"].GetString();
-      } else if (obj["value"].IsArray()) {
-        for (const auto &val : obj["value"].GetArray()) {
+      else if (obj["value"].IsArray()) {
+        for (const auto &val : obj["value"].GetArray()) 
           arg.values.push_back(val.GetString());
-        }
       }
     }
   }
@@ -99,15 +97,13 @@ Client::Arguments Client::Arguments::parse(const rapidjson::Value &obj) {
   Arguments args;
 
   if (obj.HasMember("game")) {
-    for (const auto &arg : obj["game"].GetArray()) {
-      args.game.push_back(Argument::parse(arg));
-    }
+    for (const auto &arg : obj["game"].GetArray()) 
+      args.game.push_back(Argument::fromJson(arg));
   }
 
   if (obj.HasMember("jvm")) {
-    for (const auto &arg : obj["jvm"].GetArray()) {
-      args.jvm.push_back(Argument::parse(arg));
-    }
+    for (const auto &arg : obj["jvm"].GetArray()) 
+      args.jvm.push_back(Argument::fromJson(arg));    
   }
 
   return args;

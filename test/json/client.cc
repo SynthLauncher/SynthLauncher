@@ -148,20 +148,54 @@ TEST(ClientHH, RuleParsing_3) {
   }
 }
 
-// TEST(ClientHH, MultipleArgumentParsing) {
-//     rapidjson::Document doc =
-//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/argument.json");
+TEST(ClientHH, ArgumentParsing_1) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+      "E:/OneDrive/Desktop/SynthLauncher/assets/argument/argument_1.json");
 
-//     const rapidjson::Value &arr = doc.GetArray();
+  const rapidjson::Value &arr = doc;
 
-//     std::vector<Client::Argument> arguments;
-//     for (rapidjson::Value::ConstValueIterator itr = arr.Begin(); itr !=
-//     arr.End(); ++itr) {
-//         arguments.push_back(Client::Argument::parse(*itr));
-//     }
+  std::vector<Client::Argument> arguments;
+  for (const auto &obj : arr.GetArray()) {
+    arguments.push_back(Client::Argument::fromJson(obj));
+  }
 
-//     ASSERT_EQ(arguments.at(1).value, "--demo");
-// }
+  ASSERT_EQ(arguments[0].value, "${version_type}");
+}
+
+TEST(ClientHH, ArgumentParsing_2) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+    "E:/OneDrive/Desktop/SynthLauncher/assets/argument/argument_2.json");
+
+  const rapidjson::Value &arr = doc;
+
+  std::vector<Client::Argument> arguments;
+  for (const auto &obj : arr.GetArray()) {
+    arguments.push_back(Client::Argument::fromJson(obj));
+  }
+
+  ASSERT_EQ(arguments[0].rules[0].action, "allow");
+  ASSERT_EQ(arguments[0].rules[0].features->isDemoUser, true);
+  ASSERT_EQ(arguments[0].value, "--demo");
+}
+
+TEST(ClientHH, ArgumentParsing_3) {
+  rapidjson::Document doc = rapidjson_utils::fromJson(
+    "E:/OneDrive/Desktop/SynthLauncher/assets/argument/argument_3.json");
+
+  const rapidjson::Value &arr = doc;
+
+  std::vector<Client::Argument> arguments;
+  for (const auto &obj : arr.GetArray()) {
+    arguments.push_back(Client::Argument::fromJson(obj));
+  }
+
+  ASSERT_EQ(arguments[0].values[0], "--width");
+  ASSERT_EQ(arguments[0].values[1], "${resolution_width}");
+  ASSERT_EQ(arguments[0].values[2], "--height");
+  ASSERT_EQ(arguments[0].values[3], "${resolution_height}");
+  ASSERT_EQ(arguments[0].rules[0].action, "allow");
+  ASSERT_EQ(arguments[0].rules[0].features->hasCustomResolution, true);
+}
 
 // TEST(ClientHH, ArgumentsParsing) {
 //     rapidjson::Document doc =
