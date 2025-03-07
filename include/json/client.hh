@@ -75,7 +75,7 @@ public:
     std::vector<Argument> game;
     std::vector<Argument> jvm;
 
-    static Arguments parse(const rapidjson::Value &obj);
+    static Arguments fromJson(const rapidjson::Value &obj);
   };
 
   struct Download {

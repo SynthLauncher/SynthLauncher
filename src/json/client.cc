@@ -93,7 +93,7 @@ Client::Argument Client::Argument::fromJson(const rapidjson::Value &val) {
   return arg;
 }
 
-Client::Arguments Client::Arguments::parse(const rapidjson::Value &obj) {
+Client::Arguments Client::Arguments::fromJson(const rapidjson::Value &obj) {
   Arguments args;
 
   if (obj.HasMember("game")) {
@@ -340,7 +340,7 @@ Client Client::parse(const rapidjson::Value &obj) {
   Client client;
 
   if (obj.HasMember("arguments"))
-    client.arguments = Arguments::parse(obj["arguments"]);
+    client.arguments = Arguments::fromJson(obj["arguments"]);
   else
     client.arguments = Arguments();
 

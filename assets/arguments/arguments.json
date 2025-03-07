@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "game": [
+      "--username",
+      "${auth_player_name}",
+      "--version",
+      "${version_name}"
+    ],
+    "jvm": [
+      {
+        "rules": [{ "action": "allow", "os": { "name": "windows" } }],
+        "value": "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"
+      },
+      "-Djava.library.path=${natives_directory}"
+    ]
+  }
+}

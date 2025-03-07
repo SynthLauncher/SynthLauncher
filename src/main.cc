@@ -7,5 +7,7 @@ int main() {
   App::AppConfig appConfig = App::initAppConfig();
   App::initLauncherDir(appConfig);
 
+  
+
   return 0;
 }

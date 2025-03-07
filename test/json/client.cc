@@ -197,16 +197,23 @@ TEST(ClientHH, ArgumentParsing_3) {
   ASSERT_EQ(arguments[0].rules[0].features->hasCustomResolution, true);
 }
 
-// TEST(ClientHH, ArgumentsParsing) {
-//     rapidjson::Document doc =
-//     rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
+TEST(ClientHH, ArgumentsParsing) {
+    rapidjson::Document doc =
+    rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/arguments/arguments.json");
 
-//     const rapidjson::Value& obj = doc["arguments"];
+    const rapidjson::Value& obj = doc["arguments"];
 
-//     Client::Arguments args = Client::Arguments::parse(obj);
+    Client::Arguments args = Client::Arguments::fromJson(obj);
 
-//     ASSERT_EQ(args.game.at(0).value, "--username");
-// }
+    ASSERT_EQ(args.game[0].value, "--username");
+    ASSERT_EQ(args.game[1].value, "${auth_player_name}");
+    ASSERT_EQ(args.game[2].value, "--version");
+    ASSERT_EQ(args.game[3].value, "${version_name}");
+    ASSERT_EQ(args.jvm[0].rules[0].action, "allow");
+    ASSERT_EQ(args.jvm[0].rules[0].os->name, OperatingSystem::OS::Windows);
+    ASSERT_EQ(args.jvm[0].value, "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
+    ASSERT_EQ(args.jvm[1].value, "-Djava.library.path=${natives_directory}");
+}
 
 // TEST(ClientHH, DownloadParsing) {
 //     rapidjson::Document doc =
