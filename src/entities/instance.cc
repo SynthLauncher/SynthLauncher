@@ -6,7 +6,7 @@ fs::path Instance::INSTANCE_FILE;
 Instance::Instance(const std::string_view name, const std::string_view version)
     : name(name), version(version) {}
 
-Instance Instance::parse(const rapidjson::Value &obj) {
+Instance Instance::fromJson(const rapidjson::Value &obj) {
   Instance instance(obj["name"].GetString(), obj["version"].GetString());
 
   return instance;
@@ -22,7 +22,7 @@ std::string Instance::toJson(Instance &instance) {
   return json;
 }
 
-void Instance::init(App::AppConfig &config) {
+void Instance::init(const App::AppConfig &config) {
   PARENT_DIR = config.DIR + "\\instances\\";
   INSTANCE_FILE = config.DIR + "instances.json";
 }
@@ -34,8 +34,8 @@ void Instance::initDir() {
     fs::create_directories(this->dir());
 }
 
-Instance Instance::createInstance(const std::string &name,
-                                  const std::string &version) {
+Instance Instance::createInstance(const std::string_view name,
+                                  const std::string_view version) {
   Instance instance = Instance(name, version);
   Manifest manifest = Manifest::fromJson();
   std::string url = "";
@@ -48,7 +48,7 @@ Instance Instance::createInstance(const std::string &name,
   }
 
   if (url.empty()) {
-    throw std::runtime_error("Version '" + version +
+    throw std::runtime_error("Version '" + std::string(version) +
                              "' not found in manifest!");
   }
 
@@ -68,9 +68,9 @@ Instance Instance::createInstance(const std::string &name,
   if (auto res = cli.Get(path)) {
     if (res->status == 200) {
       std::ofstream outFile(client_path);
-      if (!outFile) 
+      if (!outFile)
         throw std::runtime_error("Failed to open " + client_path.string());
-  
+
       outFile << res->body;
     } else {
       throw std::runtime_error("Unexpected HTTP status: " +
@@ -90,7 +90,7 @@ std::vector<Instance> Instance::readInstances() {
   auto json = rapidjson_utils::fromJson(INSTANCE_FILE);
 
   for (const auto &instance : json.GetArray())
-    instances.push_back(Instance::parse(instance));
+    instances.push_back(Instance::fromJson(instance));
 
   return instances;
 }
@@ -125,7 +125,10 @@ void Instance::addInstance(Instance &instance) {
   */
 }
 
-Config Instance::getConfig() {}
+Config Instance::getConfig() {
+  fs::path path = this->dir() / "config.json";
+  return Config::getConfig(path);
+}
 
 Client Instance::readClient() {
   fs::path path = this->dir() / "client.json";
