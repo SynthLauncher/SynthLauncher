@@ -1,7 +1,5 @@
 #include "include/json/manifest.hh"
 
-fs::path Manifest::PATH = "";
-
 Manifest::Latest Manifest::Latest::fromJson(const rapidjson::Value &obj) {
   Manifest::Latest latest;
 

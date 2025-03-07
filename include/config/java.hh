@@ -53,8 +53,9 @@ public:
   /// @brief Extracts the Java version from the Java cup
   static bool extractJavaVersion(Java &cup);
 
-  /// @brief Checks if the Java cup is valid or not 
-  static bool isValid(const Java& cup);
+  /// @brief Checks if the Java cup is valid or not
+  static bool isValid(const Java &cup);
+
 private:
   /// @brief Compares two Java versions
   static int compareVersions(const std::string &v1, const std::string &v2);

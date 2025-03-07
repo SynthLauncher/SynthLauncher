@@ -8,23 +8,23 @@ App::AppConfig App::initAppConfig() {
   config.OS = OperatingSystem::OS::Windows;
   const char *appData = std::getenv("APPDATA");
   if (appData)
-    config.DIR = std::string(appData) + "\\SynthLauncher";
+    config.DIR = fs::path(appData) / "SynthLauncher";
   else
     config.DIR = "C:\\SynthLauncher";
 #elif __linux__
   config.OS = OperatingSystem::OS::Linux;
   const char *home = std::getenv("HOME");
   if (home)
-    config.DIR = std::string(home) + "/.synthlauncher";
+    config.DIR = fs::path(home) / ".synthlauncher";
   else
     config.DIR = "/usr/local/synthlauncher";
 #elif __APPLE__
   config.OS = OperatingSystem::OS::OSX;
   const char *home = std::getenv("HOME");
-  if (home)
+  if (home) {
     config.DIR =
-        std::string(home) + "/Library/Application Support/SynthLauncher";
-  else
+        fs::path(home) / "Library" / "Application Support" / "SynthLauncher";
+  } else
     config.DIR = "/usr/local/synthlauncher";
 #endif
 
@@ -39,9 +39,9 @@ App::AppConfig App::initAppConfig() {
   config.ARCH = Architecture::Arch::Arm;
 #endif
 
-  config.ASSETS_DIR = fs::path(config.DIR) / "assets";
-  config.LIBRARIES_DIR = fs::path(config.DIR) / "libraries";
-  config.NATIVES_DIR = fs::path(config.DIR) / "natives";
+  config.ASSETS_DIR = config.DIR / "assets";
+  config.LIBRARIES_DIR = config.DIR / "libraries";
+  config.NATIVES_DIR = config.DIR / "natives";
 
   return config;
 }
@@ -58,7 +58,7 @@ void App::initLauncherDir(const App::AppConfig &config) {
 
   httplib::Client cli("https://launchermeta.mojang.com");
 
-  Manifest::PATH = config.DIR + "/manifest.json";
+  Manifest::PATH = config.DIR / "manifest.json";
 
   auto res = cli.Get("/mc/game/version_manifest.json");
 

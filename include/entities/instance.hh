@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "include/rapidjson/document.h"
@@ -20,13 +21,14 @@ class Config;
 
 class Instance {
 public:
-  static fs::path PARENT_DIR;
-  static fs::path INSTANCE_FILE;
+  inline static fs::path PARENT_DIR = "";
+  inline static fs::path INSTANCE_FILE = "";
 
   std::string name;
   std::string version;
   fs::path icon;
 
+  Instance();
   Instance(const std::string_view name, const std::string_view version);
 
   fs::path dir();
@@ -47,5 +49,5 @@ public:
   void launch(App::AppConfig &config);
   
   static Instance fromJson(const rapidjson::Value &obj);
-  static std::string toJson(Instance &instance);
+  std::string toJson() const;
 };

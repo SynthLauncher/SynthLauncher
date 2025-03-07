@@ -3,23 +3,22 @@
 Java::Java() : version(""), path("") {}
 
 Java::Java(std::string version, std::string path)
-    : version(version), path(path) {};
+    : version(version), path(path){};
 
 std::string Java::toJson() const {
-  std::string json = "java: {";
-  json += "\"version\":\"" + this->version + "\",";
-  json += "\"path\":\"" + this->path + "\"";
-  json += "}";
-  return json;
+  std::ostringstream json;
+  json << "java: {"
+       << "\"version\": \"" << this->version << "\","
+       << "\"path\": \"" << this->path << "\"";
+
+  return json.str();
 }
 
 Java Java::fromJson(const rapidjson::Value &obj) {
-  Java java;
-  if (obj.HasMember("version"))
-    java.version = obj["version"].GetString();
-  if (obj.HasMember("path"))
-    java.path = obj["path"].GetString();
-  return java;
+  if (!obj.HasMember("version") || !obj.HasMember("path"))
+    return Java();
+
+  return Java(obj["version"].GetString(), obj["path"].GetString());
 }
 
 std::vector<Java> Java::getAvaliableJavaCups() {
@@ -198,7 +197,7 @@ bool Java::extractJavaVersion(Java &cup) {
   return false;
 }
 
-bool Java::isValid(const Java& cup) {
+bool Java::isValid(const Java &cup) {
   if (cup.path == "")
     return false;
   return true;

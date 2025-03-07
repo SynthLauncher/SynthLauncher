@@ -14,7 +14,7 @@ namespace App {
 /// @brief Configuration for the application (folder structure, OS,
 /// architecture)
 struct AppConfig {
-  std::string DIR;
+  fs::path DIR;
   fs::path ASSETS_DIR;
   fs::path LIBRARIES_DIR;
   fs::path NATIVES_DIR;

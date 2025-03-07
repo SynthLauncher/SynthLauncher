@@ -1,37 +1,36 @@
 #include "include/entities/instance.hh"
 
-fs::path Instance::PARENT_DIR;
-fs::path Instance::INSTANCE_FILE;
+Instance::Instance() : name(""), version("") {}
 
 Instance::Instance(const std::string_view name, const std::string_view version)
     : name(name), version(version) {}
 
 Instance Instance::fromJson(const rapidjson::Value &obj) {
-  Instance instance(obj["name"].GetString(), obj["version"].GetString());
-
-  return instance;
+  if (!obj.HasMember("name") || !obj.HasMember("version")) 
+    return Instance();
+  
+  return Instance(obj["name"].GetString(), obj["version"].GetString());
 }
 
-std::string Instance::toJson(Instance &instance) {
-  std::string json = "{";
-  json += "\"name\": ";
-  json += instance.name + ",";
-  json += "\"version\": ";
-  json += instance.version;
+std::string Instance::toJson() const {
+  std::ostringstream json;
+  json << "{"
+       << "\"name\" \"" << this->name << "\","
+       << "\"version\": \"" << this->version << "\""
+       << "}";
 
-  return json;
+  return json.str();
 }
 
 void Instance::init(const App::AppConfig &config) {
-  PARENT_DIR = config.DIR + "\\instances\\";
-  INSTANCE_FILE = config.DIR + "instances.json";
+  PARENT_DIR = config.DIR / "instances";
+  INSTANCE_FILE = config.DIR / "instances.json";
 }
 
-fs::path Instance::dir() { return this->PARENT_DIR / this->name; }
+fs::path Instance::dir() { return PARENT_DIR / name; }
 
 void Instance::initDir() {
-  if (!fs::exists(this->dir()))
-    fs::create_directories(this->dir());
+  fs::create_directories(this->dir());
 }
 
 Instance Instance::createInstance(const std::string_view name,
@@ -107,7 +106,7 @@ Instance Instance::getInstance(const std::string &name) {
 }
 
 void Instance::writeInstance(Instance &instance) {
-  std::string json = Instance::toJson(instance);
+  std::string json = instance.toJson();
 
   std::ofstream file(INSTANCE_FILE);
   file.write(json.c_str(), sizeof(json));

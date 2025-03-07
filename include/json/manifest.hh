@@ -13,7 +13,7 @@ namespace fs = std::filesystem;
 /// @brief Manifest for the game
 class Manifest {
 public:
-  static fs::path PATH;
+  inline static fs::path PATH = "";
 
   /// @brief Latest version of the game
   class Latest {
