@@ -32,12 +32,6 @@ public:
   std::string toJson();
   static Config parse(const rapidjson::Value &obj);
 
-  uint64_t getMinRam() const;
-  uint64_t getMaxRam() const;
-  Java getJava() const;
-  void setMinRam(uint64_t min_ram);
-  void setMaxRam(uint64_t max_ram);
-  void setJava(Java java);
   static Config getConfig(fs::path);
   Config readMainConfig();
   void launch(App::AppConfig &config, Instance &instance);

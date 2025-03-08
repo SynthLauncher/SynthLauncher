@@ -26,12 +26,12 @@ Client::OSRules Client::OSRules::fromJson(const rapidjson::Value &obj) {
   OSRules rules;
 
   if (obj.HasMember("name"))
-    rules.name = OperatingSystem::fromString(obj["name"].GetString());
+    rules.name = stringToOs(obj["name"].GetString());
   else
     rules.name = std::nullopt;
 
   if (obj.HasMember("arch"))
-    rules.arch = Architecture::fromString(obj["arch"].GetString());
+    rules.arch = stringToArch(obj["arch"].GetString());
   else
     rules.arch = std::nullopt;
 
@@ -250,7 +250,7 @@ Client::Library Client::Library::fromJson(const rapidjson::Value &obj) {
          itr != obj["natives"].MemberEnd(); ++itr) {
       auto &key = itr->name;
       auto &val = itr->value;
-      library.natives[OperatingSystem::fromString(key.GetString())] =
+      library.natives[stringToOs(key.GetString())] =
           val.GetString();
     }
   }

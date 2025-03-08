@@ -54,7 +54,7 @@ TEST(ClientHH, OSRulesParsing_1) {
 
   Client::OSRules rules = Client::OSRules::fromJson(obj);
 
-  ASSERT_EQ(rules.name, OperatingSystem::OS::Windows);
+  ASSERT_EQ(rules.name, OS::Windows);
   ASSERT_EQ(rules.arch, std::nullopt);
   ASSERT_EQ(rules.version, "");
 }
@@ -66,7 +66,7 @@ TEST(ClientHH, OSRulesParsing_2) {
 
   Client::OSRules rules = Client::OSRules::fromJson(obj);
 
-  ASSERT_EQ(rules.arch, Architecture::Arch::X86);
+  ASSERT_EQ(rules.arch, Arch::X86);
   ASSERT_EQ(rules.version, "1.21");
   ASSERT_EQ(rules.name, std::nullopt);
 }
@@ -78,8 +78,8 @@ TEST(ClientHH, OSRulesParsing_3) {
 
   Client::OSRules rules = Client::OSRules::fromJson(obj);
 
-  ASSERT_EQ(rules.name, OperatingSystem::OS::Linux);
-  ASSERT_EQ(rules.arch, Architecture::Arch::Arm);
+  ASSERT_EQ(rules.name, OS::Linux);
+  ASSERT_EQ(rules.arch, Arch::Arm);
   ASSERT_EQ(rules.version, "");
 }
 
@@ -97,8 +97,8 @@ TEST(ClientHH, RuleParsing_1) {
     Client::Rule rule = Client::Rule::fromJson(obj);
 
     ASSERT_EQ(rule.action, "allow");
-    ASSERT_EQ(rule.os->name, OperatingSystem::OS::OSX);
-    ASSERT_EQ(rule.os->arch, Architecture::Arch::X86_64);
+    ASSERT_EQ(rule.os->name, OS::OSX);
+    ASSERT_EQ(rule.os->arch, Arch::X86_64);
     ASSERT_EQ(rule.features, std::nullopt);
   }
 }
@@ -117,7 +117,7 @@ TEST(ClientHH, RuleParsing_2) {
     Client::Rule rule = Client::Rule::fromJson(obj);
 
     ASSERT_EQ(rule.action, "disallow");
-    ASSERT_EQ(rule.os->name, OperatingSystem::OS::Windows);
+    ASSERT_EQ(rule.os->name, OS::Windows);
     ASSERT_EQ(rule.os->version, "1.21");
     ASSERT_EQ(rule.os->arch, std::nullopt);
     ASSERT_EQ(rule.features, std::nullopt);
@@ -210,7 +210,7 @@ TEST(ClientHH, ArgumentsParsing) {
   ASSERT_EQ(args.game[2].value, "--version");
   ASSERT_EQ(args.game[3].value, "${version_name}");
   ASSERT_EQ(args.jvm[0].rules[0].action, "allow");
-  ASSERT_EQ(args.jvm[0].rules[0].os->name, OperatingSystem::OS::Windows);
+  ASSERT_EQ(args.jvm[0].rules[0].os->name, OS::Windows);
   ASSERT_EQ(args.jvm[0].value,
             "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_"
             "minecraft.exe.heapdump");

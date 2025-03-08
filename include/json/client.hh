@@ -41,8 +41,8 @@ public:
   };
 
   struct OSRules {
-    std::optional<OperatingSystem::OS> name;
-    std::optional<Architecture::Arch> arch;
+    std::optional<OS> name;
+    std::optional<Arch> arch;
     std::string version;
 
     static OSRules fromJson(const rapidjson::Value &obj);
@@ -129,7 +129,7 @@ public:
     LibraryDownloads downloads;
     std::string name;
     std::vector<Rule> rules;
-    std::map<OperatingSystem::OS, std::string> natives;
+    std::map<OS, std::string> natives;
     LibraryExtractRules extract;
 
     static Library fromJson(const rapidjson::Value &obj);

@@ -1,25 +1,25 @@
 #include "include/json/assetindex.hh"
 
 std::string AssetIndex::AssetObject::id() {
-  if (hash.empty() || hash.size() < 2)
+  if (hash.size() < 2)
     throw std::runtime_error("Invalid hash: too short to generate ID.");
 
   return hash.substr(0, 2);
 }
 
 std::string AssetIndex::AssetObject::url() {
-  return "https://resources.download.minecraft.net/" + this->id() + "/" + hash;
+  return "https://resources.download.minecraft.net/" + id() + "/" + hash;
 }
 
 fs::path AssetIndex::AssetObject::path(App::AppConfig &config) {
-  return config.ASSETS_DIR / "objects" / this->id() / hash;
+  return config.ASSETS_DIR / "objects" /  id() / hash;
 }
 
 void AssetIndex::AssetObject::fetch(App::AppConfig &config) {
-  fs::path asset_path = this->path(config);
+  fs::path asset_path =  path(config);
 
   if (!fs::exists(asset_path)) {
-    httplib::Client cli(this->url());
+    httplib::Client cli(  url());
 
     auto res = cli.Get("/");
     if (res && res->status == 200) {

@@ -18,8 +18,8 @@ struct AppConfig {
   fs::path ASSETS_DIR;
   fs::path LIBRARIES_DIR;
   fs::path NATIVES_DIR;
-  OperatingSystem::OS OS;
-  Architecture::Arch ARCH;
+  OS OS;
+  Arch ARCH;
 };
 
 /// @brief Initializes the application configuration

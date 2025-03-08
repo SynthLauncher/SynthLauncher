@@ -2,8 +2,6 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include <filesystem>
-#include <stdexcept>
-#include <sstream>
 #include <string>
 #include <vector>
 #include "include/rapidjson/document.h"
@@ -29,13 +27,13 @@ public:
   fs::path icon;
 
   Instance();
-  Instance(const std::string_view name, const std::string_view version);
+  Instance(const std::string &name, const std::string &version);
 
   fs::path dir();
   void initDir();
   static void init(const App::AppConfig &config);
-  static Instance createInstance(const std::string_view name,
-                                 const std::string_view version);
+  static Instance createInstance(const std::string &name,
+                                 const std::string &version);
   static std::vector<Instance> readInstances();
   static Instance getInstance(const std::string &name);
   static void writeInstance(Instance& instance);

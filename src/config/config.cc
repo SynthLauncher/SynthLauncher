@@ -28,11 +28,11 @@ uint64_t Config::getTotalPhysicalMemory() {
 Config::Config() {
   uint64_t total = getTotalPhysicalMemory();
 
-  this->max_ram = total / 4 / 1024 / 1024;
-  this->min_ram = this->max_ram / 2;
+  max_ram = total / 4 / 1024 / 1024;
+  min_ram = max_ram / 2;
 
-  this->java = Java::getAvaliableJavaCups()[0];
-  this->path = MAIN_PATH.string();
+  java = Java::getAvaliableJavaCups()[0];
+  path = MAIN_PATH.string();
 }
 
 Config::Config(const fs::path &path)
@@ -44,10 +44,10 @@ Config::Config(const Java &java, const fs::path &path, const uint64_t &min_ram,
 
 std::string Config::toJson() {
   std::ostringstream json;
-  json << "\"path\": \"" << this->path << "\", "
-       << "\"min_ram\": " << this->min_ram << ", "
-       << "\"max_ram\": " + this->max_ram << ", "
-       << "\"java\": " << this->java.toJson();
+  json << "\"path\": \"" << path << "\", "
+       << "\"min_ram\": " << min_ram << ", "
+       << "\"max_ram\": " + max_ram << ", "
+       << "\"java\": " << java.toJson();
   return json.str();
 }
 
@@ -72,18 +72,6 @@ Config Config::getConfig(fs::path path) {
 
   return config;
 }
-
-uint64_t Config::getMinRam() const { return this->min_ram; }
-
-uint64_t Config::getMaxRam() const { return this->max_ram; }
-
-Java Config::getJava() const { return this->java; }
-
-void Config::setMinRam(uint64_t min_ram) { this->min_ram = min_ram; }
-
-void Config::setMaxRam(uint64_t max_ram) { this->max_ram = max_ram; }
-
-void Config::setJava(Java java) { this->java = java; }
 
 void Config::writeConfig() {
   std::string json = this->toJson();
@@ -116,10 +104,10 @@ void Config::launch(App::AppConfig &config, Instance &instance) {
   classpath += (instance.dir() / "client.jar").string();
 
   std::vector<std::string> args = {
-      getJava().path,
+      java.path,
       "-Djava.library.path=" + (instance.dir() / "natives").string(),
-      "-Xms" + std::to_string(getMinRam()) + "M",
-      "-Xmx" + std::to_string(getMaxRam()) + "M",
+      "-Xms" + std::to_string(min_ram) + "M",
+      "-Xmx" + std::to_string(max_ram) + "M",
       "-cp",
       classpath,
       client.mainClass,

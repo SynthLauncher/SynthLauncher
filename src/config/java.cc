@@ -8,8 +8,8 @@ Java::Java(std::string version, std::string path)
 std::string Java::toJson() const {
   std::ostringstream json;
   json << "java: {"
-       << "\"version\": \"" << this->version << "\","
-       << "\"path\": \"" << this->path << "\""
+       << "\"version\": \"" << version << "\","
+       << "\"path\": \"" << path << "\""
        << "}";
 
   return json.str();
@@ -37,17 +37,14 @@ std::vector<Java> Java::getAvaliableJavaCups() {
   cups.insert(cups.end(), pathCups.begin(), pathCups.end());
 
   auto javaHome = getJavaHomeCup();
-  if (Java::isValid(javaHome))
+  if (isValid(javaHome))
     cups.push_back(javaHome);
 
-  for (auto it = cups.begin(); it != cups.end();) {
+  for (auto it = cups.begin(); it != cups.end(); ++it) {
     if (it->version.empty()) {
       if (!extractJavaVersion(*it))
         it = cups.erase(it);
-      else
-        ++it;
-    } else
-      ++it;
+    } 
   }
 
   sortCups(cups);
@@ -199,7 +196,5 @@ bool Java::extractJavaVersion(Java &cup) {
 }
 
 bool Java::isValid(const Java &cup) {
-  if (cup.path == "")
-    return false;
-  return true;
+  return !(cup.path == "");
 }

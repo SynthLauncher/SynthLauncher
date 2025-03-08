@@ -2,7 +2,7 @@
 
 Instance::Instance() : name(""), version("") {}
 
-Instance::Instance(const std::string_view name, const std::string_view version)
+Instance::Instance(const std::string &name, const std::string &version)
     : name(name), version(version) {}
 
 Instance Instance::fromJson(const rapidjson::Value &obj) {
@@ -31,7 +31,7 @@ fs::path Instance::dir() { return PARENT_DIR / name; }
 
 void Instance::initDir() { fs::create_directories(this->dir()); }
 
-Instance Instance::createInstance(const std::string_view name, const std::string_view version) {
+Instance Instance::createInstance(const std::string &name, const std::string &version) {
   Instance instance = Instance(name, version);
   Manifest manifest = Manifest::fromJson();
   std::string url = "";
