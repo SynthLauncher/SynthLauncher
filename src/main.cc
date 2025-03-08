@@ -12,9 +12,9 @@ int main() {
   Client cli = Client::fromJson(doc);
   Instance::init(appConfig);
 
-  Instance instance = Instance::createInstance("test10", "1.21");
+  Instance instance = Instance::createInstance("test11", "1.21");
 
-  cli.downloadAssets(appConfig);
+  cli.downloadLibraries(appConfig, instance.dir());
 
 
   return 0;
