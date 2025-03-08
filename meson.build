@@ -2,21 +2,17 @@ project('SynthLauncher', 'cpp', license: 'aGPL-3.0', version: '1.0.0', license_f
 
 cpp = meson.get_compiler('cpp')
 
+platform_deps =  []
+
 # Platform-specific dependencies
 if host_machine.system() == 'windows'
   ws2_32 = cpp.find_library('ws2_32')
   crypt32 = cpp.find_library('crypt32')
-  minizip = cpp.find_library('minizip', required: true)
-  platform_deps = [ws2_32, crypt32, minizip]
-elif host_machine.system() == 'darwin'
-  minizip = cpp.find_library('minizip', required: true)
-  platform_deps = [minizip]
-else
-  minizip = cpp.find_library('minizip', required: true)
-  platform_deps = [minizip]
+  platform_deps = [ws2_32, crypt32]
 endif
 
-openssl = dependency('openssl')
+minizip_dep = dependency('minizip', required: true)
+openssl_dep = dependency('openssl', required: true)
 
 src = [
   'src/json/client.cc',
@@ -43,17 +39,14 @@ test_src = [
 ]
 
 # Test dependency
-gtest = dependency('gtest', required: false)
-if not gtest.found()
-  gtest = cpp.find_library('gtest', required: true)
-endif
+gtest_dep = dependency('gtest', required: false)
 
 executable('SynthLauncher', 
   [src, 'src/main.cc'], 
   include_directories: 'include',
-  dependencies: [openssl] + platform_deps, 
+  dependencies: [openssl_dep, minizip_dep, platform_deps], 
 )
 
-test_exe = executable('SynthLauncherTest', [src, test_src], dependencies: [gtest, openssl] + platform_deps)
+test_exe = executable('SynthLauncherTest', [src, test_src], dependencies: [gtest_dep, openssl_dep, minizip_dep, platform_deps])
 
 test('SynthLauncherTest', test_exe)
