@@ -1,4 +1,6 @@
 #include "include/config/config.hh"
+#include <stdexcept>
+#include <unistd.h>
 
 uint64_t Config::getTotalPhysicalMemory() {
 #ifdef _WIN32
@@ -182,8 +184,13 @@ void Config::launch(App::AppConfig &config, Instance &instance) {
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
 #else
-  /*
-    I'll write this later
-  */
+  pid_t pid = fork();
+
+  if(pid == 0){
+    execl(java.path.c_str(), args.data()->c_str(), NULL);
+  }else{
+    std::cerr << "CreateProcess failed () \n";
+    return;
+  }
 #endif
 }

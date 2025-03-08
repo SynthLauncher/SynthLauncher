@@ -17,6 +17,8 @@
 #include <sys/sysctl.h>
 #else
 #include <sys/sysinfo.h>
+#include <unistd.h>
+#include <sys/types.h>
 #endif
 
 namespace fs = std::filesystem;
