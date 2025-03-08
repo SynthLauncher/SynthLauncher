@@ -1,17 +1,18 @@
 #pragma once
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
+#include "include/config/app.hh"
+#include "include/config/config.hh"
+#include "include/httplib.h"
+#include "include/json/client.hh"
+#include "include/json/manifest.hh"
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/error/en.h"
+#include "include/utils/httplib_utils.hh"
 #include <filesystem>
 #include <string>
 #include <vector>
-#include "include/rapidjson/document.h"
-#include "include/rapidjson/error/en.h"
-#include "include/json/manifest.hh"
-#include "include/config/app.hh"
-#include "include/httplib.h"
-#include "include/utils/httplib_utils.hh"
-#include "include/config/config.hh"
-#include "include/json/client.hh"
+
 
 namespace fs = std::filesystem;
 
@@ -36,16 +37,16 @@ public:
                                  const std::string &version);
   static std::vector<Instance> readInstances();
   static Instance getInstance(const std::string &name);
-  static void writeInstance(Instance& instance);
-  static void updateInstance(Instance& instance);
-  static void addInstance(Instance& instance);
-  
+  static void writeInstance(Instance &instance);
+  static void updateInstance(Instance &instance);
+  static void addInstance(Instance &instance);
+
   Config getConfig();
   Client readClient();
-  
+
   void install(App::AppConfig &config);
   void launch(App::AppConfig &config);
-  
+
   static Instance fromJson(const rapidjson::Value &obj);
   std::string toJson() const;
 };

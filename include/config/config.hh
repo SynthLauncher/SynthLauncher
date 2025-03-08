@@ -30,7 +30,7 @@ public:
   Config(const fs::path& path);
   Config(const Java &java, const fs::path& path, const uint64_t& min_ram, const uint64_t& max_ram);
   std::string toJson();
-  static Config parse(const rapidjson::Value &obj);
+  static Config fromJson(const rapidjson::Value &obj);
 
   static Config getConfig(fs::path);
   Config readMainConfig();

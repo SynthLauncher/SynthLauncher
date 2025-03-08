@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <string>
 
-
 /// @brief Enum class representing an Architecture (X86, X86_64, Arm64, Arm)
 enum class Arch { X86, X86_64, Arm64, Arm };
 

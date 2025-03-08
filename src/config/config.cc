@@ -4,23 +4,23 @@ uint64_t Config::getTotalPhysicalMemory() {
 #ifdef _WIN32
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
-  if (!GlobalMemoryStatusEx(&status)) {
+  if (!GlobalMemoryStatusEx(&status))
     throw std::runtime_error("Failed to get memory status");
-  }
+
   return status.ullTotalPhys;
 #elif defined(__APPLE__)
   uint64_t mem;
   size_t len = sizeof(mem);
   int mib[2] = {CTL_HW, HW_MEMSIZE};
-  if (sysctl(mib, 2, &mem, &len, NULL, 0) == -1) {
+  if (sysctl(mib, 2, &mem, &len, NULL, 0) == -1)
     throw std::runtime_error("Failed to get memory status");
-  }
+
   return mem;
 #else
   struct sysinfo info;
-  if (sysinfo(&info) != 0) {
+  if (sysinfo(&info) != 0)
     throw std::runtime_error("Failed to get memory status");
-  }
+
   return static_cast<uint64_t>(info.totalram) * info.mem_unit;
 #endif
 }
@@ -51,14 +51,18 @@ std::string Config::toJson() {
   return json.str();
 }
 
-Config Config::parse(const rapidjson::Value &obj) {
+Config Config::fromJson(const rapidjson::Value &obj) {
   Config config;
+
   if (obj.HasMember("path"))
     config.path = obj["path"].GetString();
+
   if (obj.HasMember("min_ram"))
     config.min_ram = obj["min_ram"].GetUint64();
+
   if (obj.HasMember("max_ram"))
     config.max_ram = obj["max_ram"].GetUint64();
+
   if (obj.HasMember("java"))
     config.java = Java::fromJson(obj["java"]);
 
@@ -67,8 +71,9 @@ Config Config::parse(const rapidjson::Value &obj) {
 
 Config Config::getConfig(fs::path path) {
   auto json = rapidjson_utils::fromJson(path);
-  Config config = Config::parse(json);
-  config.path = path.string();
+
+  Config config = Config::fromJson(json);
+  config.path = path;
 
   return config;
 }
@@ -77,9 +82,9 @@ void Config::writeConfig() {
   std::string json = this->toJson();
 
   std::ofstream file(this->path, std::ios::out | std::ios::trunc);
-  if (!file) 
+  if (!file)
     throw std::runtime_error("Failed to open file: " + this->path.string());
-  
+
   file << json;
 }
 
@@ -97,9 +102,8 @@ void Config::launch(App::AppConfig &config, Instance &instance) {
       ':';
 #endif
 
-  for (const auto &path : paths) {
+  for (const auto &path : paths)
     classpath += path.string() + seperator;
-  }
 
   classpath += (instance.dir() / "client.jar").string();
 
@@ -137,11 +141,10 @@ void Config::launch(App::AppConfig &config, Instance &instance) {
 #ifdef _WIN32
   std::string cmd;
   for (const auto &arg : args) {
-    if (arg.find(' ') != std::string::npos) {
+    if (arg.find(' ') != std::string::npos)
       cmd += '"' + arg + "\" ";
-    } else {
+    else
       cmd += arg + " ";
-    }
   }
 
   // Convert UTF-8 command line to UTF-16
