@@ -12,7 +12,7 @@ App::AppConfig App::initAppConfig() {
   else
     config.DIR = "C:\\SynthLauncher";
 #elif __linux__
-  config.OS = OS::Linux;
+  config.Os = OS::Linux;
   const char *home = std::getenv("HOME");
   if (home)
     config.DIR = fs::path(home) / ".synthlauncher";

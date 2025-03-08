@@ -376,7 +376,7 @@ void Client::Library::downloadArtifact(App::AppConfig &config) {
 }
 
 void Client::Library::downloadNative(App::AppConfig &config) {
-  std::string nativeIndex = natives[config.OS];
+  std::string nativeIndex = natives[config.Os];
 
   if (nativeIndex != "") {
     fs::path nativePath = downloads.nativePath(config, nativeIndex);
@@ -393,7 +393,7 @@ void Client::Library::downloadNative(App::AppConfig &config) {
 
 void Client::Library::extractNative(App::AppConfig &config,
                                     fs::path instanceDir) {
-  std::string nativeIndex = natives[config.OS];
+  std::string nativeIndex = natives[config.Os];
 
   fs::path nativeZipPath = downloads.nativePath(config, nativeIndex);
 
@@ -565,7 +565,7 @@ bool Client::Rule::osMatches(App::AppConfig &config) {
 
   if (os != std::nullopt) {
     if (os->name != std::nullopt)
-      match = (os->name == config.OS);
+      match = (os->name == config.Os);
 
     if (os->arch != std::nullopt)
       match = match && (os->arch == config.ARCH);

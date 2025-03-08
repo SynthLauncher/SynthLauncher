@@ -18,7 +18,7 @@ struct AppConfig {
   fs::path ASSETS_DIR;
   fs::path LIBRARIES_DIR;
   fs::path NATIVES_DIR;
-  OS OS;
+  OS Os;
   Arch ARCH;
 };
 
