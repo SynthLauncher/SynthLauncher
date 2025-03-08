@@ -1,8 +1,7 @@
 #include "include/config/app.hh"
-#include "include/json/client.hh"
 #include "include/entities/instance.hh"
+#include "include/json/client.hh"
 #include <iostream>
-
 
 int main() {
   // Crashes after starting idk why
@@ -12,7 +11,7 @@ int main() {
 
   std::cout << "Initialized! \n";
 
-  rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/25w03a.json");
+  rapidjson::Document doc = rapidjson_utils::fromJson("../assets/25w03a.json");
 
   Client cli = Client::fromJson(doc);
   Instance::init(appConfig);

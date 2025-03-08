@@ -3,8 +3,8 @@
 #include <gtest/gtest.h>
 
 TEST(ClientHH, FeaturesParsing_1) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/features/features_1.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/features/features_1.json");
   const rapidjson::Value &obj = doc["features"];
 
   Client::Features features = Client::Features::fromJson(obj);
@@ -18,8 +18,8 @@ TEST(ClientHH, FeaturesParsing_1) {
 }
 
 TEST(ClientHH, FeaturesParsing_2) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/features/features_2.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/features/features_2.json");
   const rapidjson::Value &obj = doc["features"];
 
   Client::Features features = Client::Features::fromJson(obj);
@@ -33,8 +33,8 @@ TEST(ClientHH, FeaturesParsing_2) {
 }
 
 TEST(ClientHH, FeaturesParsing_3) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/features/features_3.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/features/features_3.json");
   const rapidjson::Value &obj = doc["features"];
 
   Client::Features features = Client::Features::fromJson(obj);
@@ -48,8 +48,8 @@ TEST(ClientHH, FeaturesParsing_3) {
 }
 
 TEST(ClientHH, OSRulesParsing_1) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/os_rules/os_rules_1.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/os_rules/os_rules_1.json");
   const rapidjson::Value &obj = doc["os"];
 
   Client::OSRules rules = Client::OSRules::fromJson(obj);
@@ -60,8 +60,8 @@ TEST(ClientHH, OSRulesParsing_1) {
 }
 
 TEST(ClientHH, OSRulesParsing_2) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/os_rules/os_rules_2.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/os_rules/os_rules_2.json");
   const rapidjson::Value &obj = doc["os"];
 
   Client::OSRules rules = Client::OSRules::fromJson(obj);
@@ -72,8 +72,8 @@ TEST(ClientHH, OSRulesParsing_2) {
 }
 
 TEST(ClientHH, OSRulesParsing_3) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/os_rules/os_rules_3.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/os_rules/os_rules_3.json");
   const rapidjson::Value &obj = doc["os"];
 
   Client::OSRules rules = Client::OSRules::fromJson(obj);
@@ -84,8 +84,8 @@ TEST(ClientHH, OSRulesParsing_3) {
 }
 
 TEST(ClientHH, RuleParsing_1) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/rule/rule_1.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/rule/rule_1.json");
 
   const rapidjson::Value &arr = doc["rules"];
 
@@ -104,8 +104,8 @@ TEST(ClientHH, RuleParsing_1) {
 }
 
 TEST(ClientHH, RuleParsing_2) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/rule/rule_2.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/rule/rule_2.json");
 
   const rapidjson::Value &arr = doc["rules"];
 
@@ -125,8 +125,8 @@ TEST(ClientHH, RuleParsing_2) {
 }
 
 TEST(ClientHH, RuleParsing_3) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/rule/rule_3.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/rule/rule_3.json");
 
   const rapidjson::Value &arr = doc["rules"];
 
@@ -149,8 +149,8 @@ TEST(ClientHH, RuleParsing_3) {
 }
 
 TEST(ClientHH, ArgumentParsing_1) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-      "E:/OneDrive/Desktop/SynthLauncher/assets/argument/argument_1.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/argument/argument_1.json");
 
   const rapidjson::Value &arr = doc;
 
@@ -163,8 +163,8 @@ TEST(ClientHH, ArgumentParsing_1) {
 }
 
 TEST(ClientHH, ArgumentParsing_2) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-    "E:/OneDrive/Desktop/SynthLauncher/assets/argument/argument_2.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/argument/argument_2.json");
 
   const rapidjson::Value &arr = doc;
 
@@ -179,8 +179,8 @@ TEST(ClientHH, ArgumentParsing_2) {
 }
 
 TEST(ClientHH, ArgumentParsing_3) {
-  rapidjson::Document doc = rapidjson_utils::fromJson(
-    "E:/OneDrive/Desktop/SynthLauncher/assets/argument/argument_3.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/argument/argument_3.json");
 
   const rapidjson::Value &arr = doc;
 
@@ -198,48 +198,54 @@ TEST(ClientHH, ArgumentParsing_3) {
 }
 
 TEST(ClientHH, ArgumentsParsing) {
-    rapidjson::Document doc =
-    rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/arguments/arguments.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/arguments/arguments.json");
 
-    const rapidjson::Value& obj = doc["arguments"];
+  const rapidjson::Value &obj = doc["arguments"];
 
-    Client::Arguments args = Client::Arguments::fromJson(obj);
+  Client::Arguments args = Client::Arguments::fromJson(obj);
 
-    ASSERT_EQ(args.game[0].value, "--username");
-    ASSERT_EQ(args.game[1].value, "${auth_player_name}");
-    ASSERT_EQ(args.game[2].value, "--version");
-    ASSERT_EQ(args.game[3].value, "${version_name}");
-    ASSERT_EQ(args.jvm[0].rules[0].action, "allow");
-    ASSERT_EQ(args.jvm[0].rules[0].os->name, OperatingSystem::OS::Windows);
-    ASSERT_EQ(args.jvm[0].value, "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
-    ASSERT_EQ(args.jvm[1].value, "-Djava.library.path=${natives_directory}");
+  ASSERT_EQ(args.game[0].value, "--username");
+  ASSERT_EQ(args.game[1].value, "${auth_player_name}");
+  ASSERT_EQ(args.game[2].value, "--version");
+  ASSERT_EQ(args.game[3].value, "${version_name}");
+  ASSERT_EQ(args.jvm[0].rules[0].action, "allow");
+  ASSERT_EQ(args.jvm[0].rules[0].os->name, OperatingSystem::OS::Windows);
+  ASSERT_EQ(args.jvm[0].value,
+            "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_"
+            "minecraft.exe.heapdump");
+  ASSERT_EQ(args.jvm[1].value, "-Djava.library.path=${natives_directory}");
 }
 
 TEST(ClientHH, DownloadParsing_1) {
-    rapidjson::Document doc =
-    rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download/download_1.json");
-    const rapidjson::Value &obj = doc["download"];
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/download/download_1.json");
+  const rapidjson::Value &obj = doc["download"];
 
-    Client::Download download = Client::Download::fromJson(obj);
+  Client::Download download = Client::Download::fromJson(obj);
 
-    ASSERT_EQ(download.path, "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
-    ASSERT_EQ(download.sha1, "e9aca8c5479b520a2a7f0d542a118140e812c5e8");
-    ASSERT_EQ(download.size, 133378);
-    ASSERT_EQ(download.url, "https://libraries.minecraft.net/org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
-    ASSERT_EQ(download.id, "");
-    ASSERT_EQ(download.totalSize, 0);
+  ASSERT_EQ(download.path,
+            "org/lwjgl/lwjgl/3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+  ASSERT_EQ(download.sha1, "e9aca8c5479b520a2a7f0d542a118140e812c5e8");
+  ASSERT_EQ(download.size, 133378);
+  ASSERT_EQ(download.url, "https://libraries.minecraft.net/org/lwjgl/lwjgl/"
+                          "3.3.3/lwjgl-3.3.3-natives-windows-arm64.jar");
+  ASSERT_EQ(download.id, "");
+  ASSERT_EQ(download.totalSize, 0);
 }
 
 TEST(ClientHH, DownloadParsing_2) {
   rapidjson::Document doc =
-  rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download/download_2.json");
+      rapidjson_utils::fromJson("../assets/download/download_2.json");
   const rapidjson::Value &obj = doc["download"];
 
   Client::Download download = Client::Download::fromJson(obj);
 
   ASSERT_EQ(download.sha1, "e003d151668a0eff64c1191972707655e341f8f5");
   ASSERT_EQ(download.size, 57017689);
-  ASSERT_EQ(download.url, "https://piston-data.mojang.com/v1/objects/e003d151668a0eff64c1191972707655e341f8f5/server.jar");
+  ASSERT_EQ(download.url,
+            "https://piston-data.mojang.com/v1/objects/"
+            "e003d151668a0eff64c1191972707655e341f8f5/server.jar");
   ASSERT_EQ(download.id, "123k");
   ASSERT_EQ(download.totalSize, 0);
   ASSERT_EQ(download.path, "");
@@ -247,13 +253,13 @@ TEST(ClientHH, DownloadParsing_2) {
 
 TEST(ClientHH, DownloadParsing_3) {
   rapidjson::Document doc =
-  rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/download/download_3.json");
+      rapidjson_utils::fromJson("../assets/download/download_3.json");
   const rapidjson::Value &obj = doc["download"];
 
   Client::Download download = Client::Download::fromJson(obj);
 
   ASSERT_EQ(
-    download.path,
+      download.path,
       "com/fasterxml/jackson/core/jackson-core/2.13.4/jackson-core-2.13.4.jar");
   ASSERT_EQ(download.sha1, "0cf934c681294b97ef6d80082faeefbe1edadf56");
   ASSERT_EQ(download.totalSize, 29323);
@@ -263,63 +269,96 @@ TEST(ClientHH, DownloadParsing_3) {
 }
 
 TEST(ClientHH, ClientDownloadsParsing) {
-  rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/client_download/client_download.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/"
+                                "client_download/client_download.json");
   rapidjson::Value &obj = doc["downloads"];
 
   Client::ClientDownloads downloads = Client::ClientDownloads::fromJson(obj);
 
   ASSERT_EQ(downloads.client.sha1, "9acca901e3564a91250b941cd2c55a55d0b71bca");
   ASSERT_EQ(downloads.client.size, 28534222);
-  ASSERT_EQ(downloads.client.url, "https://piston-data.mojang.com/v1/objects/9acca901e3564a91250b941cd2c55a55d0b71bca/client.jar");
-  
-  ASSERT_EQ(downloads.client_mappings.sha1, "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
+  ASSERT_EQ(downloads.client.url,
+            "https://piston-data.mojang.com/v1/objects/"
+            "9acca901e3564a91250b941cd2c55a55d0b71bca/client.jar");
+
+  ASSERT_EQ(downloads.client_mappings.sha1,
+            "94b753018a4683ec7c25a33c9048d46fbf9a5db0");
   ASSERT_EQ(downloads.client_mappings.size, 10413606);
-  ASSERT_EQ(downloads.client_mappings.url, "https://piston-data.mojang.com/v1/objects/94b753018a4683ec7c25a33c9048d46fbf9a5db0/client.txt");
+  ASSERT_EQ(downloads.client_mappings.url,
+            "https://piston-data.mojang.com/v1/objects/"
+            "94b753018a4683ec7c25a33c9048d46fbf9a5db0/client.txt");
 
   ASSERT_EQ(downloads.server.sha1, "e003d151668a0eff64c1191972707655e341f8f5");
   ASSERT_EQ(downloads.server.size, 57017689);
-  ASSERT_EQ(downloads.server.url, "https://piston-data.mojang.com/v1/objects/e003d151668a0eff64c1191972707655e341f8f5/server.jar");
+  ASSERT_EQ(downloads.server.url,
+            "https://piston-data.mojang.com/v1/objects/"
+            "e003d151668a0eff64c1191972707655e341f8f5/server.jar");
 
-  ASSERT_EQ(downloads.server_mappings.sha1, "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
+  ASSERT_EQ(downloads.server_mappings.sha1,
+            "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d");
   ASSERT_EQ(downloads.server_mappings.size, 7824495);
-  ASSERT_EQ(downloads.server_mappings.url,  "https://piston-data.mojang.com/v1/objects/ad7bb6cf9bdb85fd561981e2c4634a9d3292592d/server.txt");
+  ASSERT_EQ(downloads.server_mappings.url,
+            "https://piston-data.mojang.com/v1/objects/"
+            "ad7bb6cf9bdb85fd561981e2c4634a9d3292592d/server.txt");
 }
 
 TEST(ClientHH, JavaVersionParsing) {
-    rapidjson::Document doc =
-    rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/java_version/java_version.json");
-    const rapidjson::Value &obj = doc["javaVersion"];
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/"
+                                "java_version/java_version.json");
+  const rapidjson::Value &obj = doc["javaVersion"];
 
-    Client::JavaVersion version = Client::JavaVersion::fromJson(obj);
+  Client::JavaVersion version = Client::JavaVersion::fromJson(obj);
 
-    ASSERT_EQ(version.component, "java-runtime-delta");
-    ASSERT_EQ(version.majorVersion, 21);
+  ASSERT_EQ(version.component, "java-runtime-delta");
+  ASSERT_EQ(version.majorVersion, 21);
 }
 
 TEST(ClientHH, LibraryDownloadsParsing) {
-  rapidjson::Document doc = rapidjson_utils::fromJson("E:/OneDrive/Desktop/SynthLauncher/assets/library_download/library_download.json");
+  rapidjson::Document doc =
+      rapidjson_utils::fromJson("../assets/"
+                                "library_download/library_download.json");
   const rapidjson::Value &obj = doc["downloads"];
 
   Client::LibraryDownloads downloads = Client::LibraryDownloads::fromJson(obj);
 
-  ASSERT_EQ(downloads.classifiers["natives-linux"].path, "net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-linux.jar");
-  ASSERT_EQ(downloads.classifiers["natives-linux"].sha1, "7ff832a6eb9ab6a767f1ade2b548092d0fa64795");
+  ASSERT_EQ(downloads.classifiers["natives-linux"].path,
+            "net/java/jinput/jinput-platform/2.0.5/"
+            "jinput-platform-2.0.5-natives-linux.jar");
+  ASSERT_EQ(downloads.classifiers["natives-linux"].sha1,
+            "7ff832a6eb9ab6a767f1ade2b548092d0fa64795");
   ASSERT_EQ(downloads.classifiers["natives-linux"].size, 10362);
-  ASSERT_EQ(downloads.classifiers["natives-linux"].url, "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-linux.jar");
+  ASSERT_EQ(downloads.classifiers["natives-linux"].url,
+            "https://libraries.minecraft.net/net/java/jinput/jinput-platform/"
+            "2.0.5/jinput-platform-2.0.5-natives-linux.jar");
 
-  ASSERT_EQ(downloads.classifiers["natives-osx"].path, "net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-osx.jar");
-  ASSERT_EQ(downloads.classifiers["natives-osx"].sha1, "53f9c919f34d2ca9de8c51fc4e1e8282029a9232");
+  ASSERT_EQ(downloads.classifiers["natives-osx"].path,
+            "net/java/jinput/jinput-platform/2.0.5/"
+            "jinput-platform-2.0.5-natives-osx.jar");
+  ASSERT_EQ(downloads.classifiers["natives-osx"].sha1,
+            "53f9c919f34d2ca9de8c51fc4e1e8282029a9232");
   ASSERT_EQ(downloads.classifiers["natives-osx"].size, 12186);
-  ASSERT_EQ(downloads.classifiers["natives-osx"].url, "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-osx.jar");
+  ASSERT_EQ(downloads.classifiers["natives-osx"].url,
+            "https://libraries.minecraft.net/net/java/jinput/jinput-platform/"
+            "2.0.5/jinput-platform-2.0.5-natives-osx.jar");
 
-  ASSERT_EQ(downloads.classifiers["natives-windows"].path, "net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar");
-  ASSERT_EQ(downloads.classifiers["natives-windows"].sha1, "385ee093e01f587f30ee1c8a2ee7d408fd732e16");
+  ASSERT_EQ(downloads.classifiers["natives-windows"].path,
+            "net/java/jinput/jinput-platform/2.0.5/"
+            "jinput-platform-2.0.5-natives-windows.jar");
+  ASSERT_EQ(downloads.classifiers["natives-windows"].sha1,
+            "385ee093e01f587f30ee1c8a2ee7d408fd732e16");
   ASSERT_EQ(downloads.classifiers["natives-windows"].size, 155179);
-  ASSERT_EQ(downloads.classifiers["natives-windows"].url, "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar");
+  ASSERT_EQ(downloads.classifiers["natives-windows"].url,
+            "https://libraries.minecraft.net/net/java/jinput/jinput-platform/"
+            "2.0.5/jinput-platform-2.0.5-natives-windows.jar");
 
-  ASSERT_EQ(downloads.artifact.path, "ca/weblite/java-objc-bridge/1.1/java-objc-bridge-1.1.jar");
+  ASSERT_EQ(downloads.artifact.path,
+            "ca/weblite/java-objc-bridge/1.1/java-objc-bridge-1.1.jar");
   ASSERT_EQ(downloads.artifact.sha1,
             "1227f9e0666314f9de41477e3ec277e542ed7f7b");
   ASSERT_EQ(downloads.artifact.size, 1330045);
-  ASSERT_EQ(downloads.artifact.url, "https://libraries.minecraft.net/ca/weblite/java-objc-bridge/1.1/java-objc-bridge-1.1.jar");
+  ASSERT_EQ(downloads.artifact.url,
+            "https://libraries.minecraft.net/ca/weblite/java-objc-bridge/1.1/"
+            "java-objc-bridge-1.1.jar");
 }
