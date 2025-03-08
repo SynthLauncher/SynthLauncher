@@ -4,23 +4,26 @@
 #include <iostream>
 
 int main() {
-  // Crashes after starting idk why
-  std::cout << "Starting... \n";
   App::AppConfig appConfig = App::initAppConfig();
   App::initLauncherDir(appConfig);
-
-  std::cout << "Initialized! \n";
 
   rapidjson::Document doc = rapidjson_utils::fromJson("../assets/25w03a.json");
 
   Client cli = Client::fromJson(doc);
   Instance::init(appConfig);
 
-  std::cout << "Instance dir: " << Instance::PARENT_DIR << std::endl;
+  Instance instance = Instance::createInstance("test5", "1.21");
 
-  Instance instance = Instance::createInstance("test4", "1.21");
+  instance.install(appConfig);
 
-  std::cout << "Instance path: " << instance.dir() << std::endl;
+  /*
+  PS E:\OneDrive\Desktop\SynthLauncher\build> ./synthlauncher
+  terminate called after throwing an instance of 'std::runtime_error'
+    what():  Failed to open file:
+  C:\Users\User\AppData\Roaming\SynthLauncher\assets\indexes\17\.json PS
+  E:\OneDrive\Desktop\SynthLauncher\build>
 
+  */
+ 
   return 0;
 }
