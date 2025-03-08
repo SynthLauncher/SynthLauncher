@@ -491,7 +491,7 @@ void Client::downloadAssets(App::AppConfig &config) {
   if (!fs::exists(indexesDir))
     fs::create_directories(indexesDir);
 
-  fs::path indexPath = indexesDir / (assets + ".json");
+  fs::path indexPath = indexesDir / (assets  + ".json");
 
   if (!fs::exists(indexPath)) {
     auto indexFile = this->assetIndex.fetch();
