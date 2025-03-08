@@ -25,7 +25,10 @@ class Instance;
 
 class Config {
 public:
-  static fs::path MAIN_PATH;
+  inline static fs::path MAIN_PATH = "";
+  
+  Config(const fs::path& path);
+  Config(const Java &java, const fs::path& path, const uint64_t& min_ram, const uint64_t& max_ram);
   std::string toJson();
   static Config parse(const rapidjson::Value &obj);
 
@@ -35,13 +38,12 @@ public:
   void setMinRam(uint64_t min_ram);
   void setMaxRam(uint64_t max_ram);
   void setJava(Java java);
-  Config(fs::path path);
   static Config getConfig(fs::path);
   Config readMainConfig();
   void launch(App::AppConfig &config, Instance &instance);
 
 private:
-  std::string path;
+  fs::path path;
   uint64_t min_ram;
   uint64_t max_ram;
   Java java;

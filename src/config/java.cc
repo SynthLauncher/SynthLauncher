@@ -9,7 +9,8 @@ std::string Java::toJson() const {
   std::ostringstream json;
   json << "java: {"
        << "\"version\": \"" << this->version << "\","
-       << "\"path\": \"" << this->path << "\"";
+       << "\"path\": \"" << this->path << "\""
+       << "}";
 
   return json.str();
 }
@@ -60,8 +61,8 @@ std::vector<Java> Java::getCommonWindowsCups() {
   fs::path systemDrive(std::getenv("SystemDrive"));
 
   std::vector<fs::path> paths = {
-      fs::path(systemDrive) / "\\Program Files" / "Java",
-      fs::path(systemDrive) / "\\Program Files (x86)" / "Java"};
+      systemDrive / "Program Files" / "Java",
+      systemDrive / "Program Files (x86)" / "Java"};
 
   for (const auto &path : paths) {
     if (fs::exists(path))

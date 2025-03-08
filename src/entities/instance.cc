@@ -6,9 +6,9 @@ Instance::Instance(const std::string_view name, const std::string_view version)
     : name(name), version(version) {}
 
 Instance Instance::fromJson(const rapidjson::Value &obj) {
-  if (!obj.HasMember("name") || !obj.HasMember("version")) 
+  if (!obj.HasMember("name") || !obj.HasMember("version"))
     return Instance();
-  
+
   return Instance(obj["name"].GetString(), obj["version"].GetString());
 }
 
@@ -29,12 +29,9 @@ void Instance::init(const App::AppConfig &config) {
 
 fs::path Instance::dir() { return PARENT_DIR / name; }
 
-void Instance::initDir() {
-  fs::create_directories(this->dir());
-}
+void Instance::initDir() { fs::create_directories(this->dir()); }
 
-Instance Instance::createInstance(const std::string_view name,
-                                  const std::string_view version) {
+Instance Instance::createInstance(const std::string_view name, const std::string_view version) {
   Instance instance = Instance(name, version);
   Manifest manifest = Manifest::fromJson();
   std::string url = "";
@@ -54,7 +51,6 @@ Instance Instance::createInstance(const std::string_view name,
   instance.initDir();
   fs::path client_path = instance.dir() / "client.json";
 
-  std::cout << client_path;
   if (fs::exists(client_path)) {
     throw std::runtime_error("Instance already exists at: " +
                              client_path.string());
@@ -120,7 +116,7 @@ void Instance::updateInstance(Instance &instance) {
 
 void Instance::addInstance(Instance &instance) {
   /*
-    I'll implement this later
+    I'll implement this later :)
   */
 }
 

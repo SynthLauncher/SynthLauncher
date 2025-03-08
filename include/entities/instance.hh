@@ -21,8 +21,8 @@ class Config;
 
 class Instance {
 public:
-  inline static fs::path PARENT_DIR = "";
-  inline static fs::path INSTANCE_FILE = "";
+  inline static fs::path PARENT_DIR;
+  inline static fs::path INSTANCE_FILE;
 
   std::string name;
   std::string version;

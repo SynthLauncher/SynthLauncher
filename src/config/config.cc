@@ -1,7 +1,5 @@
 #include "include/config/config.hh"
 
-fs::path Config::MAIN_PATH = "";
-
 uint64_t Config::getTotalPhysicalMemory() {
 #ifdef _WIN32
   MEMORYSTATUSEX status;
@@ -27,16 +25,30 @@ uint64_t Config::getTotalPhysicalMemory() {
 #endif
 }
 
-Config::Config(fs::path path)
-    : java(), path(path.string()), min_ram(0), max_ram(0) {}
+Config::Config() {
+  uint64_t total = getTotalPhysicalMemory();
+
+  this->max_ram = total / 4 / 1024 / 1024;
+  this->min_ram = this->max_ram / 2;
+
+  this->java = Java::getAvaliableJavaCups()[0];
+  this->path = MAIN_PATH.string();
+}
+
+Config::Config(const fs::path &path)
+    : java(), path(path), min_ram(0), max_ram(0) {}
+
+Config::Config(const Java &java, const fs::path &path, const uint64_t &min_ram,
+               const uint64_t &max_ram)
+    : java(java), path(path), min_ram(min_ram), max_ram(max_ram) {}
 
 std::string Config::toJson() {
-  std::string json = "\"path\": ";
-  json += this->path + ", ";
-  json += "\"min_ram\": " + std::to_string(this->min_ram) + ", ";
-  json += "\"max_ram\": " + std::to_string(this->max_ram) + ", ";
-  json += this->java.toJson();
-  return json;
+  std::ostringstream json;
+  json << "\"path\": \"" << this->path << "\", "
+       << "\"min_ram\": " << this->min_ram << ", "
+       << "\"max_ram\": " + this->max_ram << ", "
+       << "\"java\": " << this->java.toJson();
+  return json.str();
 }
 
 Config Config::parse(const rapidjson::Value &obj) {
@@ -61,16 +73,6 @@ Config Config::getConfig(fs::path path) {
   return config;
 }
 
-Config::Config() {
-  uint64_t total = getTotalPhysicalMemory();
-
-  this->max_ram = total / 4 / 1024 / 1024;
-  this->min_ram = this->max_ram / 2;
-
-  this->java = Java::getAvaliableJavaCups()[0];
-  this->path = MAIN_PATH.string();
-}
-
 uint64_t Config::getMinRam() const { return this->min_ram; }
 
 uint64_t Config::getMaxRam() const { return this->max_ram; }
@@ -87,10 +89,9 @@ void Config::writeConfig() {
   std::string json = this->toJson();
 
   std::ofstream file(this->path, std::ios::out | std::ios::trunc);
-  if (!file) {
-    throw std::runtime_error("Failed to open file: " + this->path);
-  }
-
+  if (!file) 
+    throw std::runtime_error("Failed to open file: " + this->path.string());
+  
   file << json;
 }
 
