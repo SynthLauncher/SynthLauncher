@@ -1,4 +1,5 @@
 #pragma once
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include "include/entities/arch.hh"
 #include "include/entities/os.hh"

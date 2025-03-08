@@ -5,7 +5,7 @@ App::AppConfig App::initAppConfig() {
 
 // OS Configuration
 #ifdef _WIN32
-  config.OS = OS::Windows;
+  config.Os = OS::Windows;
   const char *appData = std::getenv("APPDATA");
   if (appData)
     config.DIR = fs::path(appData) / "SynthLauncher";
@@ -19,7 +19,7 @@ App::AppConfig App::initAppConfig() {
   else
     config.DIR = "/usr/local/synthlauncher";
 #elif __APPLE__
-  config.OS = OS::OSX;
+  config.Os = OS::OSX;
   const char *home = std::getenv("HOME");
   if (home) {
     config.DIR =
@@ -47,14 +47,10 @@ App::AppConfig App::initAppConfig() {
 }
 
 void App::initLauncherDir(const App::AppConfig &config) {
-  if (!fs::exists(config.DIR))
-    fs::create_directories(config.DIR);
-  if (!fs::exists(config.ASSETS_DIR))
-    fs::create_directories(config.ASSETS_DIR);
-  if (!fs::exists(config.LIBRARIES_DIR))
-    fs::create_directories(config.LIBRARIES_DIR);
-  if (!fs::exists(config.NATIVES_DIR))
-    fs::create_directories(config.NATIVES_DIR);
+  fs::create_directories(config.DIR);
+  fs::create_directories(config.ASSETS_DIR);
+  fs::create_directories(config.LIBRARIES_DIR);
+  fs::create_directories(config.NATIVES_DIR);
 
   httplib::Client cli("https://launchermeta.mojang.com");
 
