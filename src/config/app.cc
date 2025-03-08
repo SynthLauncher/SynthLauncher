@@ -5,7 +5,7 @@ App::AppConfig App::initAppConfig() {
 
 // OS Configuration
 #ifdef _WIN32
-  config.OS = OS::Windows;
+  config.Os = OS::Windows;
   const char *appData = std::getenv("APPDATA");
   if (appData)
     config.DIR = fs::path(appData) / "SynthLauncher";
@@ -19,7 +19,7 @@ App::AppConfig App::initAppConfig() {
   else
     config.DIR = "/usr/local/synthlauncher";
 #elif __APPLE__
-  config.OS = OS::OSX;
+  config.Os = OS::OSX;
   const char *home = std::getenv("HOME");
   if (home) {
     config.DIR =
