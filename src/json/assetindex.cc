@@ -15,24 +15,28 @@ fs::path AssetIndex::AssetObject::path(App::AppConfig &config) {
   return config.ASSETS_DIR / "objects" /  id() / hash;
 }
 
-void AssetIndex::AssetObject::fetch(App::AppConfig &config) {
-  fs::path asset_path =  path(config);
+void AssetIndex::AssetObject::fetch(App::AppConfig& config) {
+  fs::path target_path = AssetIndex::AssetObject::path(config);
 
-  if (!fs::exists(asset_path)) {
-    httplib::Client cli(  url());
+  if (!fs::exists(target_path)) {
+      fs::create_directories(target_path.parent_path());
 
-    auto res = cli.Get("/");
-    if (res && res->status == 200) {
-      fs::create_directories(asset_path.parent_path());
+      httplib::Client cli("https://resources.download.minecraft.net");
 
-      std::ofstream outFile(asset_path, std::ios::binary);
+      std::string path = "/" + hash.substr(0, 2) + "/" + hash;
+      auto res = cli.Get(path.c_str());
 
-      if (!outFile)
-        throw std::runtime_error("Failed to open file for writing.");
-
-      outFile.write(res->body.data(), res->body.size());
-    } else
-      throw std::runtime_error("Failed to download asset: " + hash);
+      if (res && res->status == 200) {
+          std::ofstream outFile(target_path, std::ios::binary);
+          if (!outFile) {
+              throw std::runtime_error("Failed to open file: " + target_path.string());
+          }
+          outFile.write(res->body.data(), res->body.size());
+      } else {
+          throw std::runtime_error("Failed to download asset: " + hash + 
+                                  " - HTTP Code: " + 
+                                  (res ? std::to_string(res->status) : "No response"));
+      }
   }
 }
 
@@ -46,14 +50,14 @@ AssetIndex::AssetObject::fromJson(const rapidjson::Value &obj) {
   return object;
 }
 
-AssetIndex AssetIndex::fromJson(const rapidjson::Value &obj) {
+AssetIndex AssetIndex::fromJson(const rapidjson::Value& obj) {
   AssetIndex idx;
-
   if (obj.IsObject()) {
-    AssetIndex::AssetObject assetObject;
-    assetObject.hash = obj["hash"].GetString();
-    idx.objects[obj.GetString()] = assetObject;
+      for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it) {
+          const auto& key = it->name.GetString();
+          const auto& value = it->value;
+          idx.objects[key] = AssetIndex::AssetObject::fromJson(value);
+      }
   }
-
   return idx;
 }

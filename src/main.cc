@@ -12,18 +12,10 @@ int main() {
   Client cli = Client::fromJson(doc);
   Instance::init(appConfig);
 
-  Instance instance = Instance::createInstance("test5", "1.21");
+  Instance instance = Instance::createInstance("test10", "1.21");
 
-  instance.install(appConfig);
+  cli.downloadAssets(appConfig);
 
-  /*
-  PS E:\OneDrive\Desktop\SynthLauncher\build> ./synthlauncher
-  terminate called after throwing an instance of 'std::runtime_error'
-    what():  Failed to open file:
-  C:\Users\User\AppData\Roaming\SynthLauncher\assets\indexes\17\.json PS
-  E:\OneDrive\Desktop\SynthLauncher\build>
 
-  */
- 
   return 0;
 }

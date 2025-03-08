@@ -491,7 +491,7 @@ void Client::downloadAssets(App::AppConfig &config) {
   if (!fs::exists(indexesDir))
     fs::create_directories(indexesDir);
 
-  fs::path indexPath = indexesDir / this->assets / ".json";
+  fs::path indexPath = indexesDir / (assets + ".json");
 
   if (!fs::exists(indexPath)) {
     auto indexFile = this->assetIndex.fetch();
@@ -502,7 +502,7 @@ void Client::downloadAssets(App::AppConfig &config) {
   }
 
   auto json = rapidjson_utils::fromJson(indexPath);
-  AssetIndex asset = AssetIndex::fromJson(json);
+  AssetIndex asset = AssetIndex::fromJson(json["objects"]);
 
   std::vector<AssetIndex::AssetObject> values;
   for (const auto &pair : asset.objects) {
