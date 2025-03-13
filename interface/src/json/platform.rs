@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, Debug, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Deserialize, Serialize, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum OsType {
     Windows,
