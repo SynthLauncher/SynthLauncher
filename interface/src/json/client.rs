@@ -52,10 +52,44 @@ pub enum ArgumentValue {
     Values(Vec<String>),
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
 pub enum Argument {
     Arg(String),
     Rule {
         rules: Vec<Rule>,
         value: ArgumentValue,
     },
+}
+
+impl Argument {
+    fn to_json(self) -> Vec<String> {
+        match self {
+            Argument::Arg(arg) => vec![arg],
+            Argument::Rule { rules, value } => {
+                if rules.iter().all(Rule::is_allowed) {
+                    match value {
+                        ArgumentValue::Value(value) => vec![value],
+                        ArgumentValue::Values(values) => values,
+                    }
+                } else {
+                    vec![]
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Arguments {
+    Args {
+        game: Vec<Argument>,
+        jvm: Vec<Argument>
+    },
+    MinecraftArgs(String)
+}
+
+impl Arguments {
+    
 }
