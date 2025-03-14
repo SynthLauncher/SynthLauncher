@@ -1,3 +1,3 @@
-mod json;
-mod config;
+pub mod json;
+pub mod config;
 

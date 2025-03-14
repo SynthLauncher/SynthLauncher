@@ -1,4 +1,15 @@
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+use synthlauncher_backend::config::java::JavaInstallation;
+
+#[tauri::command]
+fn my_custom_command() -> Result<String, ()> {
+  let result = JavaInstallation::get_installation();
+  match result {
+    Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
+    Err(err) => Ok(err.to_string()),
+  }
+}
+
+
 pub fn run() {
   tauri::Builder::default()
     .setup(|app| {
@@ -11,6 +22,7 @@ pub fn run() {
       }
       Ok(())
     })
+    .invoke_handler(tauri::generate_handler![my_custom_command])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
