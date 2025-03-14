@@ -18,8 +18,7 @@ export default function Home() {
 
   return (
     <div className="h-screen w-full bg-gray-900 text-white">
-      <h1>{data}</h1>
-      <Button onClick={handleClick} variant="destructive">Invoke Command</Button>
+
     </div>
   );
 }

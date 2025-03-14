@@ -2,7 +2,7 @@ use synthlauncher_backend::config::java::JavaInstallation;
 
 #[tauri::command]
 fn my_custom_command() -> Result<String, ()> {
-  let result = JavaInstallation::get_installation();
+  let result = JavaInstallation::get_installations();
   match result {
     Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
     Err(err) => Ok(err.to_string()),

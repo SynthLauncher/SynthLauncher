@@ -135,7 +135,7 @@ impl JavaInstallation {
         Self::search_java_dirs(&common_paths)
     }
 
-    pub fn get_installation() -> Result<Vec<Self>, Error> {
+    pub fn get_installations() -> Result<Vec<Self>, Error> {
         let mut installations = Vec::new();
 
         installations.extend(Self::find_common_installations()?);
@@ -151,18 +151,9 @@ impl JavaInstallation {
 
         Ok(installations)
     }
-}
 
-#[test]
-fn get_installation_test() {
-    let java = JavaInstallation::get_installation();
-
-    match java {
-        Ok(installation) => {
-            println!("{:#?}", installation);
-        }
-        Err(err) => {
-            panic!("Expected Ok, but got Err: {:?}", err);
-        }
+    
+    pub fn newest() -> JavaInstallation {
+        Self::get_installations().unwrap().into_iter().next().unwrap()
     }
 }
