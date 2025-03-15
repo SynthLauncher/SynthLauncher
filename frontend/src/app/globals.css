@@ -121,3 +121,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+body {
+  background-color: #131313;
+  overflow: hidden;
+}
