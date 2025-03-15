@@ -116,7 +116,7 @@ export const Sidebar = () => {
   return (
     <div className="bg-neutral-900 h-screen w-[95px] flex flex-col items-center p-1 border-r-2 border-neutral-700/50">
       <Dialog>
-        <DialogTrigger>
+        <DialogTrigger className="focus:outline-none">
           <Image
             className="rounded-full object-cover mt-5 ml-[2px] mb-5"
             src="/icon1.png"
@@ -138,7 +138,7 @@ export const Sidebar = () => {
         </DialogContent>
       </Dialog>
       <Dialog>
-        <DialogTrigger>
+        <DialogTrigger className="focus:outline-none">
           <Plus className="mt-5 text-white bg-neutral-800 rounded-full p-2 border-2 border-neutral-700/50" width={50} height={50} />
         </DialogTrigger>
         <DialogContent className="bg-[#141414] border-2 border-neutral-700/50 text-white">

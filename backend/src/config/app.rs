@@ -35,5 +35,7 @@ pub fn init_launcher_dir() {
     fs::create_dir_all(&(*LIBS_DIR)).unwrap();
     fs::create_dir_all(&(*ASSETS_DIR)).unwrap();
     fs::create_dir_all(&(*INSTALLATIONS_DIR)).unwrap();
+
+    
 }
 
