@@ -4031,6 +4031,7 @@ dependencies = [
  "regex",
  "reqwest",
  "serde",
+ "serde_json",
  "synthlauncher-meta",
  "tokio",
  "which",

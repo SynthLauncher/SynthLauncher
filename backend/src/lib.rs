@@ -4,6 +4,7 @@ use config::app::config_launcher_dir;
 use lazy_static::lazy_static;
 use synthlauncher_meta::json::platform::{Arch, OsName};
 
+pub mod utils;
 pub mod config;
 pub mod installation;
 pub mod json;
@@ -29,6 +30,7 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
 };
 
 lazy_static! {
+    #[derive(Debug)]
     pub static ref LAUNCHER_DIR: PathBuf = config_launcher_dir();
     pub static ref INSTALLATIONS_DIR: PathBuf = LAUNCHER_DIR.join("installations");
     pub static ref ASSETS_DIR: PathBuf = LAUNCHER_DIR.join("assets");
