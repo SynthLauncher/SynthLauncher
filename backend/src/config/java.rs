@@ -86,7 +86,7 @@ impl JavaInstallation {
         Ok(installations)
     }
 
-    fn search_java_dirs(paths: &[PathBuf]) -> Result<Vec<Self>, Error> {
+    fn search_java_dirs(paths: &Vec::<&std::path::Path>) -> Result<Vec<Self>, Error> {
         let mut installations = Vec::new();
         for path in paths {
             if let Ok(entries) = fs::read_dir(path) {
