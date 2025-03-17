@@ -1,6 +1,6 @@
 use std::fs;
 
-use synthlauncher_meta::json::version_manifest::VersionManifest;
+use synthlauncher_meta::json::version_manifest::{Version, VersionManifest};
 
 use crate::{utils, LAUNCHER_DIR};
 
@@ -24,3 +24,13 @@ async fn fetch_version_manifest() -> VersionManifest {
     serde_json::from_str(buffer.as_str()).expect("Failed parsing file: version_manifest.json")
 }
 
+impl Manifest {
+    pub async fn fetch() -> Self {
+        let manifest = fetch_version_manifest().await;
+        Self { manifest }
+    }
+
+    pub fn versions(&self) -> impl Iterator<Item = &Version> {
+        self.manifest.versions.iter()
+    }
+}
