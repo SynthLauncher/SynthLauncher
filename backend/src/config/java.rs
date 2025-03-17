@@ -124,7 +124,8 @@ impl JavaInstallation {
             drive_path.join("Program Files (x86)").join("Java"),
         ];
 
-        Self::search_java_dirs(&common_paths)
+        let common_paths_refs: Vec<&Path> = common_paths.iter().map(|p| p.as_path()).collect();
+        Self::search_java_dirs(&common_paths_refs)
     }
 
     #[cfg(any(target_os = "linux", target_os = "macos"))]

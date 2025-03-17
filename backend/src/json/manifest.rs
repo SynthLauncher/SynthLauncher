@@ -8,7 +8,7 @@ pub struct Manifest {
     manifest: VersionManifest
 }
 
-async fn fetch_version_manifest() -> VersionManifest {
+pub async fn fetch_version_manifest() -> VersionManifest {
     let path = LAUNCHER_DIR.join("version_manifest.json");
 
     let res = utils::download::get("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json").await;
