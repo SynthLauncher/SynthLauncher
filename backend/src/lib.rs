@@ -4,10 +4,8 @@ use config::app::config_launcher_dir;
 use lazy_static::lazy_static;
 use synthlauncher_meta::json::platform::{Arch, OsName};
 
-pub mod utils;
 pub mod config;
-pub mod installation;
-pub mod json;
+pub mod utils;
 
 pub const OS: OsName = if cfg!(target_os = "windows") {
     OsName::Windows
@@ -16,7 +14,7 @@ pub const OS: OsName = if cfg!(target_os = "windows") {
 } else if cfg!(target_os = "macos") {
     OsName::Osx
 } else {
-    panic!("Unknown OS!")
+    panic!("Unsupported OS")
 };
 
 pub const ARCH: Arch = if cfg!(target_arch = "x86") {
@@ -26,7 +24,7 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
 } else if cfg!(target_arch = "aarch64") {
     Arch::ARM64
 } else {
-    panic!("Unknown Arch")
+    panic!("Unsupported Arch")
 };
 
 lazy_static! {
