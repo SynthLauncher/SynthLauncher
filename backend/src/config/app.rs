@@ -1,6 +1,6 @@
 use std::{env, fs, path::PathBuf};
 
-use crate::{ASSETS_DIR, INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR};
+use crate::{ASSETS_DIR, INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR, MANIFEST};
 
 pub fn config_launcher_dir() -> PathBuf {
     #[cfg(target_os = "windows")]
@@ -31,11 +31,10 @@ pub fn config_launcher_dir() -> PathBuf {
 }
 
 pub fn init_launcher_dir() {
-    fs::create_dir(&(*LAUNCHER_DIR)).unwrap();
+    fs::create_dir_all(&(*LAUNCHER_DIR)).unwrap();
     fs::create_dir_all(&(*LIBS_DIR)).unwrap();
     fs::create_dir_all(&(*ASSETS_DIR)).unwrap();
     fs::create_dir_all(&(*INSTALLATIONS_DIR)).unwrap();
-
-    
+    assert!(MANIFEST.versions().count() > 0);
 }
 

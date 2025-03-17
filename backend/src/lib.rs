@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 use config::app::config_launcher_dir;
-use json::manifest::fetch_version_manifest;
+use json::manifest::Manifest;
 use lazy_static::lazy_static;
-use synthlauncher_meta::json::{platform::{Arch, OsName}, version_manifest::VersionManifest};
+use synthlauncher_meta::json::platform::{Arch, OsName};
 
 pub mod config;
 pub mod utils;
@@ -35,5 +35,5 @@ lazy_static! {
     pub static ref INSTALLATIONS_DIR: PathBuf = LAUNCHER_DIR.join("installations");
     pub static ref ASSETS_DIR: PathBuf = LAUNCHER_DIR.join("assets");
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
-    pub static ref VERSION_MANIFEST: VersionManifest = tokio::runtime::Runtime::new().unwrap().block_on(fetch_version_manifest());
+    pub static ref MANIFEST: Manifest = tokio::runtime::Runtime::new().unwrap().block_on(Manifest::fetch());
 }
