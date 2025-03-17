@@ -1,5 +1,7 @@
 use std::{
-    env, fs, path::{Path, PathBuf}, process::Command
+    env, fs,
+    path::{Path, PathBuf},
+    process::Command,
 };
 
 use anyhow::{Context, Error};
@@ -86,14 +88,16 @@ impl JavaInstallation {
         Ok(installations)
     }
 
-    fn search_java_dirs(paths: &Vec::<&std::path::Path>) -> Result<Vec<Self>, Error> {
+    fn search_java_dirs(paths: &[&std::path::Path]) -> Result<Vec<Self>, Error> {
         let mut installations = Vec::new();
         for path in paths {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries.flatten() {
-                    let java_path = entry.path().join("bin").join(
-                        if cfg!(windows) { "java.exe" } else { "java" }
-                    );
+                    let java_path = entry.path().join("bin").join(if cfg!(windows) {
+                        "java.exe"
+                    } else {
+                        "java"
+                    });
 
                     if java_path.exists() {
                         if let Ok(installation) = Self::from_path(&java_path) {
@@ -114,10 +118,10 @@ impl JavaInstallation {
         if drive_path.as_os_str().to_string_lossy().ends_with(':') {
             drive_path.push("\\");
         }
-        
+
         let common_paths = vec![
             drive_path.join("Program Files").join("Java"),
-            drive_path.join("Program Files (x86)").join("Java")
+            drive_path.join("Program Files (x86)").join("Java"),
         ];
 
         Self::search_java_dirs(&common_paths)
@@ -129,7 +133,7 @@ impl JavaInstallation {
             Path::new("/usr/lib/jvm"),
             Path::new("/usr/lib64/jvm"),
             Path::new("/usr/lib32/jvm"),
-            Path::new("/Library/Java/JavaVirtualMachines")
+            Path::new("/Library/Java/JavaVirtualMachines"),
         ];
 
         Self::search_java_dirs(&common_paths)
@@ -140,7 +144,7 @@ impl JavaInstallation {
 
         installations.extend(Self::find_common_installations()?);
         installations.extend(Self::find_in_path()?);
-        
+
         if let Some(java_home) = Self::find_java_home()? {
             installations.push(java_home);
         }
@@ -152,8 +156,11 @@ impl JavaInstallation {
         Ok(installations)
     }
 
-    
     pub fn newest() -> JavaInstallation {
-        Self::get_installations().unwrap().into_iter().next().unwrap()
+        Self::get_installations()
+            .unwrap()
+            .into_iter()
+            .next()
+            .unwrap()
     }
 }
