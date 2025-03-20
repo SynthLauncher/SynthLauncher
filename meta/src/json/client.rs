@@ -1,8 +1,6 @@
-use std::{collections::HashMap, path::PathBuf};
-
-use serde::Deserialize;
-
 use super::platform::{Os, OsName};
+use std::{collections::HashMap, path::PathBuf};
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -50,10 +48,10 @@ pub struct Download {
     pub id: Option<String>,
     pub path: Option<PathBuf>,
     pub total_size: Option<i32>,
-    
+
     pub url: String,
     pub sha1: String,
-    pub size: i32
+    pub size: i32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -61,14 +59,14 @@ pub struct Downloads {
     pub client: Download,
     pub client_mappings: Download,
     pub server: Download,
-    pub server_mappings: Download
+    pub server_mappings: Download,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 pub enum ArgumentValue {
     Value(String),
-    Values(Vec<String>)
+    Values(Vec<String>),
 }
 
 #[derive(Debug, Deserialize)]
@@ -77,8 +75,8 @@ pub enum Argument {
     Arg(String),
     Rule {
         rules: Vec<Rule>,
-        value: ArgumentValue
-    }
+        value: ArgumentValue,
+    },
 }
 
 impl Argument {
@@ -89,33 +87,41 @@ impl Argument {
                 if rules.iter().all(Rule::is_allowed) {
                     match value {
                         ArgumentValue::Value(value) => vec![value],
-                        ArgumentValue::Values(values) => values
-                    }   
+                        ArgumentValue::Values(values) => values,
+                    }
                 } else {
                     vec![]
                 }
             }
         }
-    }   
+    }
 }
 
 #[derive(Debug, Deserialize)]
 pub enum Arguments {
     Args {
         game: Vec<Argument>,
-        jvm: Vec<Argument>
+        jvm: Vec<Argument>,
     },
-    MinecraftArgs(String)
+    MinecraftArgs(String),
 }
 
 impl Arguments {
     pub fn into_str_args(self) -> (Vec<String>, Vec<String>) {
         match self {
             Arguments::Args { game, jvm } => {
-                let jvm = jvm.into_iter().map(Argument::into_str_args).flatten().collect();
-                let game = game.into_iter().map(Argument::into_str_args).flatten().collect();
-                (jvm, game) 
-            },
+                let jvm = jvm
+                    .into_iter()
+                    .map(Argument::into_str_args)
+                    .flatten()
+                    .collect();
+                let game = game
+                    .into_iter()
+                    .map(Argument::into_str_args)
+                    .flatten()
+                    .collect();
+                (jvm, game)
+            }
             Arguments::MinecraftArgs(args) => {
                 let game = args.split(' ').map(|arg| arg.to_string()).collect();
 
@@ -136,18 +142,18 @@ impl Arguments {
 #[serde(rename_all = "camelCase")]
 pub struct JavaVersion {
     pub component: String,
-    pub major_version: u16
+    pub major_version: u16,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct LibraryDownload {
     pub artifact: Option<Download>,
-    pub classifiers: Option<HashMap<String, Download>>
+    pub classifiers: Option<HashMap<String, Download>>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Extract {
-    pub exlude: Option<Vec<PathBuf>>
+    pub exlude: Option<Vec<PathBuf>>,
 }
 
 pub type NativesType = HashMap<OsName, String>;
@@ -157,7 +163,7 @@ pub struct Library {
     pub downloads: LibraryDownload,
     pub extract: Option<Extract>,
     pub natives: Option<NativesType>,
-    pub rules: Option<Vec<Rule>>
+    pub rules: Option<Vec<Rule>>,
 }
 
 impl Library {
@@ -192,7 +198,7 @@ pub struct Client {
     pub main_class: String,
     pub downloads: Downloads,
     pub assets: String,
-    pub asset_index: Download
+    pub asset_index: Download,
 }
 
 impl Client {
