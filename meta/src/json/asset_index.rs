@@ -15,28 +15,27 @@ pub struct AssetIndex {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use crate::json::asset_index::AssetIndex;
 
     use super::AssetObject;
 
     #[test]
     fn deserialize_asset_object() {
-        let json = r#"
-        {
+        let json = json!({
             "hash": "b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356",
             "size": 9101
-        }
-        "#;
+        });
 
-        let asset: AssetObject = serde_json::from_str(json).unwrap();
+        let asset: AssetObject = serde_json::from_value(json).unwrap();
         assert_eq!(asset.hash, "b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356");
         assert_eq!(asset.size, 9101);
     }
 
     #[test]
     fn deserialize_asset_index() {
-        let json = r#"
-        {
+        let json = json!({
             "objects": {
                 "icons/icon_128x128.png": {
                     "hash": "b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356",
@@ -51,10 +50,9 @@ mod tests {
                     "size": 19642
                 }
             }
-        }
-        "#;
+        });
 
-        let asset_index: AssetIndex = serde_json::from_str(json).unwrap();
+        let asset_index: AssetIndex = serde_json::from_value(json).unwrap();
         assert_eq!(asset_index.objects.get("icons/icon_128x128.png").unwrap().hash, "b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356");
         assert_eq!(asset_index.objects.get("icons/icon_128x128.png").unwrap().size, 9101);
 
