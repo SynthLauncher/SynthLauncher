@@ -7,7 +7,7 @@ use crate::{utils, LAUNCHER_DIR};
 
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
-    pub manifest: VersionManifest
+    pub manifest: VersionManifest,
 }
 
 pub async fn fetch_version_manifest() -> VersionManifest {
@@ -15,7 +15,9 @@ pub async fn fetch_version_manifest() -> VersionManifest {
 
     println!("Path: {:?}", LAUNCHER_DIR.display());
 
-    let res = utils::download::get("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json").await;
+    let res =
+        utils::download::get("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json")
+            .await;
 
     if let Ok(res) = res {
         if let Some(parent) = path.parent() {

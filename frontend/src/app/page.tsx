@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Sidebar } from '@/components/layout/sidebar';
-import Banner from '@/components/layout/banner';
-import Cards from '@/components/layout/cards';
+import { Sidebar } from "@/components/layout/sidebar";
+import Banner from "@/components/layout/banner";
+import Cards from "@/components/layout/cards";
 
 export default function Home() {
   return (

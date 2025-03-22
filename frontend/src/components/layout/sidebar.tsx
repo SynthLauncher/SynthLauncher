@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -20,12 +20,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../ui/popover"
+} from "../ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
 import React from "react";
 
@@ -58,12 +54,12 @@ const minecraftVersions = [
     value: "1.8.9",
     label: "Minecraft 1.8.9",
   },
-]
+];
 
 export function ComboboxDemo() {
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
-  
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -81,7 +77,10 @@ export function ComboboxDemo() {
       </PopoverTrigger>
       <PopoverContent className="w-full p-0 bg-[#141414] border-2 transition duration-300 border-neutral-700/50 text-white">
         <Command className="bg-transparent text-white">
-          <CommandInput placeholder="Search Minecraft Version..." className="text-neutral-700/50 border-b-2 border-neutral-700/50" />
+          <CommandInput
+            placeholder="Search Minecraft Version..."
+            className="text-neutral-700/50 border-b-2 border-neutral-700/50"
+          />
           <CommandList className="text-white">
             <CommandEmpty className="text-neutral-400 m-2">No Version found.</CommandEmpty>
             <CommandGroup>
@@ -90,8 +89,8 @@ export function ComboboxDemo() {
                   key={minecraftVersion.value}
                   value={minecraftVersion.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue)
-                    setOpen(false)
+                    setValue(currentValue === value ? "" : currentValue);
+                    setOpen(false);
                   }}
                   className="text-white hover:bg-neutral-800"
                 >
@@ -109,7 +108,7 @@ export function ComboboxDemo() {
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
 
 export const Sidebar = () => {
@@ -130,36 +129,47 @@ export const Sidebar = () => {
           <DialogHeader className="bg-[#141414]">
             <DialogTitle className="text-white">Are you absolutely sure?</DialogTitle>
             <DialogDescription className="text-white">
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+              This action cannot be undone. This will permanently delete your account and remove
+              your data from our servers.
             </DialogDescription>
           </DialogHeader>
-          <Button className="bg-white text-black hover:bg-neutral-100">Yes, Delete my account</Button>
+          <Button className="bg-white text-black hover:bg-neutral-100">
+            Yes, Delete my account
+          </Button>
         </DialogContent>
       </Dialog>
       <Dialog>
         <DialogTrigger className="focus:outline-none">
-          <Plus className="mt-5 text-white bg-neutral-800 rounded-full p-2 border-2 border-neutral-700/50" width={50} height={50} />
+          <Plus
+            className="mt-5 text-white bg-neutral-800 rounded-full p-2 border-2 border-neutral-700/50"
+            width={50}
+            height={50}
+          />
         </DialogTrigger>
         <DialogContent className="bg-[#141414] border-2 border-neutral-700/50 text-white">
           <DialogHeader className="bg-[#141414]">
             <DialogTitle className="text-white">Add a new installation</DialogTitle>
-            <DialogDescription className="text-white">Add a new Minecraft installation.</DialogDescription>
-        </DialogHeader>
-  
-        {/* Image Picker */}
-        <div className="flex flex-col items-center justify-center my-4 p-6 border-2 border-dashed border-neutral-600 rounded-lg">
-          <div className="p-4 rounded-full bg-neutral-800">
-            <Camera size={32} className="text-neutral-300" />
+            <DialogDescription className="text-white">
+              Add a new Minecraft installation.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Image Picker */}
+          <div className="flex flex-col items-center justify-center my-4 p-6 border-2 border-dashed border-neutral-600 rounded-lg">
+            <div className="p-4 rounded-full bg-neutral-800">
+              <Camera size={32} className="text-neutral-300" />
+            </div>
+            <p className="font-medium mt-3">Choose an image</p>
+            <p className="text-sm text-neutral-400 mt-1">PNG, JPG or GIF</p>
+            <Button variant="outline" className="mt-4 bg-white text-black hover:bg-neutral-100">
+              <Upload size={16} />
+              Browse files
+            </Button>
           </div>
-          <p className="font-medium mt-3">Choose an image</p>
-          <p className="text-sm text-neutral-400 mt-1">PNG, JPG or GIF</p>
-          <Button variant="outline" className="mt-4 bg-white text-black hover:bg-neutral-100">
-            <Upload size={16} />
-            Browse files
-          </Button>
-        </div>
-          <Input placeholder="Name of installation..." className="border-2 border-neutral-700/50 h-12" />
+          <Input
+            placeholder="Name of installation..."
+            className="border-2 border-neutral-700/50 h-12"
+          />
           <ComboboxDemo />
           <Button className="bg-white text-black hover:bg-neutral-100">Add the installation</Button>
         </DialogContent>
