@@ -44,4 +44,4 @@ If you have any questions or need further assistance, feel free to reach out to 
 
 ---
 
-**SynthLauncher** - A Minecraft Launcher for Everyone
+## **SynthLauncher** - A Minecraft Launcher for Everyone
