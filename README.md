@@ -21,6 +21,9 @@
 ![ss1](https://i.imgur.com/waxsWEb.png)
 ![ss2](https://i.imgur.com/BlP1VOD.png)
 
+>[!WARNING]
+> There aren't any releases yet!
+
 ## Contributing
 
 We appreciate and welcome contributions! If you’re interested in helping out, please fork the repository, make your changes, and submit a pull request. Whether you’re fixing bugs, optimizing performance, or adding new features, your contributions are valuable.
@@ -31,6 +34,9 @@ We appreciate and welcome contributions! If you’re interested in helping out, 
 2. Create a new branch for your feature or fix.
 3. Make your changes and test them.
 4. Submit a pull request with a detailed description of your changes.
+
+>[!INFO]
+> If you want to join the team, please contact STierProgrammer.
 
 ## Contact
 
