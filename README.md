@@ -10,6 +10,10 @@
 - **Optimized Performance:** We’re focused on maximizing performance, reducing load times, and minimizing resource usage to ensure a smooth Minecraft experience.
 - **Open-Source:** SynthLauncher is completely open-source, and we encourage contributions from developers who share our vision.
 
+>[!NOTE]
+> We will be implementing more features!
+
+
 ## Current Status
 
 **Launching the game is now possible! Every version works. We've added a Java installer and are planning to integrate Microsoft authentication. The latest code hasn't been pushed yet as we're still fixing some issues, but once everything is resolved, we'll push the update!**
