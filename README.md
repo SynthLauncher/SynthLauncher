@@ -35,7 +35,7 @@ We appreciate and welcome contributions! If you’re interested in helping out, 
 3. Make your changes and test them.
 4. Submit a pull request with a detailed description of your changes.
 
->[!INFO]
+>[!NOTE]
 > If you want to join the team, please contact STierProgrammer.
 
 ## Contact
