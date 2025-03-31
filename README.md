@@ -12,8 +12,10 @@
 
 ## Current Status
 
-🚧 **Work in Progress**  
-We are currently developing SynthLauncher and working towards our first stable release, **Version 1.0**. As of now, there are no official releases available, but we are actively working on the core features and optimizations.
+**Launching the game is now possible! Every version works. We've added a Java installer and are planning to integrate Microsoft authentication. The latest code hasn't been pushed yet as we're still fixing some issues, but once everything is resolved, we'll push the update!**
+
+![ss1](https://i.imgur.com/waxsWEb.png)
+![ss2](https://i.imgur.com/BlP1VOD.png)
 
 ## Contributing
 
