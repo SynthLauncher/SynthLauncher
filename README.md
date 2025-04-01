@@ -20,7 +20,7 @@
 ![ss1](https://i.imgur.com/waxsWEb.png)
 ![ss2](https://i.imgur.com/BlP1VOD.png)
 
->[!WARNING}
+>[!WARNING]
 > There are some bugs right now which have to be fixed!
 > Bugs: config.json not working properly; proper check for the current Java to install correct version of Java for older/newer versions; few problems with installations.rs. 
 
