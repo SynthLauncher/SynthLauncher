@@ -6,21 +6,18 @@ pub enum DownloadErr {
     Status(reqwest::StatusCode),
     IO(std::io::Error),
     InvalidURL,
-    Timeout
+    Timeout,
 }
 
 impl From<reqwest::Error> for DownloadErr {
     fn from(err: reqwest::Error) -> Self {
         if err.is_builder() {
             DownloadErr::InvalidURL
-        }
-        else if err.is_timeout() {
+        } else if err.is_timeout() {
             DownloadErr::Timeout
-        }
-        else if let Some(status) = err.status() {
+        } else if let Some(status) = err.status() {
             DownloadErr::Status(status)
-        }
-        else {
+        } else {
             DownloadErr::Other(err)
         }
     }

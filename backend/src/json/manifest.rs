@@ -1,42 +1,33 @@
 use std::fs;
 
-use serde::Deserialize;
-use synthlauncher_meta::json::version_manifest::{Version, VersionManifest};
+use bytes::Bytes;
+use synthlauncher_meta::json::version_manifest::VersionManifest;
 
-use crate::{utils, LAUNCHER_DIR};
+use crate::{
+    utils::{self, errors::BackendError},
+    MANIFEST_PATH,
+};
 
-#[derive(Debug, Deserialize)]
-pub struct Manifest {
-    pub manifest: VersionManifest,
-}
-
-pub async fn fetch_version_manifest() -> VersionManifest {
-    let path = LAUNCHER_DIR.join("version_manifest.json");
-
-    println!("Path: {:?}", LAUNCHER_DIR.display());
-
+pub async fn fetch_version_manifest() {
     let res =
         utils::download::get("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json")
             .await;
 
     if let Ok(res) = res {
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).expect("Failed to create the dir");
-        }
-        fs::write(&path, res).expect("Failed writing into the file: version_manifest.json");
+        fs::write(&MANIFEST_PATH.as_path(), res).expect("Failed writing into the file: version_manifest.json");
     }
-
-    let buffer = fs::read_to_string(path).expect("Failed reading the file: version_manifest.json");
-    serde_json::from_str(buffer.as_str()).expect("Failed parsing file: version_manifest.json")
 }
 
-impl Manifest {
-    pub async fn fetch() -> Self {
-        let manifest = fetch_version_manifest().await;
-        Self { manifest }
-    }
+pub fn read() -> VersionManifest {
+    let buffer = fs::read_to_string(MANIFEST_PATH.as_path()).expect("Failed reading the file: version_manifest.json");
+    serde_json::from_str(buffer.as_str()).expect("Failed to parse file: version_manifest.json")    
+}
 
-    pub fn versions(&self) -> impl Iterator<Item = &Version> {
-        self.manifest.versions.iter()
-    }
+pub async fn download_version(manifest: &VersionManifest, version: &str) -> Result<Bytes, BackendError> {
+    let Some(version) = manifest.versions().find(|x| x.id == version) else {
+        return Err(BackendError::MinecraftVersionNotFound);
+    };
+
+    let res = utils::download::get(&version.url).await?;
+    Ok(res)
 }

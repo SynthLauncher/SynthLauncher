@@ -1,28 +1,19 @@
 use super::platform::{Os, OsName};
 use std::{collections::HashMap, path::PathBuf};
+
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum RuleActionType {
     Allow,
     Disallow,
 }
 
-#[derive(Debug, Deserialize, Hash, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum Features {
-    IsDemoUser,
-    HasCustomResolution,
-    HasQuickPlaysSupport,
-    IsQuickPlaySingleplayer,
-    IsQuickPlayMultiplayer,
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Rule {
     pub action: RuleActionType,
-    pub features: Option<HashMap<Features, bool>>,
+    pub features: Option<HashMap<String, bool>>,
     pub os: Option<Os>,
 }
 
@@ -41,14 +32,10 @@ impl Rule {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Download {
-    // NOTE: These 3 may not be present everywhere
-    pub id: Option<String>,
     pub path: Option<PathBuf>,
-    pub total_size: Option<i32>,
-
     pub url: String,
     pub sha1: String,
     pub size: i32,
@@ -57,19 +44,16 @@ pub struct Download {
 #[derive(Debug, Deserialize)]
 pub struct Downloads {
     pub client: Download,
-    pub client_mappings: Download,
-    pub server: Download,
-    pub server_mappings: Download,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum ArgumentValue {
     Value(String),
     Values(Vec<String>),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum Argument {
     Arg(String),
@@ -80,7 +64,7 @@ pub enum Argument {
 }
 
 impl Argument {
-    fn into_str_args(self) -> Vec<String> {
+    fn into_raw(self) -> Vec<String> {
         match self {
             Argument::Arg(arg) => vec![arg],
             Argument::Rule { rules, value } => {
@@ -98,6 +82,7 @@ impl Argument {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(untagged)]
 pub enum Arguments {
     Args {
         game: Vec<Argument>,
@@ -107,19 +92,12 @@ pub enum Arguments {
 }
 
 impl Arguments {
-    pub fn into_str_args(self) -> (Vec<String>, Vec<String>) {
+    pub fn into_raw(self) -> (Vec<String>, Vec<String>) {
         match self {
             Arguments::Args { game, jvm } => {
-                let jvm = jvm
-                    .into_iter()
-                    .map(Argument::into_str_args)
-                    .flatten()
-                    .collect();
-                let game = game
-                    .into_iter()
-                    .map(Argument::into_str_args)
-                    .flatten()
-                    .collect();
+                let jvm: Vec<String> = jvm.into_iter().map(Argument::into_raw).flatten().collect();
+
+                let game = game.into_iter().map(Argument::into_raw).flatten().collect();
                 (jvm, game)
             }
             Arguments::MinecraftArgs(args) => {
@@ -145,7 +123,7 @@ pub struct JavaVersion {
     pub major_version: u16,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct LibraryDownload {
     pub artifact: Option<Download>,
     pub classifiers: Option<HashMap<String, Download>>,
@@ -153,19 +131,17 @@ pub struct LibraryDownload {
 
 #[derive(Debug, Deserialize)]
 pub struct Extract {
-    pub exlude: Option<Vec<PathBuf>>,
+    pub exclude: Option<Vec<PathBuf>>,
 }
 
-pub type NativesType = HashMap<OsName, String>;
-
+pub type Natives = HashMap<OsName, String>;
 #[derive(Debug, Deserialize)]
 pub struct Library {
     pub downloads: LibraryDownload,
     pub extract: Option<Extract>,
-    pub natives: Option<NativesType>,
+    pub natives: Option<Natives>,
     pub rules: Option<Vec<Rule>>,
 }
-
 impl Library {
     pub fn is_allowed(&self) -> bool {
         self.rules.is_none()
@@ -178,12 +154,10 @@ impl Library {
     pub fn native_from_platform(&self) -> Option<&Download> {
         let natives = self.natives.as_ref()?;
         let classifiers = self.downloads.classifiers.as_ref()?;
-
         let mut results = natives
             .iter()
             .filter(|(os, _)| **os == crate::OS)
             .map(|(_, native)| classifiers.get(native).unwrap());
-
         results.next()
     }
 }
@@ -206,4 +180,3 @@ impl Client {
         self.libraries.iter().filter(|x| x.is_allowed())
     }
 }
-

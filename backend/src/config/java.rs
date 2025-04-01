@@ -4,11 +4,12 @@ use std::{
     process::Command,
 };
 
-use anyhow::{Context, Error};
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use which::which;
+
+use crate::utils::errors::BackendError;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JavaInstallation {
@@ -34,11 +35,8 @@ impl JavaInstallation {
         a_parts.cmp(&b_parts)
     }
 
-    fn get_java_version(java_path: &Path) -> Result<String, anyhow::Error> {
-        let output = Command::new(java_path)
-            .arg("-version")
-            .output()
-            .context("Failed to execute java command")?;
+    fn get_java_version(java_path: &Path) -> Result<String, BackendError> {
+        let output = Command::new(java_path).arg("-version").output()?;
 
         let output_str = String::from_utf8_lossy(&output.stderr);
         let regx = Regex::new(r#"version\s+\"(\d+\.\d+\.\d+)[_-]?(\d+)?\""#)?;
@@ -53,15 +51,15 @@ impl JavaInstallation {
             return Ok(version);
         }
 
-        Err(anyhow::anyhow!("Version string not found!"))
+        Err(BackendError::JavaVersionNotFound)
     }
 
-    fn from_path(path: &Path) -> Result<Self, Error> {
+    fn from_path(path: &Path) -> Result<Self, BackendError> {
         let version = Self::get_java_version(path)?;
         Ok(Self::new(version, path.to_path_buf()))
     }
 
-    fn find_java_home() -> Result<Option<Self>, Error> {
+    fn find_java_home() -> Result<Option<Self>, BackendError> {
         if let Ok(java_home) = env::var("JAVA_HOME") {
             let java_path = Path::new(&java_home).join("bin").join(if cfg!(windows) {
                 "java.exe"
@@ -77,7 +75,7 @@ impl JavaInstallation {
         Ok(None)
     }
 
-    fn find_in_path() -> Result<Vec<Self>, Error> {
+    pub fn find_in_path() -> Result<Vec<Self>, BackendError> {
         let mut installations = Vec::new();
         if let Ok(path) = which("java") {
             if let Ok(installation) = Self::from_path(&path) {
@@ -88,7 +86,7 @@ impl JavaInstallation {
         Ok(installations)
     }
 
-    fn search_java_dirs(paths: &[&std::path::Path]) -> Result<Vec<Self>, Error> {
+    fn search_java_dirs(paths: &[&std::path::Path]) -> Result<Vec<Self>, BackendError> {
         let mut installations = Vec::new();
         for path in paths {
             if let Ok(entries) = fs::read_dir(path) {
@@ -112,7 +110,7 @@ impl JavaInstallation {
     }
 
     #[cfg(target_os = "windows")]
-    fn find_common_installations() -> Result<Vec<Self>, Error> {
+    fn find_common_installations() -> Result<Vec<Self>, BackendError> {
         let system_drive = env::var("SystemDrive").unwrap_or_else(|_| "C:".to_string());
         let mut drive_path = PathBuf::from(&system_drive);
         if drive_path.as_os_str().to_string_lossy().ends_with(':') {
@@ -129,7 +127,7 @@ impl JavaInstallation {
     }
 
     #[cfg(any(target_os = "linux", target_os = "macos"))]
-    fn find_common_installations() -> Result<Vec<Self>, Error> {
+    fn find_common_installations() -> Result<Vec<Self>, BackendError> {
         let common_paths = vec![
             Path::new("/usr/lib/jvm"),
             Path::new("/usr/lib64/jvm"),
@@ -140,7 +138,7 @@ impl JavaInstallation {
         Self::search_java_dirs(&common_paths)
     }
 
-    pub fn get_installations() -> Result<Vec<Self>, Error> {
+    pub fn get_installations() -> Result<Vec<Self>, BackendError> {
         let mut installations = Vec::new();
 
         installations.extend(Self::find_common_installations()?);

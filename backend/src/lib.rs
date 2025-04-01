@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
 use config::app::config_launcher_dir;
-use json::manifest::Manifest;
 use lazy_static::lazy_static;
 use synthlauncher_meta::json::platform::{Arch, OsName};
 
+pub mod java;
 pub mod config;
 pub mod utils;
 pub mod json;
@@ -32,8 +32,8 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
 lazy_static! {
     #[derive(Debug)]
     pub static ref LAUNCHER_DIR: PathBuf = config_launcher_dir();
-    pub static ref INSTALLATIONS_DIR: PathBuf = LAUNCHER_DIR.join("installations");
     pub static ref ASSETS_DIR: PathBuf = LAUNCHER_DIR.join("assets");
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
-    pub static ref MANIFEST: Manifest = tokio::runtime::Runtime::new().unwrap().block_on(Manifest::fetch());
+    pub static ref INSTALLATIONS_DIR: PathBuf = LAUNCHER_DIR.join("installations");
+    pub static ref MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
 }
