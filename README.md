@@ -9,9 +9,8 @@
 - **Optimized Performance:** We’re focused on maximizing performance, reducing load times, and minimizing resource usage to ensure a smooth Minecraft experience.
 - **Open-Source:** SynthLauncher is completely open-source, and we encourage contributions from developers who share our vision.
 
->[!NOTE]
+> [!NOTE]
 > We will be implementing more features!
-
 
 ## Current Status
 
@@ -20,11 +19,10 @@
 ![ss1](https://i.imgur.com/waxsWEb.png)
 ![ss2](https://i.imgur.com/BlP1VOD.png)
 
->[!WARNING]
+> [!WARNING]
 > There are some bugs right now which have to be fixed!
-> Bugs: config.json not working properly; proper check for the current Java to install correct version of Java for older/newer versions; few problems with installations.rs. 
-
->[!WARNING]
+> Bugs: config.json not working properly; proper check for the current Java to install correct version of Java for older/newer versions; few problems with installations.rs.
+> [!WARNING]
 > There aren't any releases yet!
 
 ## Contributing
@@ -38,12 +36,12 @@ We appreciate and welcome contributions! If you’re interested in helping out, 
 3. Make your changes and test them.
 4. Submit a pull request with a detailed description of your changes.
 
->[!NOTE]
+> [!NOTE]
 > If you want to join the team, please contact STierProgrammer.
 
 ## Contact
 
-If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker, Email: [STierProgrammer@gmail.com](mailto:stierprogrammer@gmail.com) or Discord: ```stierprogrammer```.
+If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker, Email: [STierProgrammer@gmail.com](mailto:stierprogrammer@gmail.com) or Discord: `stierprogrammer`.
 
 ---
 
