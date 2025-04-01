@@ -2,11 +2,10 @@
 
 ![SynthLauncher Logo](https://i.imgur.com/jCbkNh4.png)
 
-**SynthLauncher** is an open-source Minecraft launcher designed for both premium and cracked accounts. Our goal is to provide a seamless, optimized experience that enhances performance across all types of systems. Currently, the launcher is in active development, and we welcome contributions from the community.
+**SynthLauncher** is an open-source Minecraft launcher. Our goal is to provide a seamless, optimized experience that enhances performance across all types of systems. Currently, the launcher is in active development, and we welcome contributions from the community.
 
 ## Features
 
-- **Support for Premium and Cracked Accounts:** Whether you have a premium account or use a cracked version, SynthLauncher has you covered.
 - **Optimized Performance:** We’re focused on maximizing performance, reducing load times, and minimizing resource usage to ensure a smooth Minecraft experience.
 - **Open-Source:** SynthLauncher is completely open-source, and we encourage contributions from developers who share our vision.
 
