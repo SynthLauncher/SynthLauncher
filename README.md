@@ -2,18 +2,26 @@
 
 ![SynthLauncher Logo](https://i.imgur.com/jCbkNh4.png)
 
-**SynthLauncher** is an open-source Minecraft launcher designed for both premium and cracked accounts. Our goal is to provide a seamless, optimized experience that enhances performance across all types of systems. Currently, the launcher is in active development, and we welcome contributions from the community.
+**SynthLauncher** is an open-source Minecraft launcher. Our goal is to provide a seamless, optimized experience that enhances performance across all types of systems. Currently, the launcher is in active development, and we welcome contributions from the community.
 
 ## Features
 
-- **Support for Premium and Cracked Accounts:** Whether you have a premium account or use a cracked version, SynthLauncher has you covered.
 - **Optimized Performance:** We’re focused on maximizing performance, reducing load times, and minimizing resource usage to ensure a smooth Minecraft experience.
 - **Open-Source:** SynthLauncher is completely open-source, and we encourage contributions from developers who share our vision.
 
+>[!NOTE]
+> We will be implementing more features!
+
+
 ## Current Status
 
-🚧 **Work in Progress**  
-We are currently developing SynthLauncher and working towards our first stable release, **Version 1.0**. As of now, there are no official releases available, but we are actively working on the core features and optimizations.
+**Launching the game is now possible! Every version works. We've added a Java installer and are planning to integrate Microsoft authentication. The latest code hasn't been pushed yet as we're still fixing some issues, but once everything is resolved, we'll push the update!**
+
+![ss1](https://i.imgur.com/waxsWEb.png)
+![ss2](https://i.imgur.com/BlP1VOD.png)
+
+>[!WARNING]
+> There aren't any releases yet!
 
 ## Contributing
 
@@ -26,10 +34,13 @@ We appreciate and welcome contributions! If you’re interested in helping out, 
 3. Make your changes and test them.
 4. Submit a pull request with a detailed description of your changes.
 
+>[!NOTE]
+> If you want to join the team, please contact STierProgrammer.
+
 ## Contact
 
 If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker, Email: [STierProgrammer@gmail.com](mailto:stierprogrammer@gmail.com) or Discord: ```stierprogrammer```.
 
 ---
 
-**SynthLauncher** - A Minecraft Launcher for Everyone
+## **SynthLauncher** - A Minecraft Launcher for Everyone
