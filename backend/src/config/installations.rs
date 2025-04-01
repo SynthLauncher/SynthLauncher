@@ -202,9 +202,12 @@ impl Installation {
 
     pub fn execute(&self) -> Result<(), BackendError> {
         let config = self.get_config()?;
-        let current_java_path = config.get("java").unwrap();
-        let max_ram = config.get("max_ram").unwrap();
-        let min_ram = config.get("min_ram").unwrap();
+        let current_java_path = config.get("java")
+            .ok_or_else(|| BackendError::ConfigError("Java path not found in config".to_string()))?;
+        let max_ram = config.get("max_ram")
+            .unwrap_or("2048"); // Default to 2GB if not specified
+        let min_ram = config.get("min_ram")
+            .unwrap_or("1024"); // Default to 1GB if not specified
 
         let args = self.generate_arguments(&config)?;
 

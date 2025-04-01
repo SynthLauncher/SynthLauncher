@@ -1,9 +1,11 @@
-use std::path::Path;
+use std::{path::Path, env, fs, io::Write};
 
 use crate::utils::errors::BackendError;
 
 pub fn set_environment_variables(java_home: &Path) -> Result<(), BackendError> {
     let bin_path = java_home.join("bin");
+    let java_home_str = java_home.to_string_lossy().to_string();
+    let bin_path_str = bin_path.to_string_lossy().to_string();
 
     cfg_if::cfg_if! {
         if #[cfg(target_os = "windows")] {
@@ -14,10 +16,9 @@ pub fn set_environment_variables(java_home: &Path) -> Result<(), BackendError> {
             let hkcu = RegKey::predef(HKEY_CURRENT_USER);
             let environment = hkcu.open_subkey_with_flags("Environment", KEY_READ | KEY_WRITE)?;
 
-            environment.set_value("JAVA_HOME", &java_home.to_string_lossy().to_string())?;
+            environment.set_value("JAVA_HOME", &java_home_str)?;
 
             let path_value: String = environment.get_value("Path").unwrap_or_default();
-            let bin_path_str = bin_path.to_string_lossy();
 
             if !path_value.contains(&*bin_path_str) {
                 let new_path = format!("{};{}", bin_path_str, path_value);
@@ -54,8 +55,8 @@ pub fn set_environment_variables(java_home: &Path) -> Result<(), BackendError> {
                     .create(true)
                     .open(&shell_config)?;
 
-                writeln!(file, "\nexport JAVA_HOME={}", java_home.display())?;
-                writeln!(file, "export PATH=\"$JAVA_HOME/bin:$PATH\"")?;
+                writeln!(file, "\nexport JAVA_HOME={}", java_home_str)?;
+                writeln!(file, "export PATH=\"{}:$PATH\"", bin_path_str)?;
             }
 
             println!("You may need to run: source {}", shell_config.display());
