@@ -16,6 +16,7 @@ pub enum BackendError {
     InvalidJavaPackage,
     MinecraftVersionNotFound,
     ZipExtractionError(String),
+    ConfigError(String),
 }
 
 impl From<reqwest::Error> for BackendError {
