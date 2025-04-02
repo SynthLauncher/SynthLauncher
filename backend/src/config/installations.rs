@@ -176,6 +176,7 @@ impl Installation {
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
                 "auth_uuid" => "e371151a-b6b4-496a-b446-0abcd3e75ec4",
+                "auth_player_name" => &self.metadata.name(),
                 _ => config.get(arg)?,
             })
         };
