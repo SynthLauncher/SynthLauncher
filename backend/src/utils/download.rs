@@ -29,11 +29,37 @@ impl From<std::io::Error> for DownloadErr {
     }
 }
 
+const MAX_RETRIES: u32 = 3;
+const INITIAL_BACKOFF_MS: u64 = 1000;
+
 pub async fn get(url: &str) -> Result<Bytes, DownloadErr> {
-    let res = reqwest::get(url).await?;
-    if !res.status().is_success() {
-        return Err(DownloadErr::Status(res.status()));
+    let mut retries = 0;
+    let mut backoff_ms = INITIAL_BACKOFF_MS;
+
+    loop {
+        match reqwest::get(url).await {
+            Ok(res) => {
+                if !res.status().is_success() {
+                    return Err(DownloadErr::Status(res.status()));
+                }
+                match res.bytes().await {
+                    Ok(bytes) => return Ok(bytes),
+                    Err(e) => {
+                        if retries >= MAX_RETRIES {
+                            return Err(DownloadErr::Other(e));
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                if retries >= MAX_RETRIES {
+                    return Err(e.into());
+                }
+            }
+        }
+
+        retries += 1;
+        tokio::time::sleep(std::time::Duration::from_millis(backoff_ms)).await;
+        backoff_ms *= 2; // Exponential backoff
     }
-    let bytes = res.bytes().await?;
-    Ok(bytes)
 }

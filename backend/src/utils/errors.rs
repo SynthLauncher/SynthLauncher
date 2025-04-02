@@ -17,6 +17,8 @@ pub enum BackendError {
     MinecraftVersionNotFound,
     ZipExtractionError(String),
     ConfigError(String),
+    FailedToSaveInstallations,
+    VersionAlreadyInstalled,
 }
 
 impl From<reqwest::Error> for BackendError {

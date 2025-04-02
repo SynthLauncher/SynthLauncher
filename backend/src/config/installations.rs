@@ -3,6 +3,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
     process::{Command, Stdio},
+    time::SystemTime,
 };
 
 use serde::{Deserialize, Serialize};
@@ -21,15 +22,37 @@ use super::{
     MULTI_PATH_SEPERATOR,
 };
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct InstallationMetadata {
     name: String,
     version: String,
+    path: String,
+    java_version: String,
+    created_at: String,
+    last_used: String,
+    status: String,
 }
 
 impl InstallationMetadata {
     pub fn new(name: String, version: String) -> Self {
-        Self { name, version }
+        let path = INSTALLATIONS_DIR.join(&name).to_string_lossy().to_string();
+        let now = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        let timestamp = chrono::DateTime::<chrono::Utc>::from_timestamp(now as i64, 0)
+            .unwrap()
+            .to_rfc3339();
+        
+        Self {
+            name,
+            version,
+            path,
+            java_version: "17".to_string(), // Default to Java 17
+            created_at: timestamp.clone(),
+            last_used: timestamp,
+            status: "installing".to_string(),
+        }
     }
 
     pub fn version(&self) -> &str {
@@ -38,6 +61,50 @@ impl InstallationMetadata {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct InstallationsConfig {
+    installations: Vec<InstallationMetadata>,
+}
+
+impl InstallationsConfig {
+    pub fn load() -> Self {
+        let config_path = INSTALLATIONS_DIR.join("installations.json");
+        if let Ok(data) = fs::read_to_string(&config_path) {
+            serde_json::from_str(&data).unwrap_or(Self { installations: vec![] })
+        } else {
+            Self { installations: vec![] }
+        }
+    }
+
+    pub fn save(&self) -> Result<(), std::io::Error> {
+        let config_path = INSTALLATIONS_DIR.join("installations.json");
+        fs::create_dir_all(&*INSTALLATIONS_DIR)?;
+        fs::write(config_path, serde_json::to_string_pretty(self)?)?;
+        Ok(())
+    }
+
+    pub fn add_installation(&mut self, metadata: InstallationMetadata) {
+        if let Some(existing) = self.installations.iter_mut()
+            .find(|i| i.name == metadata.name && i.version == metadata.version) {
+            *existing = metadata;
+        } else {
+            self.installations.push(metadata);
+        }
+        self.save().expect("Failed to save installations config");
+    }
+
+    pub fn is_installed(&self, name: &str, version: &str) -> bool {
+        if let Some(installation) = self.installations.iter()
+            .find(|i| i.name == name && i.version == version) {
+            // Check if the installation is marked as installed and the client.jar exists
+            let installation_path = INSTALLATIONS_DIR.join(name);
+            let client_jar_exists = installation_path.join("client.jar").exists();
+            return installation.status == "installed" && client_jar_exists;
+        }
+        false
     }
 }
 
@@ -131,8 +198,32 @@ impl Installation {
     }
 
     pub async fn install(&mut self, manifest: &VersionManifest) -> Result<(), BackendError> {
+        let mut config = InstallationsConfig::load();
+        let client_jar_exists = self.client_jar_path().exists();
+
+        // If the version is already installed and client.jar exists, update last_used and return
+        if config.is_installed(&self.metadata.name, &self.metadata.version) && client_jar_exists {
+            let mut installation_meta = self.metadata.clone();
+            installation_meta.status = "installed".to_string();
+            installation_meta.last_used = chrono::Local::now().to_rfc3339();
+            config.add_installation(installation_meta);
+            return Ok(());
+        }
+
+        // Start fresh installation
+        let mut installation_meta = self.metadata.clone();
+        installation_meta.status = "installing".to_string();
+        config.add_installation(installation_meta.clone());
+
         let client = self.init(manifest).await?;
-        client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path()).await
+        let result = client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path()).await;
+
+        if result.is_ok() {
+            installation_meta.status = "installed".to_string();
+            config.add_installation(installation_meta);
+        }
+
+        result
     }
 
     fn classpath(&self, client: &Client) -> String {

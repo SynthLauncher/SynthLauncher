@@ -24,6 +24,7 @@ flate2 = "1.1.0"
 tar = "0.4.44"
 cfg-if = "1.0.0"
 tempfile = "3.19.1"
+chrono = "0.4.35"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
