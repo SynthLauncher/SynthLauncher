@@ -199,14 +199,43 @@ impl Installation {
 
     pub async fn install(&mut self, manifest: &VersionManifest) -> Result<(), BackendError> {
         let mut config = InstallationsConfig::load();
+        
+        // Check if this version exists for any user
+        let version_exists = config.installations.iter()
+            .any(|i| i.version == self.metadata.version && i.status == "installed");
         let client_jar_exists = self.client_jar_path().exists();
 
-        // If the version is already installed and client.jar exists, update last_used and return
-        if config.is_installed(&self.metadata.name, &self.metadata.version) && client_jar_exists {
+        // If the version exists for any user or client.jar exists, create a new installation entry
+        if version_exists || client_jar_exists {
             let mut installation_meta = self.metadata.clone();
             installation_meta.status = "installed".to_string();
             installation_meta.last_used = chrono::Local::now().to_rfc3339();
             config.add_installation(installation_meta);
+            
+            // Create user-specific directory if it doesn't exist
+            fs::create_dir_all(self.dir_path())?;
+            
+            // If client files don't exist in user directory but exist for another user, copy them
+            if version_exists {
+                if let Some(existing_install) = config.installations.iter()
+                    .find(|i| i.version == self.metadata.version && i.status == "installed") {
+                    let existing_dir = INSTALLATIONS_DIR.join(&existing_install.name);
+                    
+                    // Copy client.jar if needed
+                    if !client_jar_exists {
+                        let existing_jar = existing_dir.join("client.jar");
+                        if existing_jar.exists() {
+                            fs::copy(existing_jar, self.client_jar_path())?;
+                        }
+                    }
+                    
+                    // Copy client.json
+                    let existing_json = existing_dir.join("client.json");
+                    if existing_json.exists() {
+                        fs::copy(existing_json, self.client_json_path())?;
+                    }
+                }
+            }
             return Ok(());
         }
 
