@@ -1,13 +1,17 @@
-[19:15:22] [Datafixer Bootstrap/INFO]: 263 Datafixer optimizations took 907 milliseconds
-[19:15:24] [main/WARN]: Unrecognized user type: 
-[19:15:25] [Render thread/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
-[19:15:25] [Render thread/INFO]: Setting user: stierprogrammer
-[19:15:25] [Render thread/INFO]: Backend library: LWJGL version 3.3.3+5
-[19:15:27] [Render thread/INFO]: Using optional rendering extensions: 
-[19:15:28] [Render thread/INFO]: Reloading ResourceManager: vanilla
-[19:15:28] [Worker-Main-2/INFO]: Found unifont_all_no_pua-16.0.01.hex, loading
-[19:15:28] [Download-1/INFO]: Could not authorize you against Realms server: Invalid session id
-[19:15:28] [Download-1/ERROR]: Failed to fetch Realms feature flags
+[21:26:52] [Datafixer Bootstrap/INFO]: 263 Datafixer optimizations took 1403 milliseconds
+[21:27:07] [main/WARN]: Unrecognized user type: 
+[21:27:07] [Render thread/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[21:27:08] [Render thread/INFO]: Setting user: stierprogrammer
+[21:27:08] [Render thread/INFO]: Backend library: LWJGL version 3.3.3+5
+[21:27:11] [Render thread/INFO]: Using optional rendering extensions: 
+[21:27:12] [Render thread/INFO]: Reloading ResourceManager: vanilla
+[21:27:12] [Worker-Main-5/INFO]: Found unifont_all_no_pua-16.0.01.hex, loading
+[21:27:13] [Worker-Main-4/INFO]: Found unifont_jp_patch-16.0.01.hex, loading
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_decal_cutout_no_cull
+[21:27:14] [Download-1/INFO]: Could not authorize you against Realms server: Invalid session id
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/eyes
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/eyes
+[21:27:14] [Download-1/ERROR]: Failed to fetch Realms feature flags
 fnm: Realms authentication error with message 'Invalid session id'
 	at flq.a(SourceFile:495) ~[client.jar:?]
 	at flq.n(SourceFile:177) ~[client.jar:?]
@@ -15,30 +19,26 @@ fnm: Realms authentication error with message 'Invalid session id'
 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?]
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?]
 	at java.base/java.lang.Thread.run(Thread.java:1583) [?:?]
-[19:15:28] [Worker-Main-2/INFO]: Found unifont_jp_patch-16.0.01.hex, loading
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/eyes
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/eyes
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/breeze_wind
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_decal_cutout_no_cull
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/energy_swirl
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/energy_swirl
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_translucent
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_cutout_no_cull
-[19:15:29] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/entity_no_outline
-[19:15:29] [Render thread/INFO]: OpenAL initialized on device MacBook Air Speakers
-[19:15:29] [Render thread/INFO]: Sound engine started
-[19:15:29] [Render thread/INFO]: Created: 1024x512x4 minecraft:textures/atlas/blocks.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 2048x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 64x64x0 minecraft:textures/atlas/map_decorations.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 256x128x0 minecraft:textures/atlas/mob_effects.png-atlas
-[19:15:29] [Render thread/INFO]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
-[19:15:39] [Render thread/INFO]: Stopping!
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_cutout_no_cull
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/energy_swirl
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/energy_swirl
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/entity_no_outline
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_translucent
+[21:27:14] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/breeze_wind
+[21:27:14] [Render thread/INFO]: OpenAL initialized on device MacBook Air Speakers
+[21:27:14] [Render thread/INFO]: Sound engine started
+[21:27:14] [Render thread/INFO]: Created: 1024x512x4 minecraft:textures/atlas/blocks.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 2048x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 64x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 256x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[21:27:14] [Render thread/INFO]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
+[21:27:18] [Render thread/INFO]: Stopping!

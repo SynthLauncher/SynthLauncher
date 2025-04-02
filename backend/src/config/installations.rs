@@ -26,30 +26,19 @@ use super::{
 pub struct InstallationMetadata {
     name: String,
     version: String,
-    path: String,
     java_version: String,
-    created_at: String,
     last_used: String,
     status: String,
 }
 
 impl InstallationMetadata {
     pub fn new(name: String, version: String) -> Self {
-        let path = INSTALLATIONS_DIR.join(&name).to_string_lossy().to_string();
-        let now = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-        let timestamp = chrono::DateTime::<chrono::Utc>::from_timestamp(now as i64, 0)
-            .unwrap()
-            .to_rfc3339();
+        let timestamp = chrono::Local::now().to_rfc3339();
         
         Self {
             name,
             version,
-            path,
             java_version: "17".to_string(), // Default to Java 17
-            created_at: timestamp.clone(),
             last_used: timestamp,
             status: "installing".to_string(),
         }
@@ -119,8 +108,8 @@ impl Installation {
         Self { metadata, path }
     }
 
-    fn dir_path(&self) -> &Path {
-        &self.path
+    fn dir_path(&self) -> PathBuf {
+        INSTALLATIONS_DIR.join(&self.metadata.name)
     }
 
     fn config_path(&self) -> PathBuf {
@@ -245,7 +234,7 @@ impl Installation {
         config.add_installation(installation_meta.clone());
 
         let client = self.init(manifest).await?;
-        let result = client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path()).await;
+        let result = client::install_client(&ASSETS_DIR, &LIBS_DIR, client, &self.dir_path()).await;
 
         if result.is_ok() {
             installation_meta.status = "installed".to_string();
