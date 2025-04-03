@@ -1,8 +1,5 @@
 use std::{
-    borrow::Cow,
-    fs,
-    path::{Path, PathBuf},
-    process::{Command, Stdio},
+    borrow::Cow, fs, path::{Path, PathBuf}, process::{Command, Stdio}
 };
 
 use serde::{Deserialize, Serialize};
@@ -10,9 +7,7 @@ use synthlauncher_meta::json::{client::Client, version_manifest::VersionManifest
 use velcro::hash_map_from;
 
 use crate::{
-    json::{client, manifest::download_version},
-    utils::errors::BackendError,
-    ASSETS_DIR, INSTALLATIONS_DIR, LIBS_DIR,
+    json::{client, manifest::download_version}, utils::errors::BackendError, ASSETS_DIR, INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR
 };
 
 use super::{
@@ -41,6 +36,7 @@ impl InstallationMetadata {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Installation {
     metadata: InstallationMetadata,
     path: PathBuf,
@@ -176,7 +172,7 @@ impl Installation {
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
                 "auth_uuid" => "e371151a-b6b4-496a-b446-0abcd3e75ec4",
-                "auth_player_name" => &self.metadata.name(),
+                "auth_player_name" => config.get("auth_player_name").unwrap_or("stierprogrammer"),
                 _ => config.get(arg)?,
             })
         };
@@ -206,9 +202,9 @@ impl Installation {
         let current_java_path = config.get("java")
             .ok_or_else(|| BackendError::ConfigError("Java path not found in config".to_string()))?;
         let max_ram = config.get("max_ram")
-            .unwrap_or("2048"); // Default to 2GB if not specified
+            .unwrap_or("2048"); 
         let min_ram = config.get("min_ram")
-            .unwrap_or("1024"); // Default to 1GB if not specified
+            .unwrap_or("1024"); 
 
         let args = self.generate_arguments(&config)?;
 
@@ -224,9 +220,25 @@ impl Installation {
             .output()?;
 
         if !output.status.success() {
-            return Err(BackendError::JavaVersionNotFound);
+            return Err(BackendError::FailedToExecuteInstallation);
         }
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(transparent)]
+pub struct Installations(pub Vec<Installation>);
+
+impl Installations {
+    pub fn load() -> Self {
+        let path = LAUNCHER_DIR.join("installations.json");
+        if !path.exists() {
+            return Self(Vec::new());
+        }
+
+        let content = fs::read_to_string(path).expect("Failed to read installations.json!");
+        serde_json::from_str(&content).expect("Failed to deserialize installations.json!")
     }
 }

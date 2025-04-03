@@ -10,11 +10,9 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     Launch {
-        /// The version to launch
         #[arg(required = true)]
         version: String,
-        /// The player name
-        #[arg(default_value = "Player")]
+        #[arg(required = true)]
         name: String,
     },
 }

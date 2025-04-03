@@ -15,6 +15,8 @@ pub enum BackendError {
     JavaAlreadyExists,
     InvalidJavaPackage,
     MinecraftVersionNotFound,
+    FailedToSaveInstallation,
+    FailedToExecuteInstallation,
     ZipExtractionError(String),
     ConfigError(String),
 }

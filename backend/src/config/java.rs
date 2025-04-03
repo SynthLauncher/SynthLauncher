@@ -51,7 +51,7 @@ impl JavaInstallation {
             return Ok(version);
         }
 
-        Err(BackendError::JavaVersionNotFound)
+        Err(BackendError::RegexError(regex::Error::Syntax("Failed to parse Java version".to_string())))
     }
 
     fn from_path(path: &Path) -> Result<Self, BackendError> {
@@ -150,12 +150,13 @@ impl JavaInstallation {
 
         installations.sort_by_cached_key(|i| i.version.clone());
         installations.dedup_by(|a, b| a.path == b.path);
-        installations.sort_by(|a, b| Self::compare_versions(&a.version, &b.version));
+        installations.sort_by(|a, b| Self::compare_versions(&b.version, &a.version));
 
         Ok(installations)
     }
 
     pub fn newest() -> JavaInstallation {
+        println!("{:?}", Self::get_installations().unwrap());
         Self::get_installations()
             .unwrap()
             .into_iter()
