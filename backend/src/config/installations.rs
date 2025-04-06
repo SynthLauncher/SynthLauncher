@@ -107,7 +107,7 @@ impl Installation {
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json");
 
-        let java = JavaInstallation::newest();
+        let java = JavaInstallation::get_newest();
         let java_path = java.path.as_path().to_string_lossy().to_string();
         let config = Config::new(hash_map_from! {
             "java": java_path,

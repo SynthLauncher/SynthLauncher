@@ -7,7 +7,6 @@ use std::{
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use which::which;
 
 use crate::utils::errors::BackendError;
 
@@ -22,6 +21,32 @@ impl JavaInstallation {
         Self { version, path }
     }
 
+    pub fn get_installations() -> Result<Vec<Self>, BackendError> {
+        let mut installations = Vec::new();
+
+        installations.extend(Self::find_common_installations()?);
+        installations.extend(Self::find_in_path()?);
+
+        if let Some(java_home) = Self::find_java_home()? {
+            installations.push(java_home);
+        }
+
+        installations.sort_by_cached_key(|i| i.version.clone());
+        installations.dedup_by(|a, b| a.path == b.path);
+        installations.sort_by(|a, b| Self::compare_versions(&b.version, &a.version));
+
+        Ok(installations)
+    }
+
+    pub fn get_newest() -> JavaInstallation {
+        Self::get_installations()
+            .unwrap()
+            .into_iter()
+            .next()
+            .unwrap()
+    }
+
+    #[inline]
     fn compare_versions(a: &str, b: &str) -> std::cmp::Ordering {
         let parse_version = |v: &str| {
             v.split(|c| c == '.' || c == '_')
@@ -76,10 +101,17 @@ impl JavaInstallation {
     }
 
     pub fn find_in_path() -> Result<Vec<Self>, BackendError> {
-        let mut installations = Vec::new();
-        if let Ok(path) = which("java") {
-            if let Ok(installation) = Self::from_path(&path) {
-                installations.push(installation);
+        let mut installations: Vec<Self> = Vec::new();
+
+        if let Some(paths) = env::var_os("PATH") {
+            for path in env::split_paths(&paths) {
+                let java_path = path.join(if cfg!(windows) { "java.exe" } else { "java" });
+                if java_path.exists() && fs::metadata(&java_path).map(|m| m.is_file()).unwrap_or(false) {
+                   if let Ok(installation) = Self::from_path(&java_path) {
+                    installations.push(installation);
+                    break;
+                   } 
+                }
             }
         }
 
@@ -136,31 +168,5 @@ impl JavaInstallation {
         ];
 
         Self::search_java_dirs(&common_paths)
-    }
-
-    pub fn get_installations() -> Result<Vec<Self>, BackendError> {
-        let mut installations = Vec::new();
-
-        installations.extend(Self::find_common_installations()?);
-        installations.extend(Self::find_in_path()?);
-
-        if let Some(java_home) = Self::find_java_home()? {
-            installations.push(java_home);
-        }
-
-        installations.sort_by_cached_key(|i| i.version.clone());
-        installations.dedup_by(|a, b| a.path == b.path);
-        installations.sort_by(|a, b| Self::compare_versions(&b.version, &a.version));
-
-        Ok(installations)
-    }
-
-    pub fn newest() -> JavaInstallation {
-        println!("{:?}", Self::get_installations().unwrap());
-        Self::get_installations()
-            .unwrap()
-            .into_iter()
-            .next()
-            .unwrap()
     }
 }

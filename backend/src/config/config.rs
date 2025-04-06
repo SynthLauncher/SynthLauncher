@@ -13,9 +13,10 @@ use super::java::JavaInstallation;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
 
+// TODO: Remove java version from default and write a function to handle correct java versions for each installations!
 impl Config {
     fn create_default() -> Result<Self, std::io::Error> {
-        let java = JavaInstallation::newest();
+        let java = JavaInstallation::get_newest();
 
         Ok(Self(hash_map_from! {
             "min_ram": "512",
