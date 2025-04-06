@@ -11,7 +11,7 @@ use crate::{
 };
 
 use super::{
-    config::{Config, ConfigMut},
+    config::Config,
     java::JavaInstallation,
     MULTI_PATH_SEPERATOR,
 };
@@ -89,13 +89,6 @@ impl Installation {
         }
     }
 
-    pub fn config_mut(&mut self) -> ConfigMut {
-        let config_path = self.config_path();
-        self.read_config()
-            .unwrap_or(Config::empty())
-            .into_mut(&config_path)
-    }
-
     pub fn read_client(&self) -> Option<Client> {
         let data = fs::read_to_string(self.client_json_path()).ok()?;
         serde_json::from_str(&data).expect("Failed to deserialize client.json!")
@@ -109,6 +102,7 @@ impl Installation {
     }
 
     async fn reinit(&mut self, manifest: &VersionManifest) -> Result<Client, BackendError> {
+        println!("{}", self.metadata.version());
         let client_raw = download_version(&manifest, self.metadata.version()).await?;
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json");

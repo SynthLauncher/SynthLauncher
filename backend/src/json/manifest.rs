@@ -18,7 +18,7 @@ pub async fn fetch_version_manifest() {
     }
 }
 
-pub fn read() -> VersionManifest {
+pub fn manifest_read() -> VersionManifest {
     let buffer = fs::read_to_string(MANIFEST_PATH.as_path()).expect("Failed reading the file: version_manifest.json");
     serde_json::from_str(buffer.as_str()).expect("Failed to parse file: version_manifest.json")    
 }

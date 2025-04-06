@@ -37,6 +37,7 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     fs::create_dir_all(&(*LIBS_DIR)).unwrap();
     fs::create_dir_all(&(*ASSETS_DIR)).unwrap();
     fs::create_dir_all(&(*INSTALLATIONS_DIR)).unwrap();
+    
     fetch_version_manifest().await;
 
     Ok(())

@@ -11,8 +11,8 @@ pub struct Cli {
 pub enum Commands {
     Launch {
         #[arg(required = true)]
-        version: String,
-        #[arg(required = true)]
         name: String,
+        #[arg(required = true)]
+        version: String,
     },
 }
