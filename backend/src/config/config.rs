@@ -5,8 +5,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use velcro::hash_map_from;
+
+use crate::utils::errors::BackendError;
 
 use super::java::JavaInstallation;
 
@@ -15,16 +18,42 @@ pub struct Config(HashMap<String, String>);
 
 // TODO: Remove java version from default and write a function to handle correct java versions for each installations!
 impl Config {
-    fn create_default() -> Result<Self, std::io::Error> {
-        let java = JavaInstallation::get_newest();
-
+    fn create_default_global() -> Result<Self, std::io::Error> {
         Ok(Self(hash_map_from! {
-            "min_ram": "512",
-            "max_ram": "2048",
-            "auth_player_name": "stierprogrammer",
+            "auth_player_name": "synther",
             "auth_access_token": "0",
-            "java": java.path.to_string_lossy()
         }))
+    }
+
+    // TODO: Finish this
+    #[warn(dead_code)]
+    fn create_config(version: String) -> Result<JavaInstallation, BackendError> {
+        let parsed_version = Version::parse(&version).unwrap();
+        let javas = JavaInstallation::get_installations().unwrap();
+
+        if parsed_version <= Version::parse("1.16").unwrap() {
+            for java in javas {
+                if JavaInstallation::extract_java_version(&java.version.as_str()).unwrap() == 8 {
+                    return Ok(java);
+                }
+            }
+        }
+
+        return Err(BackendError::JavaVersionNotFound);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::config::java::JavaInstallation;
+
+    #[test] 
+    fn test() {
+        let javas = JavaInstallation::get_installations().unwrap();
+        
+        for java in javas {
+            println!("{}\n", JavaInstallation::extract_java_version(&java.version.as_str()).unwrap());
+        }
     }
 }
 
@@ -45,7 +74,7 @@ impl Config {
         let path = Self::global_config_path(launcher_root);
 
         let config = if !path.exists() {
-            let config = Self::create_default()?;
+            let config = Self::create_default_global()?;
             let file = File::create(path)?;
             serde_json::to_writer_pretty(file, &config).unwrap();
             config

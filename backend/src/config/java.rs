@@ -79,6 +79,19 @@ impl JavaInstallation {
         Err(BackendError::RegexError(regex::Error::Syntax("Failed to parse Java version".to_string())))
     }
 
+    pub fn extract_java_version(input: &str) -> Option<u32> {
+        let re = Regex::new(r"^(?:1\.(\d+)|(\d+))").ok()?;
+        let caps = re.captures(input)?;
+    
+        if let Some(old_ver) = caps.get(1) {
+            old_ver.as_str().parse().ok()
+        } else if let Some(new_ver) = caps.get(2) {
+            new_ver.as_str().parse().ok()
+        } else {
+            None
+        }
+    }
+
     fn from_path(path: &Path) -> Result<Self, BackendError> {
         let version = Self::get_java_version(path)?;
         Ok(Self::new(version, path.to_path_buf()))
