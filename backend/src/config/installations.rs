@@ -67,6 +67,7 @@ impl Installation {
     fn read_config(&self) -> Option<Config> {
         let config_path = self.config_path();
         let config = fs::read_to_string(&config_path).ok()?;
+
         Some(serde_json::from_str(&config).expect("Failed to deserialize config.json!"))
     }
 
@@ -107,7 +108,7 @@ impl Installation {
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json");
 
         let config =
-            Config::create_config(client.java_version.as_ref().unwrap().major_version).unwrap();
+            Config::create_config(client.java_version.as_ref().unwrap().major_version).await.unwrap();
         let config = config.merge(Config::read_global().unwrap());
         self.override_config(config)?;
 
@@ -189,15 +190,13 @@ impl Installation {
 
     pub fn execute(&self) -> Result<(), BackendError> {
         let config = self.get_config()?;
-        let current_java_path = config.get("java").ok_or_else(|| {
-            BackendError::ConfigError("Java path not found in config".to_string())
-        })?;
+
+        let current_java_path = config.get("java").unwrap();
+        println!("Trying to launch Java from: {}", current_java_path);
         let max_ram = config.get("max_ram").unwrap_or("2048");
         let min_ram = config.get("min_ram").unwrap_or("1024");
 
         let args = self.generate_arguments(&config)?;
-
-        dbg!("executing with args: {:?}", &args);
 
         let output = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))

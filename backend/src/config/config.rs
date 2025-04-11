@@ -1,14 +1,15 @@
 use std::{
     collections::HashMap,
-    fs::File,
+    fs::{self, File},
     io::BufReader,
     path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use velcro::hash_map_from;
 
-use crate::{utils::errors::BackendError, LAUNCHER_DIR};
+use crate::{java::installer::installer::install_version, utils::errors::BackendError, LAUNCHER_DIR};
 
 use super::java::JavaInstallation;
 
@@ -23,13 +24,23 @@ impl Config {
         }))
     }
 
-    pub fn create_config(java_version: u16) -> Result<Self, BackendError> {
+    pub async fn create_config(java_version: u16) -> Result<Self, BackendError> {
         let javas = JavaInstallation::get_installations().unwrap();
 
         for java in javas {
-            if JavaInstallation::extract_java_version(&java.version.as_str()).unwrap() == java_version {  
+            if JavaInstallation::extract_java_version(&java.version.as_str()).unwrap()
+                == java_version
+            {
                 return Ok(Self(hash_map_from! {
                     "java": java.path.to_string_lossy()
+                }));
+            } else {
+                println!("Java version: {}", java_version);
+                let new_java_path = install_version(java_version, None, "jdk".to_string(), true).await.unwrap();
+
+                println!("New Java path: {}", new_java_path.to_string_lossy());
+                return Ok(Self(hash_map_from! {
+                    "java": new_java_path.join("bin").join("java.exe").to_string_lossy()
                 }));
             }
         }
@@ -66,6 +77,24 @@ impl Config {
         };
 
         Ok(config)
+    }
+
+    pub fn update_config_field(
+        &mut self,
+        key: &str,
+        new_value: &str,
+    ) -> Result<(), std::io::Error> {
+        let config_path = LAUNCHER_DIR.join("config.json");
+
+        let config_data = fs::read_to_string(&config_path)?;
+        let mut json: Value = serde_json::from_str(&config_data)?;
+
+        if let Some(obj) = json.as_object_mut() {
+            obj.insert(key.to_string(), Value::String(new_value.to_string()));
+        }
+
+        fs::write(&config_path, serde_json::to_string_pretty(&json)?)?;
+        Ok(())
     }
 
     pub fn get(&self, entry: &str) -> Option<&str> {

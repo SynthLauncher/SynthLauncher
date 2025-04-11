@@ -1,6 +1,9 @@
 use std::{env, fs, path::PathBuf};
 
-use crate::{json::manifest::fetch_version_manifest, utils::errors::BackendError, ASSETS_DIR, INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR};
+use crate::{
+    json::manifest::fetch_version_manifest, utils::errors::BackendError, ASSETS_DIR,
+    INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR,
+};
 
 pub fn config_launcher_dir() -> PathBuf {
     #[cfg(target_os = "windows")]
@@ -28,8 +31,6 @@ pub fn config_launcher_dir() -> PathBuf {
             .map(|home| PathBuf::from(home).join(".synthlauncher"))
             .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
     }
-
-
 }
 
 pub async fn init_launcher_dir() -> Result<(), BackendError> {
@@ -37,7 +38,7 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     fs::create_dir_all(&(*LIBS_DIR)).unwrap();
     fs::create_dir_all(&(*ASSETS_DIR)).unwrap();
     fs::create_dir_all(&(*INSTALLATIONS_DIR)).unwrap();
-    
+
     fetch_version_manifest().await;
 
     Ok(())

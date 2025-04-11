@@ -9,10 +9,11 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    Launch {
+    Install {
         #[arg(required = true)]
         name: String,
         #[arg(required = true)]
         version: String,
+        username: String
     },
 }

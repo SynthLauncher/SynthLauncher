@@ -5,12 +5,13 @@ use tempfile::TempDir;
 
 use crate::{java::{installer::{download::download_file, env::set_environment_variables}, utils::{extracter::extract_package, platform::{default_install_path, get_arch, get_os}}}, utils::errors::BackendError};
 
+// TODO: Reinstalls even if it exists so fix this!
 pub async fn install_version(
-    version: u8,
+    version: u16,
     path: Option<PathBuf>,
     package_type: String,
     force: bool,
-) -> Result<(), BackendError> {
+) -> Result<PathBuf, BackendError> {
     let os = get_os();
     let arch = get_arch();
     let package_type = package_type.to_lowercase();
@@ -66,5 +67,5 @@ pub async fn install_version(
         java_home.display()
     );
 
-    Ok(())
+    Ok(java_home)
 }

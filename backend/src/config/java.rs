@@ -76,13 +76,15 @@ impl JavaInstallation {
             return Ok(version);
         }
 
-        Err(BackendError::RegexError(regex::Error::Syntax("Failed to parse Java version".to_string())))
+        Err(BackendError::RegexError(regex::Error::Syntax(
+            "Failed to parse Java version".to_string(),
+        )))
     }
 
     pub fn extract_java_version(input: &str) -> Option<u16> {
         let re = Regex::new(r"^(?:1\.(\d+)|(\d+))").ok()?;
         let caps = re.captures(input)?;
-    
+
         if let Some(old_ver) = caps.get(1) {
             old_ver.as_str().parse().ok()
         } else if let Some(new_ver) = caps.get(2) {
@@ -119,11 +121,15 @@ impl JavaInstallation {
         if let Some(paths) = env::var_os("PATH") {
             for path in env::split_paths(&paths) {
                 let java_path = path.join(if cfg!(windows) { "java.exe" } else { "java" });
-                if java_path.exists() && fs::metadata(&java_path).map(|m| m.is_file()).unwrap_or(false) {
-                   if let Ok(installation) = Self::from_path(&java_path) {
-                    installations.push(installation);
-                    break;
-                   } 
+                if java_path.exists()
+                    && fs::metadata(&java_path)
+                        .map(|m| m.is_file())
+                        .unwrap_or(false)
+                {
+                    if let Ok(installation) = Self::from_path(&java_path) {
+                        installations.push(installation);
+                        break;
+                    }
                 }
             }
         }
