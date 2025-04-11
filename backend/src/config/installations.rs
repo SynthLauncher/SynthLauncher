@@ -1,20 +1,20 @@
 use std::{
-    borrow::Cow, fs, path::{Path, PathBuf}, process::{Command, Stdio}
+    borrow::Cow,
+    fs,
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
 };
 
 use serde::{Deserialize, Serialize};
 use synthlauncher_meta::json::{client::Client, version_manifest::VersionManifest};
-use velcro::hash_map_from;
 
 use crate::{
-    json::{client, manifest::download_version}, utils::errors::BackendError, ASSETS_DIR, INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR
+    json::{client, manifest::download_version},
+    utils::errors::BackendError,
+    ASSETS_DIR, INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR,
 };
 
-use super::{
-    config::Config,
-    java::JavaInstallation,
-    MULTI_PATH_SEPERATOR,
-};
+use super::{config::Config, MULTI_PATH_SEPERATOR};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InstallationMetadata {
@@ -80,7 +80,7 @@ impl Installation {
     }
 
     pub fn get_config(&self) -> Result<Config, std::io::Error> {
-        let global_config = Config::read_global(&self.path)?;
+        let global_config = Config::read_global()?;
 
         if let Some(config) = self.read_config() {
             Ok(config.merge(global_config))
@@ -102,17 +102,13 @@ impl Installation {
     }
 
     async fn reinit(&mut self, manifest: &VersionManifest) -> Result<Client, BackendError> {
-        println!("{}", self.metadata.version());
         let client_raw = download_version(&manifest, self.metadata.version()).await?;
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json");
 
-        let java = JavaInstallation::get_newest();
-        let java_path = java.path.as_path().to_string_lossy().to_string();
-        let config = Config::new(hash_map_from! {
-            "java": java_path,
-        });
-
+        let config =
+            Config::create_config(client.java_version.as_ref().unwrap().major_version).unwrap();
+        let config = config.merge(Config::read_global().unwrap());
         self.override_config(config)?;
 
         fs::create_dir_all(self.dir_path())?;
@@ -193,12 +189,11 @@ impl Installation {
 
     pub fn execute(&self) -> Result<(), BackendError> {
         let config = self.get_config()?;
-        let current_java_path = config.get("java")
-            .ok_or_else(|| BackendError::ConfigError("Java path not found in config".to_string()))?;
-        let max_ram = config.get("max_ram")
-            .unwrap_or("2048"); 
-        let min_ram = config.get("min_ram")
-            .unwrap_or("1024"); 
+        let current_java_path = config.get("java").ok_or_else(|| {
+            BackendError::ConfigError("Java path not found in config".to_string())
+        })?;
+        let max_ram = config.get("max_ram").unwrap_or("2048");
+        let min_ram = config.get("min_ram").unwrap_or("1024");
 
         let args = self.generate_arguments(&config)?;
 

@@ -2,21 +2,19 @@ use std::{
     collections::HashMap,
     fs::File,
     io::BufReader,
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
-use semver::Version;
 use serde::{Deserialize, Serialize};
 use velcro::hash_map_from;
 
-use crate::utils::errors::BackendError;
+use crate::{utils::errors::BackendError, LAUNCHER_DIR};
 
 use super::java::JavaInstallation;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
 
-// TODO: Remove java version from default and write a function to handle correct java versions for each installations!
 impl Config {
     fn create_default_global() -> Result<Self, std::io::Error> {
         Ok(Self(hash_map_from! {
@@ -25,35 +23,18 @@ impl Config {
         }))
     }
 
-    // TODO: Finish this
-    #[warn(dead_code)]
-    fn create_config(version: String) -> Result<JavaInstallation, BackendError> {
-        let parsed_version = Version::parse(&version).unwrap();
+    pub fn create_config(java_version: u16) -> Result<Self, BackendError> {
         let javas = JavaInstallation::get_installations().unwrap();
 
-        if parsed_version <= Version::parse("1.16").unwrap() {
-            for java in javas {
-                if JavaInstallation::extract_java_version(&java.version.as_str()).unwrap() == 8 {
-                    return Ok(java);
-                }
+        for java in javas {
+            if JavaInstallation::extract_java_version(&java.version.as_str()).unwrap() == java_version {  
+                return Ok(Self(hash_map_from! {
+                    "java": java.path.to_string_lossy()
+                }));
             }
         }
 
-        return Err(BackendError::JavaVersionNotFound);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::config::java::JavaInstallation;
-
-    #[test] 
-    fn test() {
-        let javas = JavaInstallation::get_installations().unwrap();
-        
-        for java in javas {
-            println!("{}\n", JavaInstallation::extract_java_version(&java.version.as_str()).unwrap());
-        }
+        Err(BackendError::JavaVersionNotFound)
     }
 }
 
@@ -66,12 +47,12 @@ impl Config {
         Self(HashMap::new())
     }
 
-    fn global_config_path(launcher_root: &Path) -> PathBuf {
-        launcher_root.join("config.json")
+    fn global_config_path() -> PathBuf {
+        LAUNCHER_DIR.join("config.json")
     }
 
-    pub fn read_global(launcher_root: &Path) -> Result<Self, std::io::Error> {
-        let path = Self::global_config_path(launcher_root);
+    pub fn read_global() -> Result<Self, std::io::Error> {
+        let path = Self::global_config_path();
 
         let config = if !path.exists() {
             let config = Self::create_default_global()?;

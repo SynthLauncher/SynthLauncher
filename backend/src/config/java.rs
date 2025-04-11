@@ -79,7 +79,7 @@ impl JavaInstallation {
         Err(BackendError::RegexError(regex::Error::Syntax("Failed to parse Java version".to_string())))
     }
 
-    pub fn extract_java_version(input: &str) -> Option<u32> {
+    pub fn extract_java_version(input: &str) -> Option<u16> {
         let re = Regex::new(r"^(?:1\.(\d+)|(\d+))").ok()?;
         let caps = re.captures(input)?;
     
