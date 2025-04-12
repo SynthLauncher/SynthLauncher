@@ -119,6 +119,7 @@ impl Installation {
 
     pub async fn install(&mut self, manifest: &VersionManifest) -> Result<(), BackendError> {
         let client = self.init(manifest).await?;
+
         client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path()).await
     }
 
@@ -145,6 +146,7 @@ impl Installation {
     }
 
     fn generate_arguments(&self, config: &Config) -> Result<Vec<String>, BackendError> {
+        let global_config = Config::read_global().unwrap();
         let client = self.read_client().expect("Failed to read client.json!");
         let classpath = self.classpath(&client);
         let game_dir = self.dir_path();
@@ -163,7 +165,7 @@ impl Installation {
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
                 "auth_uuid" => "e371151a-b6b4-496a-b446-0abcd3e75ec4",
-                "auth_player_name" => config.get("auth_player_name").unwrap_or("stierprogrammer"),
+                "auth_player_name" => global_config.get("auth_player_name").unwrap(),
                 _ => config.get(arg)?,
             })
         };
@@ -190,7 +192,7 @@ impl Installation {
 
     pub fn execute(&self) -> Result<(), BackendError> {
         let config = self.get_config()?;
-
+        
         let current_java_path = config.get("java").unwrap();
         println!("Trying to launch Java from: {}", current_java_path);
         let max_ram = config.get("max_ram").unwrap_or("2048");

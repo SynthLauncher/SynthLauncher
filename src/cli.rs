@@ -14,6 +14,11 @@ pub enum Commands {
         name: String,
         #[arg(required = true)]
         version: String,
-        username: String
     },
+    Launch {
+        #[arg(required = true)]
+        name: String,
+        #[arg(required = true)]
+        username: String    
+    }
 }

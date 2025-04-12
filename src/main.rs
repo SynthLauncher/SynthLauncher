@@ -14,16 +14,20 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Install { name, version, username} => {
-            let mut config =  Config::read_global().unwrap();
-            config.update_config_field("auth_player_name", username.as_str()).unwrap();
-            
+        Commands::Install { name, version } => {
             let metadata = InstallationMetadata::new(name, version);
             let mut instance = Installation::new(metadata);
             let manifest = manifest_read();
 
             instance.install(&manifest).await.unwrap();
-            instance.execute().unwrap();
         },
+        Commands::Launch { name, username } => {
+            let mut config =  Config::read_global().unwrap();
+            config.update_config_field("auth_player_name", username.as_str()).unwrap();
+            
+            let metadata = InstallationMetadata::new(name, String::new());
+            let instance = Installation::new(metadata);
+            instance.execute().unwrap();    
+        }
     }
 }
