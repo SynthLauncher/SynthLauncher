@@ -22,6 +22,7 @@
 > [!WARNING]
 > There are some bugs right now which have to be fixed!
 > Bugs: config.json not working properly; proper check for the current Java to install correct version of Java for older/newer versions; few problems with installations.rs.
+
 > [!WARNING]
 > There aren't any releases yet!
 
