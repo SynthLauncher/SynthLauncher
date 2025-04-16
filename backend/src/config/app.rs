@@ -1,8 +1,7 @@
 use std::{env, fs, path::PathBuf};
 
 use crate::{
-    json::manifest::fetch_version_manifest, utils::errors::BackendError, ASSETS_DIR,
-    INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR,
+    json::manifest::fetch_version_manifest, utils::errors::BackendError, ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LAUNCHER_DIR, LIBS_DIR
 };
 
 pub fn config_launcher_dir() -> PathBuf {
@@ -38,7 +37,9 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     fs::create_dir_all(&(*LIBS_DIR)).unwrap();
     fs::create_dir_all(&(*ASSETS_DIR)).unwrap();
     fs::create_dir_all(&(*INSTALLATIONS_DIR)).unwrap();
-
+    
+    fs::File::create(&(*INSTALLATIONS_PATH)).unwrap();
+    
     fetch_version_manifest().await;
 
     Ok(())

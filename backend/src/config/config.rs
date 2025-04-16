@@ -9,9 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use velcro::hash_map_from;
 
-use crate::{java::installer::installer::install_version, utils::errors::BackendError, LAUNCHER_DIR};
-
-use super::java::JavaInstallation;
+use crate::{java::{installer::installer::install_version, java::JavaInstallation}, utils::errors::BackendError, LAUNCHER_DIR};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);

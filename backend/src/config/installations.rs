@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    fs,
+    fs::{self, OpenOptions},
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
@@ -11,12 +11,12 @@ use synthlauncher_meta::json::{client::Client, version_manifest::VersionManifest
 use crate::{
     json::{client, manifest::download_version},
     utils::errors::BackendError,
-    ASSETS_DIR, INSTALLATIONS_DIR, LAUNCHER_DIR, LIBS_DIR,
+    ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR,
 };
 
 use super::{config::Config, MULTI_PATH_SEPERATOR};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct InstallationMetadata {
     name: String,
     version: String,
@@ -36,7 +36,7 @@ impl InstallationMetadata {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Installation {
     metadata: InstallationMetadata,
     path: PathBuf,
@@ -107,12 +107,14 @@ impl Installation {
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json");
 
-        let config =
-            Config::create_config(client.java_version.as_ref().unwrap().major_version).await.unwrap();
+        let config = Config::create_config(client.java_version.as_ref().unwrap().major_version)
+            .await
+            .unwrap();
         let config = config.merge(Config::read_global().unwrap());
         self.override_config(config)?;
 
         fs::create_dir_all(self.dir_path())?;
+        Installations::add(self);
         fs::write(self.client_json_path(), &client_raw)?;
         Ok(client)
     }
@@ -192,7 +194,7 @@ impl Installation {
 
     pub fn execute(&self) -> Result<(), BackendError> {
         let config = self.get_config()?;
-        
+
         let current_java_path = config.get("java").unwrap();
         println!("Trying to launch Java from: {}", current_java_path);
         let max_ram = config.get("max_ram").unwrap_or("2048");
@@ -222,13 +224,33 @@ impl Installation {
 pub struct Installations(pub Vec<Installation>);
 
 impl Installations {
+    pub fn new() -> Self {
+        Installations(Vec::new())
+    }
+
     pub fn load() -> Self {
-        let path = LAUNCHER_DIR.join("installations.json");
-        if !path.exists() {
-            return Self(Vec::new());
+        let content = fs::read_to_string(INSTALLATIONS_PATH.as_path())
+            .expect("Failed to read installations.json!");
+        serde_json::from_str(&content).unwrap_or(Installations::new())
+    }
+
+    pub fn add(installation: &Installation) {
+        let mut existing_installations = Self::load();
+
+        if !existing_installations
+            .0
+            .iter()
+            .any(|existing| existing.path == installation.path)
+        {
+            existing_installations.0.push(installation.clone());
         }
 
-        let content = fs::read_to_string(path).expect("Failed to read installations.json!");
-        serde_json::from_str(&content).expect("Failed to deserialize installations.json!")
+        let file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(INSTALLATIONS_PATH.as_path())
+            .unwrap();
+
+        serde_json::to_writer_pretty(file, &existing_installations).unwrap();
     }
 }

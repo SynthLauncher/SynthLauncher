@@ -36,4 +36,6 @@ lazy_static! {
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
     pub static ref INSTALLATIONS_DIR: PathBuf = LAUNCHER_DIR.join("installations");
     pub static ref MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
+    #[doc = r"Path to installations.json"]
+    pub static ref INSTALLATIONS_PATH: PathBuf = LAUNCHER_DIR.join("installations.json");
 }

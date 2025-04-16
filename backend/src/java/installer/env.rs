@@ -1,7 +1,4 @@
 use std::path::Path;
-use std::env;
-use std::fs;
-use std::io::Write;
 
 use crate::utils::errors::BackendError;
 
@@ -43,6 +40,10 @@ pub fn set_environment_variables(java_home: &Path) -> Result<(), BackendError> {
                 );
             }
         } else {
+            use std::env;
+            use std::fs;
+            use std::io::Write;
+
             let shell_config = dirs::home_dir()
                 .unwrap()
                 .join(if env::var("SHELL").unwrap_or_default().contains("zsh") {

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["backend", "frontend/src-tauri", "meta"]
+members = ["backend", "meta"]
 
 [dependencies]
 synthlauncher-backend = { path = "backend" }
