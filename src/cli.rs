@@ -20,5 +20,6 @@ pub enum Commands {
         name: String,
         #[arg(required = true)]
         username: String    
-    }
+    },
+    List
 }

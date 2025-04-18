@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf};
 use serde_json::Value;
 use tempfile::TempDir;
 
-use crate::{java::{installer::{download::download_file, env::set_environment_variables}, utils::{extracter::extract_package, platform::{default_install_path, get_arch, get_os}}}, utils::errors::BackendError};
+use crate::{java::{installer::env::set_environment_variables, utils::{download::download_file, extracter::extract_package, platform::{default_install_path, get_arch, get_os}}}, utils::errors::BackendError};
 
 // TODO: Reinstalls even if it exists so fix this!
 pub async fn install_version(

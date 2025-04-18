@@ -38,7 +38,7 @@ impl InstallationMetadata {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Installation {
-    metadata: InstallationMetadata,
+    pub metadata: InstallationMetadata,
     path: PathBuf,
 }
 
