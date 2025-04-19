@@ -25,4 +25,8 @@ tempfile = "3.19.1"
 semver = "1.0.26"
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
+<<<<<<< HEAD
 winapi = { version = "0.3", features = ["winuser"] }
+=======
+winapi = { version = "0.3", features = ["winuser"] }
+>>>>>>> 475f6ff92cdc7163fe9b8786293ca1d9e385f1ac
