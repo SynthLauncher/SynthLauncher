@@ -1,11 +1,9 @@
 use std::{
-    borrow::Cow,
-    fs::{self, OpenOptions},
-    path::{Path, PathBuf},
-    process::{Command, Stdio},
+    borrow::Cow, fs::{self, File, OpenOptions}, io::BufReader, path::{Path, PathBuf}, process::{Command, Stdio}
 };
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use synthlauncher_meta::json::{client::Client, version_manifest::VersionManifest};
 
 use crate::{
@@ -33,6 +31,20 @@ impl InstallationMetadata {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn get_version_from_dir(&mut self) {
+        let path = Path::new(&INSTALLATIONS_DIR.as_path()).join(self.name()).join("client.json");
+        let file = File::open(path).unwrap();
+        let reader = BufReader::new(file);
+        let json: Value = serde_json::from_reader(reader).unwrap();
+
+        let version = json.get("id")
+            .and_then(Value::as_str)
+            .unwrap()
+            .to_string();
+
+        self.version = version;
     }
 }
 
@@ -252,5 +264,28 @@ impl Installations {
             .unwrap();
 
         serde_json::to_writer_pretty(file, &existing_installations).unwrap();
+    }
+
+    fn find_in_installations_dir(name: String) -> Option<Installation> {
+        let path = Path::new(&INSTALLATIONS_DIR.as_path()).join(&name);
+
+        if path.exists() && path.is_dir() {
+            let mut metadata = InstallationMetadata::new(name, String::from(""));
+            metadata.get_version_from_dir();
+            let installation = Installation::new(metadata);
+            Installations::add(&installation);
+            return Some(installation);
+        }
+
+        None
+    }
+
+    pub fn find(name: String) -> Option<Installation> {
+        let installations = Self::load();
+    
+        installations.0
+            .into_iter()
+            .find(|installation| installation.metadata.name() == name)
+            .or_else(|| Self::find_in_installations_dir(name))
     }
 }

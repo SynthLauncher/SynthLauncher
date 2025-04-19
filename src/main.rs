@@ -33,9 +33,8 @@ async fn main() {
                 .update_config_field("auth_player_name", username.as_str())
                 .unwrap();
 
-            let metadata = InstallationMetadata::new(name, String::new());
-            let instance = Installation::new(metadata);
-            instance.execute().unwrap();
+            let installation = Installations::find(name).unwrap();
+            installation.execute().unwrap();
         }
         Commands::List => {
             let installations = Installations::load();
