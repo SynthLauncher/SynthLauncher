@@ -7,7 +7,7 @@ use super::download::DownloadErr;
 #[derive(Debug)]
 pub enum BackendError {
     ZipError(ZipError),
-    DownlaodError(DownloadErr),
+    DownloadError(DownloadErr),
     IOError(io::Error),
     RegexError(regex::Error),
     EnvVarError(env::VarError),
@@ -23,13 +23,13 @@ pub enum BackendError {
 
 impl From<reqwest::Error> for BackendError {
     fn from(value: reqwest::Error) -> Self {
-        Self::DownlaodError(DownloadErr::from(value))
+        Self::DownloadError(DownloadErr::from(value))
     }
 }
 
 impl From<DownloadErr> for BackendError {
     fn from(value: DownloadErr) -> Self {
-        Self::DownlaodError(value)
+        Self::DownloadError(value)
     }
 }
 
