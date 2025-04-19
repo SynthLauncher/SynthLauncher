@@ -26,10 +26,3 @@ semver = "1.0.26"
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
 winapi = { version = "0.3", features = ["winuser"] }
-base64 = "0.22.1"
-sha2 = "0.10"
-rand = "0.9.0"
-webbrowser = "1.0.4"
-warp = "0.3"
-thiserror = "2.0.12"
-url = "2.5.4"
