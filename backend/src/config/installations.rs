@@ -14,7 +14,7 @@ use crate::{
     ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR,
 };
 
-use super::{config::Config, MULTI_PATH_SEPERATOR};
+use super::{config::Config, MULTI_PATH_SEPARATOR};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct InstallationMetadata {
@@ -144,7 +144,7 @@ impl Installation {
 
         let client_jar = self.client_jar_path();
         classpath.push(format!("{}", client_jar.display()));
-        classpath.join(MULTI_PATH_SEPERATOR)
+        classpath.join(MULTI_PATH_SEPARATOR)
     }
 
     fn generate_arguments(&self, config: &Config) -> Result<Vec<String>, BackendError> {
