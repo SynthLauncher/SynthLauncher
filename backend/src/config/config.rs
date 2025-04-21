@@ -9,7 +9,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use velcro::hash_map_from;
 
-use crate::{java::{installer::installer::install_version, java::JavaInstallation}, utils::errors::BackendError, LAUNCHER_DIR};
+use crate::{
+    java::{installer::installer::install_version, java::JavaInstallation},
+    utils::errors::BackendError,
+    LAUNCHER_DIR,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
@@ -32,18 +36,16 @@ impl Config {
                 return Ok(Self(hash_map_from! {
                     "java": java.path.to_string_lossy()
                 }));
-            } else {
-                println!("Java version: {}", java_version);
-                let new_java_path = install_version(java_version, None, "jdk".to_string(), true).await.unwrap();
-
-                println!("New Java path: {}", new_java_path.to_string_lossy());
-                return Ok(Self(hash_map_from! {
-                    "java": new_java_path.join("bin").join("java.exe").to_string_lossy()
-                }));
             }
         }
 
-        Err(BackendError::JavaVersionNotFound)
+        let new_java_path = install_version(java_version, None, "jdk".to_string(), true)
+            .await
+            .map_err(|_| BackendError::JavaVersionNotFound)?;
+
+        return Ok(Self(hash_map_from! {
+            "java": new_java_path.join("bin").join("java.exe").to_string_lossy()
+        }));
     }
 }
 

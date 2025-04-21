@@ -127,6 +127,7 @@ impl Installation {
 
         fs::create_dir_all(self.dir_path())?;
         Installations::add(self);
+        
         fs::write(self.client_json_path(), &client_raw)?;
         Ok(client)
     }

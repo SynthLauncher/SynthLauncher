@@ -23,6 +23,8 @@ tar = "0.4.44"
 cfg-if = "1.0.0"
 tempfile = "3.19.1"
 semver = "1.0.26"
+which = "7.0.3"
+
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
 winapi = { version = "0.3", features = ["winuser"] }
