@@ -77,6 +77,8 @@ jobs:
     name: Create Release
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Explicitly grant permission to create releases
     
     steps:
       - name: Download artifacts
@@ -86,8 +88,9 @@ jobs:
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')  # Only run on tag pushes
         with:
-          tag_name: ${{ github.ref }}
+          # tag_name will be automatically determined from the git tag
           name: SynthLauncher ${{ github.ref_name }}
           body: |
             **SynthLauncher** ${{ github.ref_name }}
@@ -100,3 +103,5 @@ jobs:
             artifacts/synth_launcher-macos-arm/synthlauncher
             artifacts/synth_launcher-macos-x64/synthlauncher
             artifacts/synth_launcher-windows-x64/synthlauncher.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
