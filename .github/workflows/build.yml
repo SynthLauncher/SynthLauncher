@@ -17,21 +17,27 @@ jobs:
           - os: ubuntu-latest
             artifact_name: linux-arm
             target: aarch64-unknown-linux-gnu
+            cross: true
           - os: ubuntu-latest
             artifact_name: linux-x64
             target: x86_64-unknown-linux-gnu
+            cross: false
           - os: macos-latest
             artifact_name: macos-arm
             target: aarch64-apple-darwin
+            cross: false
           - os: macos-latest
             artifact_name: macos-x64
             target: x86_64-apple-darwin
+            cross: false
           - os: windows-latest
             artifact_name: windows-x64
             target: x86_64-pc-windows-msvc
+            cross: false
           - os: windows-latest
             artifact_name: windows-arm
             target: aarch64-pc-windows-msvc
+            cross: false
     
     name: Build (${{ matrix.artifact_name }})
     runs-on: ${{ matrix.os }}
@@ -48,24 +54,48 @@ jobs:
           profile: minimal
           override: true
       
+      - name: Install cross-compilation dependencies (Linux ARM)
+        if: matrix.cross && matrix.os == 'ubuntu-latest' && matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          
+          # Install OpenSSL for ARM64
+          sudo apt-get install -y pkg-config libssl-dev
+          
+          # Configure environment for cross-compilation
+          echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
+          echo "OPENSSL_DIR=/usr/include/openssl" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+      
+      - name: Use cross instead of cargo (for Linux ARM)
+        if: matrix.cross && matrix.os == 'ubuntu-latest'
+        run: |
+          cargo install cross
+          echo "CARGO_COMMAND=cross" >> $GITHUB_ENV
+      
+      - name: Set default cargo command
+        if: ${{ !matrix.cross }}
+        run: echo "CARGO_COMMAND=cargo" >> $GITHUB_ENV
+        shell: bash
+      
       - name: Build (Release)
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --target ${{ matrix.target }}
+        shell: bash
+        run: |
+          ${{ env.CARGO_COMMAND }} build --release --target ${{ matrix.target }}
       
       - name: Package binary
         shell: bash
         run: |
           mkdir -p release
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             cp target/${{ matrix.target }}/release/synthlauncher.exe release/
           else
             cp target/${{ matrix.target }}/release/synthlauncher release/
           fi
       
       - name: Upload artifact
-        uses: actions/upload-artifact@v4  # Updated to v4
+        uses: actions/upload-artifact@v4
         with:
           name: synth_launcher-${{ matrix.artifact_name }}
           path: release/
