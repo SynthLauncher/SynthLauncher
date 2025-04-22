@@ -134,7 +134,6 @@ impl Installation {
 
     pub async fn install(&mut self, manifest: &VersionManifest) -> Result<(), BackendError> {
         let client = self.init(manifest).await?;
-
         client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path()).await
     }
 
