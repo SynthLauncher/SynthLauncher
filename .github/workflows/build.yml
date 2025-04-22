@@ -11,11 +11,8 @@ env:
 
 jobs:
   build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
             artifact_name: linux-arm
@@ -35,11 +32,14 @@ jobs:
           - os: windows-latest
             artifact_name: windows-arm
             target: aarch64-pc-windows-msvc
-
+    
+    name: Build (${{ matrix.artifact_name }})
+    runs-on: ${{ matrix.os }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -47,13 +47,13 @@ jobs:
           target: ${{ matrix.target }}
           profile: minimal
           override: true
-
+      
       - name: Build (Release)
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --target ${{ matrix.target }}
-
+      
       - name: Package binary
         shell: bash
         run: |
@@ -63,24 +63,24 @@ jobs:
           else
             cp target/${{ matrix.target }}/release/synthlauncher release/
           fi
-
+      
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Updated to v4
         with:
           name: synth_launcher-${{ matrix.artifact_name }}
           path: release/
-
+  
   release:
     name: Create Release
     needs: build
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
-
+      
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -93,6 +93,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/synth_launcher-linux/synthlauncher
-            artifacts/synth_launcher-macos/synthlauncher
-            artifacts/synth_launcher-windows/synthlauncher.exe
+            artifacts/synth_launcher-linux-arm/synthlauncher
+            artifacts/synth_launcher-linux-x64/synthlauncher
+            artifacts/synth_launcher-macos-arm/synthlauncher
+            artifacts/synth_launcher-macos-x64/synthlauncher
+            artifacts/synth_launcher-windows-x64/synthlauncher.exe
+            artifacts/synth_launcher-windows-arm/synthlauncher.exe
