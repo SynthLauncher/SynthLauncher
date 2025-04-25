@@ -7,6 +7,7 @@ use sl_meta::json::{Arch, OsName};
 pub mod installations;
 pub mod config;
 pub mod json;
+pub mod auth;
 
 pub const MULTI_PATH_SEPARATOR: &'static str = if cfg!(target_os = "windows") {
     ";"

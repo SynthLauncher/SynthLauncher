@@ -70,7 +70,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: synth_launcher-${{ matrix.artifact_name }}
+          name: synthlauncher-${{ matrix.artifact_name }}
           path: release/
   
   release:
@@ -99,9 +99,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/synth_launcher-linux-x64/synthlauncher
-            artifacts/synth_launcher-macos-arm/synthlauncher
-            artifacts/synth_launcher-macos-x64/synthlauncher
-            artifacts/synth_launcher-windows-x64/synthlauncher.exe
+            artifacts/synthlauncher-linux-x64/synthlauncher
+            artifacts/synthlauncher-macos-arm/synthlauncher
+            artifacts/synthlauncher-macos-x64/synthlauncher
+            artifacts/synthlauncher-windows-x64/synthlauncher.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
