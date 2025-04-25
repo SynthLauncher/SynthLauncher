@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum VersionType {
     OldAlpha,
@@ -9,13 +9,13 @@ pub enum VersionType {
     Snapshot,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Latest {
     pub release: String,
     pub snapshot: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Version {
     pub id: String,
@@ -29,7 +29,7 @@ pub struct Version {
     pub compliance_level: u8, // Only in version_manifest_v2, which will be using
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct VersionManifest {
     pub latest: Latest,
     pub versions: Vec<Version>,

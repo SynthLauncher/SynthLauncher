@@ -158,6 +158,8 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
+ "sl-core",
+ "sl-meta",
  "tauri",
  "tauri-build",
  "tauri-plugin-log",
