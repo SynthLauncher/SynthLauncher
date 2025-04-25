@@ -1,13 +1,6 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use synthlauncher_backend::{
-    config::{
-        app::init_launcher_dir,
-        config::Config,
-        installations::{Installation, InstallationMetadata, Installations},
-    },
-    json::manifest::manifest_read,
-};
+use sl_core::{config::{config::Config, init_launcher_dir}, installations::{Installation, InstallationMetadata, Installations}, json::manifest::manifest_read};
 
 mod cli;
 
