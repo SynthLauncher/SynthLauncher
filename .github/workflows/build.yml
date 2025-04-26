@@ -89,10 +89,10 @@ jobs:
           path: artifacts
       - name: Archive artifacts
         run: |
-          tar -czvf synthlauncher-linux-x64.tar.gz artifacts/synthlauncher-linux-x64/*
-          tar -czvf synthlauncher-macos-arm.tar.gz artifacts/synthlauncher-macos-arm/*
-          tar -czvf synthlauncher-macos-x64.tar.gz artifacts/synthlauncher-macos-x64/*
-          tar -czvf synthlauncher-windows-x64.tar.gz artifacts/synthlauncher-windows-x64/*
+          tar -czvf synthlauncher-linux-x64.tar.gz -C artifacts/synthlauncher-linux-x64 *
+          tar -czvf synthlauncher-macos-arm.tar.gz -C artifacts/synthlauncher-macos-arm *
+          tar -czvf synthlauncher-macos-x64.tar.gz -C artifacts/synthlauncher-macos-x64 *
+          tar -czvf synthlauncher-windows-x64.tar.gz -C artifacts/synthlauncher-windows-x64 *
       - name: Create Release
         uses: ncipollo/release-action@v1
         if: startsWith(github.ref, 'refs/tags/') # Only run on tag pushes
