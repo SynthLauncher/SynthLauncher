@@ -16,6 +16,7 @@
 
 > [!WARNING]
 > Old status!
+
 **Launching the game is now possible! Every version works. We've added a Java installer and are planning to integrate Microsoft authentication. The latest code hasn't been pushed yet as we're still fixing some issues, but once everything is resolved, we'll push the update!**
 
 ![ss1](https://i.imgur.com/waxsWEb.png)
@@ -23,6 +24,7 @@
 
 > [!NOTE]
 > 27.4.2025 Status
+
 **Working on the frontend, but it is not finished yet!**
 
 ![ss3](https://i.imgur.com/GO3gffk.png)
