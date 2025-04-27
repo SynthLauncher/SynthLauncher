@@ -14,17 +14,18 @@
 
 ## Current Status
 
+> [!WARNING]
+> Old status!
 **Launching the game is now possible! Every version works. We've added a Java installer and are planning to integrate Microsoft authentication. The latest code hasn't been pushed yet as we're still fixing some issues, but once everything is resolved, we'll push the update!**
 
 ![ss1](https://i.imgur.com/waxsWEb.png)
 ![ss2](https://i.imgur.com/BlP1VOD.png)
 
-> [!WARNING]
-> There are some bugs right now which have to be fixed!
-> Bugs: config.json not working properly; proper check for the current Java to install correct version of Java for older/newer versions; few problems with installations.rs.
+> [!NOTE]
+> 27.4.2025 Status
+**Working on the frontend, but it is not finished yet!**
 
-> [!WARNING]
-> There aren't any releases yet!
+![ss3](https://i.imgur.com/GO3gffk.png)
 
 ## Contributing
 
