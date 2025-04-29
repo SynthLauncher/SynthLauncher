@@ -18,41 +18,34 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
+import { invoke } from "@tauri-apps/api/core";
 
-const minecraftVersions = [
-  {
-    value: "1.20.4",
-    label: "Minecraft 1.20.4",
-  },
-  {
-    value: "1.19.2",
-    label: "Minecraft 1.19.2",
-  },
-  {
-    value: "1.18.2",
-    label: "Minecraft 1.18.2",
-  },
-  {
-    value: "1.17.1",
-    label: "Minecraft 1.17.1",
-  },
-  {
-    value: "1.16.5",
-    label: "Minecraft 1.16.5",
-  },
-  {
-    value: "1.12.2",
-    label: "Minecraft 1.12.2",
-  },
-  {
-    value: "1.8.9",
-    label: "Minecraft 1.8.9",
-  },
-];
+
+type Version = {
+    id: string;
+    type: string;
+    url: string;
+    time: string;
+    releaseTime: string;
+    sha1: string;
+    complianceLevel: number;
+};
+  
 
 export function ComboboxDemo() {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
+  const [versions, setVersions] = React.useState<Version[]>([]);
+  
+    React.useEffect(() => {
+    const fetchVersions = async () => {
+      const v = await invoke<Version[]>("get_versions");
+      setVersions(v);
+    };
+    fetchVersions();
+  }, []);
+      
+  const minecraftVersions = React.useMemo(() => versions.map(item => item.id), [versions]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -64,7 +57,7 @@ export function ComboboxDemo() {
           className="w-full justify-between border-2 border-neutral-700/50 bg-transparent text-white hover:bg-neutral-700/50 hover:text-white h-12"
         >
           {value
-            ? minecraftVersions.find((minecraftVersion) => minecraftVersion.value === value)?.label
+            ? minecraftVersions.find((minecraftVersion) => minecraftVersion === value)
             : "Select Minecraft Version..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -80,19 +73,19 @@ export function ComboboxDemo() {
             <CommandGroup>
               {minecraftVersions.map((minecraftVersion) => (
                 <CommandItem
-                  key={minecraftVersion.value}
-                  value={minecraftVersion.value}
+                  key={minecraftVersion}
+                  value={minecraftVersion}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     setOpen(false);
                   }}
                   className="text-white hover:bg-neutral-800"
                 >
-                  {minecraftVersion.label}
+                  {minecraftVersion}
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === minecraftVersion.value ? "opacity-100" : "opacity-0"
+                      value === minecraftVersion ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

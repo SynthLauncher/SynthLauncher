@@ -24,7 +24,6 @@ impl Config {
         }))
     }
 
-    // !!! Uncomment this later
     pub async fn create_config(java_version: u16) -> Result<Self, BackendError> {
         let javas = JavaInstallation::get_installations().unwrap();
 

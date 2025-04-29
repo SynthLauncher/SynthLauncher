@@ -1,4 +1,4 @@
-// // Taken from https://github.com/minecraft-rs/auth/
+// Taken from https://github.com/minecraft-rs/auth/
 
 // use std::collections::HashMap;
 
