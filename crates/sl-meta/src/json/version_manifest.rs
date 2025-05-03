@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 pub enum VersionType {
     OldAlpha,
@@ -23,9 +23,17 @@ pub struct Version {
     pub url: String,
     pub time: String,
     pub release_time: String,
-    pub sha1: String, // Only in version_manifest_v2, which will be using
-    // TODO: Maybe turn this into a bool, because it can either be 0 or 1
-    pub compliance_level: u8, // Only in version_manifest_v2, which will be using
+    pub sha1: String,
+    pub compliance_level: u8,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MCVersion {
+    #[serde(rename = "id")]
+    pub version: String,
+    pub release_time: String,
+    pub r#type: Option<VersionType>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -39,5 +47,3 @@ impl VersionManifest {
         self.versions.iter()
     }
 }
-
-

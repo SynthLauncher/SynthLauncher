@@ -1,105 +1,119 @@
 use std::{
-    borrow::Cow, fs::{self, File, OpenOptions}, io::BufReader, path::{Path, PathBuf}, process::{Command, Stdio}
+    borrow::Cow,
+    fs::{self, File, OpenOptions},
+    io::BufReader,
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
 };
 
+use chrono::DateTime;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use sl_meta::json::{vanilla::Client, version_manifest::VersionManifest};
+use sl_meta::json::{
+    vanilla::Client,
+    version_manifest::{MCVersion, VersionManifest, VersionType},
+};
 use sl_utils::utils::errors::BackendError;
 
-use crate::{config::config::Config, json::{client, manifest::download_version}, ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR, MULTI_PATH_SEPARATOR};
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct InstallationMetadata {
-    name: String,
-    version: String,
-}
-
-impl InstallationMetadata {
-    pub fn new(name: String, version: String) -> Self {
-        Self { name, version }
-    }
-
-    pub fn version(&self) -> &str {
-        &self.version
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn get_version_from_dir(&mut self) {
-        let path = Path::new(&INSTALLATIONS_DIR.as_path()).join(self.name()).join("client.json");
-        let file = File::open(path).unwrap();
-        let reader = BufReader::new(file);
-        let json: Value = serde_json::from_reader(reader).unwrap();
-
-        let version = json.get("id")
-            .and_then(Value::as_str)
-            .unwrap()
-            .to_string();
-
-        self.version = version;
-    }
-}
+use crate::{
+    config::config::Config,
+    json::{client, manifest::download_version},
+    ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR, MULTI_PATH_SEPARATOR,
+};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Installation {
-    pub metadata: InstallationMetadata,
-    path: PathBuf,
+    pub name: String,
+    pub version: MCVersion,
 }
 
 impl Installation {
-    pub fn new(metadata: InstallationMetadata) -> Self {
-        let path = INSTALLATIONS_DIR.join(metadata.name.clone());
-        Self { metadata, path }
+    pub fn new(name: String, version: String, manifest: &VersionManifest) -> Option<Self> {
+        manifest
+            .versions()
+            .find(|x| x.id == version)
+            .and_then(|version| {
+                Some(Self {
+                    name,
+                    version: MCVersion {
+                        version: version.id.clone(),
+                        release_time: version.release_time.clone(),
+                        r#type: Some(version.r#type),
+                    },
+                })
+            })
     }
 
-    fn dir_path(&self) -> &Path {
-        &self.path
+    pub fn get_installation_from_dir(name: String) -> Result<Self, BackendError> {
+        let path = Path::new(&INSTALLATIONS_DIR.as_path())
+            .join(&name)
+            .join("client.json");
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+        let client: Client = serde_json::from_reader(reader)?;
+
+        let mc_version = MCVersion {
+            release_time: client.release_time,
+            r#type: Some(client.r#type),
+            version: client.id,
+        };
+
+        Ok(Self {
+            name,
+            version: mc_version,
+        })
+    }
+
+    fn dir_path(&self) -> PathBuf {
+        INSTALLATIONS_DIR.join(&self.name)
     }
 
     fn config_path(&self) -> PathBuf {
-        self.path.join("config.json")
-    }
-
-    fn client_jar_path(&self) -> PathBuf {
-        self.path.join("client.jar")
+        self.dir_path().join("config.json")
     }
 
     fn client_json_path(&self) -> PathBuf {
-        self.path.join("client.json")
+        self.dir_path().join("client.json")
+    }
+
+    fn client_jar_path(&self) -> PathBuf {
+        self.dir_path().join("client.jar")
     }
 
     fn read_config(&self) -> Option<Config> {
-        let config_path = self.config_path();
-        let config = fs::read_to_string(&config_path).ok()?;
+        let config = fs::read_to_string(self.config_path()).ok()?;
 
         Some(serde_json::from_str(&config).expect("Failed to deserialize config.json!"))
     }
 
+    fn read_client(&self) -> Option<Client> {
+        let client = fs::read_to_string(self.client_json_path()).ok()?;
+        Some(serde_json::from_str(&client).expect("Failed to deserialize client.json!"))
+    }
+
     fn override_config(&mut self, config: Config) -> Result<(), std::io::Error> {
-        let installation_dir = self.dir_path();
+        let installations_dir = self.dir_path();
         let config_path = self.config_path();
 
-        fs::create_dir_all(&installation_dir)?;
+        fs::create_dir_all(&installations_dir)?;
         fs::write(&config_path, serde_json::to_string_pretty(&config)?)?;
         Ok(())
     }
 
-    pub fn get_config(&self) -> Result<Config, std::io::Error> {
-        let global_config = Config::read_global()?;
+    async fn reinit(&mut self, manifest: &VersionManifest) -> Result<Client, BackendError> {
+        let client_raw = download_version(&manifest, &self.version.version).await?;
+        let client: Client =
+            serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
 
-        if let Some(config) = self.read_config() {
-            Ok(config.merge(global_config))
-        } else {
-            Ok(global_config)
-        }
-    }
+        let config = Config::create_config(client.java_version.as_ref().unwrap().major_version)
+            .await
+            .unwrap();
+        let config = config.merge(Config::read_global().unwrap());
+        self.override_config(config)?;
 
-    pub fn read_client(&self) -> Option<Client> {
-        let data = fs::read_to_string(self.client_json_path()).ok()?;
-        serde_json::from_str(&data).expect("Failed to deserialize client.json!")
+        fs::create_dir_all(self.dir_path())?;
+
+        fs::write(self.client_json_path(), &client_raw)?;
+        Ok(client)
     }
 
     pub async fn init(&mut self, manifest: &VersionManifest) -> Result<Client, BackendError> {
@@ -109,27 +123,9 @@ impl Installation {
         }
     }
 
-    async fn reinit(&mut self, manifest: &VersionManifest) -> Result<Client, BackendError> {
-        let client_raw = download_version(&manifest, self.metadata.version()).await?;
-        let client: Client =
-            serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json");
-
-        let config = Config::create_config(client.java_version.as_ref().unwrap().major_version)
-            .await
-            .unwrap();
-        let config = config.merge(Config::read_global().unwrap());
-        self.override_config(config)?;
-
-        fs::create_dir_all(self.dir_path())?;
-        Installations::add(self);
-        
-        fs::write(self.client_json_path(), &client_raw)?;
-        Ok(client)
-    }
-
     pub async fn install(&mut self, manifest: &VersionManifest) -> Result<(), BackendError> {
         let client = self.init(manifest).await?;
-        client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path()).await
+        client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path().as_path()).await
     }
 
     fn classpath(&self, client: &Client) -> String {
@@ -154,6 +150,38 @@ impl Installation {
         classpath.join(MULTI_PATH_SEPARATOR)
     }
 
+    fn generate_sound_arguments(&self, jvm_args: &mut Vec<String>) {
+        if self.version.r#type == Some(VersionType::OldBeta)
+            || self.version.r#type == Some(VersionType::OldAlpha)
+        {
+            jvm_args.push("-Dhttp.proxyHost=betacraft.uk".to_owned());
+
+            if self.version.version.starts_with("c0.") {
+                // Classic
+                jvm_args.push("-Dhttp.proxyPort=11701".to_owned());
+            } else if self.version.r#type == Some(VersionType::OldAlpha) {
+                // Indev, Infdev and Alpha (mostly same)
+                jvm_args.push("-Dhttp.proxyPort=11702".to_owned());
+            } else {
+                // Beta
+                jvm_args.push("-Dhttp.proxyPort=11705".to_owned());
+            }
+
+            // Fixes crash on old versions
+            jvm_args.push("-Djava.util.Arrays.useLegacyMergeSort=true".to_owned());
+        } else {
+            // 1.5.2 release date
+            let v1_5_2 = DateTime::parse_from_rfc3339("2013-04-25T15:45:00+00:00").unwrap();
+            let release = DateTime::parse_from_rfc3339(&self.version.release_time).unwrap();
+
+            if release <= v1_5_2 {
+                // 1.0 - 1.5.2
+                jvm_args.push("-Dhttp.proxyHost=betacraft.uk".to_owned());
+                jvm_args.push("-Dhttp.proxyPort=11707".to_owned());
+            }
+        }
+    }
+
     fn generate_arguments(&self, config: &Config) -> Result<Vec<String>, BackendError> {
         let global_config = Config::read_global().unwrap();
         let client = self.read_client().expect("Failed to read client.json!");
@@ -163,17 +191,21 @@ impl Installation {
 
         let raw_args = client.arguments;
         let (mut jvm_args, mut game_args) = raw_args.into_raw();
+
         let regex = regex::Regex::new(r"\$\{(\w+)\}").expect("Failed to compile regex!");
+
+        self.generate_sound_arguments(&mut jvm_args);
 
         let fmt_arg = |arg: &str| {
             Some(match arg {
                 "game_directory" => game_dir.to_str().unwrap(),
                 "assets_root" | "game_assets" => ASSETS_DIR.to_str().unwrap(),
                 "assets_index_name" => &client.assets,
-                "version_name" => &self.metadata.version(),
+                "version_name" => &self.version.version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
-                "auth_uuid" => "e371151a-b6b4-496a-b446-0abcd3e75ec4",
+                // This affects how
+                "auth_uuid" => "94240269-bb0f-4570-ab26-1e2a47dbc565",
                 "auth_player_name" => global_config.get("auth_player_name").unwrap(),
                 _ => config.get(arg)?,
             })
@@ -196,18 +228,26 @@ impl Installation {
         fmt_args(&mut jvm_args);
 
         jvm_args.push(client.main_class.clone());
+
+        println!("Game args: {:?}", game_args);
+        println!("Java args: {:?}", jvm_args);
+
         Ok([jvm_args, game_args].concat())
     }
 
     pub fn execute(&self) -> Result<(), BackendError> {
-        let config = self.get_config()?;
+        let config = self.read_config().unwrap();
 
         let current_java_path = config.get("java").unwrap();
-        println!("Trying to launch Java from: {}", current_java_path);
+
+        println!("Trying to launch Java from: {}", &current_java_path);
+
         let max_ram = config.get("max_ram").unwrap_or("2048");
         let min_ram = config.get("min_ram").unwrap_or("1024");
 
         let args = self.generate_arguments(&config)?;
+
+        println!("Launching with args: {:?}", &args);
 
         let output = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))
@@ -247,7 +287,7 @@ impl Installations {
         if !existing_installations
             .0
             .iter()
-            .any(|existing| existing.path == installation.path)
+            .any(|existing| existing.name == installation.name)
         {
             existing_installations.0.push(installation.clone());
         }
@@ -265,11 +305,10 @@ impl Installations {
         let path = Path::new(&INSTALLATIONS_DIR.as_path()).join(&name);
 
         if path.exists() && path.is_dir() {
-            let mut metadata = InstallationMetadata::new(name, String::from(""));
-            metadata.get_version_from_dir();
-            let installation = Installation::new(metadata);
-            Installations::add(&installation);
-            return Some(installation);
+            let instance = Installation::get_installation_from_dir(name).unwrap();
+            Installations::add(&instance);
+
+            return Some(instance);
         }
 
         None
@@ -277,10 +316,11 @@ impl Installations {
 
     pub fn find(name: String) -> Option<Installation> {
         let installations = Self::load();
-    
-        installations.0
+
+        installations
+            .0
             .into_iter()
-            .find(|installation| installation.metadata.name() == name)
+            .find(|installation| installation.name == name)
             .or_else(|| Self::find_in_installations_dir(name))
     }
 }

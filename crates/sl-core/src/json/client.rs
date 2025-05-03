@@ -7,7 +7,11 @@ use bytes::Bytes;
 use futures::{stream::FuturesUnordered, StreamExt};
 use sha1::{Digest, Sha1};
 use sl_meta::json::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
-use sl_utils::utils::{self, errors::{BackendError, DownloadError}, zip::ZipExtractor};
+use sl_utils::utils::{
+    self,
+    errors::{BackendError, DownloadError},
+    zip::ZipExtractor,
+};
 
 #[inline(always)]
 fn verify_data(file: &mut File, sha1: &str) -> bool {

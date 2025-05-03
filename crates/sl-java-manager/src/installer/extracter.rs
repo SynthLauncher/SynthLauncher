@@ -1,4 +1,8 @@
-use std::{fs::{self, File}, io::{self, BufReader}, path::{Path, PathBuf}};
+use std::{
+    fs::{self, File},
+    io::{self, BufReader},
+    path::{Path, PathBuf},
+};
 
 use sl_utils::utils::errors::BackendError;
 
@@ -28,30 +32,34 @@ pub fn extract_package(package_path: &Path, java: &Path) -> Result<(), BackendEr
         }
         "zip" => {
             let mut archive = zip::ZipArchive::new(file)?;
-            
+
             for i in 0..archive.len() {
                 let mut file = archive.by_index(i)?;
                 let mut name = file.name().to_string();
-                
+
                 if let Some(start) = name.find('/') {
-                    name = name[start+1..].to_string();
+                    name = name[start + 1..].to_string();
                 }
-                
+
                 let dest_path = java.join(&name);
-                
+
                 if file.is_dir() {
                     fs::create_dir_all(&dest_path)?;
                 } else {
                     if let Some(parent) = dest_path.parent() {
                         fs::create_dir_all(parent)?;
                     }
-                    
+
                     let mut outfile = File::create(&dest_path)?;
                     io::copy(&mut file, &mut outfile)?;
                 }
             }
         }
-        _ => return Err(BackendError::ZipExtractionError(String::from("Unsupported file extension!")))
+        _ => {
+            return Err(BackendError::ZipExtractionError(String::from(
+                "Unsupported file extension!",
+            )))
+        }
     }
 
     Ok(())

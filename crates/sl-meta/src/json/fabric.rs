@@ -36,7 +36,7 @@ impl Library {
 
         let est_size = group.len() + artifact.len() * 2 + version.len() * 2 + 5;
         let mut path = PathBuf::with_capacity(est_size);
-        
+
         path.push(group.replace('.', MAIN_SEPARATOR_STR));
         path.push(artifact);
         path.push(version);

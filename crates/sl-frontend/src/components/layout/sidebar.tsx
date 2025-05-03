@@ -1,6 +1,10 @@
+/*
+  Jojo Sticker
+  CHROMOKOPIA Sticker
+*/
+
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import {
   Dialog,
@@ -11,7 +15,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { Plus, Camera, Upload, Check, ChevronsUpDown } from "lucide-react";
+import { Plus, Check, ChevronsUpDown } from "lucide-react";
 import { Input } from "../ui/input";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -19,7 +23,6 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { invoke } from "@tauri-apps/api/core";
-
 
 type Version = {
     id: string;
@@ -30,7 +33,6 @@ type Version = {
     sha1: string;
     complianceLevel: number;
 };
-  
 
 export function ComboboxDemo() {
   const [open, setOpen] = React.useState(false);
@@ -62,11 +64,12 @@ export function ComboboxDemo() {
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
+
       <PopoverContent className="w-full p-0 bg-[#141414] border-2 transition duration-300 border-neutral-700/50 text-white">
         <Command className="bg-transparent text-white">
           <CommandInput
             placeholder="Search Minecraft Version..."
-            className="text-neutral-700/50 border-b-2 border-neutral-700/50"
+            className="text-white border-b-2 border-neutral-700/50"
           />
           <CommandList className="text-white">
             <CommandEmpty className="text-neutral-400 m-2">No Version found.</CommandEmpty>
@@ -99,6 +102,10 @@ export function ComboboxDemo() {
 }
 
 export const Sidebar = () => {
+  function add_installation(name: string, version: string) {
+    invoke('add_installation', { 'name': name, 'version': version })
+  }
+
   return (
     <div className="bg-neutral-900 h-screen w-[95px] flex flex-col items-center p-1 border-r-2 border-neutral-700/50">
       <Dialog>
@@ -128,7 +135,7 @@ export const Sidebar = () => {
       <Dialog>
         <DialogTrigger className="focus:outline-none">
           <Plus
-            className="mt-5 text-white bg-neutral-800 rounded-full p-2 border-2 border-neutral-700/50"
+            className="mt-5 text-white bg-neutral-800 hover:bg-neutral-700 rounded-full p-2 border-2 border-neutral-700/50 transition-all active:scale-95"
             width={50}
             height={50}
           />

@@ -1,7 +1,11 @@
 use std::{fs, path::PathBuf};
 
 use serde_json::Value;
-use sl_utils::utils::{download::download_file, errors::BackendError, platform::{default_install_path, get_arch, get_os}};
+use sl_utils::utils::{
+    download::download_file,
+    errors::BackendError,
+    platform::{default_install_path, get_arch, get_os},
+};
 use tempfile::TempDir;
 
 use crate::installer::{env::set_environment_variables, extracter::extract_package};
@@ -29,14 +33,11 @@ pub async fn install_version(
     let response = reqwest::get(&url).await?.json::<Value>().await?;
     let assets = response.as_array().unwrap();
     let asset = assets.first().unwrap();
-    
-    let version_data = &asset["version_data"];
-    let semver = version_data["semver"]
-        .as_str().unwrap();
 
-    let package = asset["binaries"][0]["package"]
-        .as_object()
-        .unwrap();
+    let version_data = &asset["version_data"];
+    let semver = version_data["semver"].as_str().unwrap();
+
+    let package = asset["binaries"][0]["package"].as_object().unwrap();
 
     let download_url = package["link"].as_str().unwrap();
     let package_name = package["name"].as_str().unwrap();

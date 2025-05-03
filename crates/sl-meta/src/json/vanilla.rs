@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use serde::Deserialize;
 
-use super::{Os, OsName};
+use super::{version_manifest::VersionType, Os, OsName};
 
 #[derive(Debug, Deserialize)]
 pub struct AssetObject {
@@ -187,6 +187,9 @@ pub struct Client {
     pub downloads: Downloads,
     pub assets: String,
     pub asset_index: Download,
+    pub id: String,
+    pub release_time: String,
+    pub r#type: VersionType,
 }
 
 impl Client {

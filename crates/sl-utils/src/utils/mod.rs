@@ -1,4 +1,4 @@
-pub mod errors;
 pub mod download;
-pub mod zip;
+pub mod errors;
 pub mod platform;
+pub mod zip;

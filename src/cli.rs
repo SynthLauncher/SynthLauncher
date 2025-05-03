@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 #[command(about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: Commands
+    pub command: Commands,
 }
 
 #[derive(Subcommand)]
@@ -19,7 +19,7 @@ pub enum Commands {
         #[arg(required = true)]
         name: String,
         #[arg(required = true)]
-        username: String    
+        username: String,
     },
-    List
+    List,
 }

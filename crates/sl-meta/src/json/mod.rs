@@ -1,10 +1,10 @@
 use serde::Deserialize;
 
-pub mod version_manifest;
 pub mod fabric;
 pub mod forge;
 pub mod optifine;
 pub mod vanilla;
+pub mod version_manifest;
 
 #[derive(Debug, Deserialize, PartialEq, Eq, Hash, Clone)]
 #[serde(rename_all = "snake_case")]

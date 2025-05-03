@@ -3,19 +3,19 @@ use std::{fs, io::Cursor, path::Path};
 use zip::{result::ZipError, ZipArchive};
 
 pub struct ZipExtractor<'a> {
-    bytes: &'a[u8],
-    exclude: Option<&'a[&'a Path]>
+    bytes: &'a [u8],
+    exclude: Option<&'a [&'a Path]>,
 }
 
 impl<'a> ZipExtractor<'a> {
-    pub fn new(bytes: &'a[u8]) -> Self {
+    pub fn new(bytes: &'a [u8]) -> Self {
         Self {
             bytes,
-            exclude: None
+            exclude: None,
         }
     }
 
-    pub fn exclude(mut self, exclude: &'a[&'a Path]) -> Self {
+    pub fn exclude(mut self, exclude: &'a [&'a Path]) -> Self {
         self.exclude = Some(exclude);
         self
     }
@@ -30,13 +30,14 @@ impl<'a> ZipExtractor<'a> {
 
             let file_path = match file.enclosed_name() {
                 Some(path) => path,
-                None => continue
+                None => continue,
             };
 
             if exclude.contains(&&file_path.as_path())
-                || file_path.parent().is_some_and(|p| exclude.contains(&p)) {
-                    continue;
-                }
+                || file_path.parent().is_some_and(|p| exclude.contains(&p))
+            {
+                continue;
+            }
 
             let output = output.join(&file_path);
             if file_path.is_dir() {

@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 use sl_utils::utils::errors::BackendError;
 use which::which_all;
 
-
 pub mod installer;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -29,7 +28,7 @@ impl JavaInstallation {
 
         installations.extend(Self::find_common_installations()?);
         installations.extend(Self::find_in_path()?);
-        
+
         if let Some(java_home) = Self::find_java_home()? {
             installations.push(java_home);
         }
@@ -125,11 +124,11 @@ impl JavaInstallation {
         let java_executable = if cfg!(windows) { "java.exe" } else { "java" };
 
         for path in which_all(java_executable).into_iter().flatten() {
-            if let Ok(installation) = Self::from_path(&path) { 
+            if let Ok(installation) = Self::from_path(&path) {
                 installations.push(installation);
             }
         }
-        
+
         println!("{:?}", installations);
         Ok(installations)
     }

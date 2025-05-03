@@ -8,6 +8,15 @@ fn get_versions() -> Vec<Version> {
     return versions;
 }
 
+// #[tauri::command]
+// async fn add_installation(name: String, version: String) {
+//     let metadata = InstallationMetadata::new(name, version);
+//     let mut instance = Installation::new(metadata);
+//     let manifest = manifest_read();
+//     instance.install(&manifest).await.unwrap();    
+// }
+
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()

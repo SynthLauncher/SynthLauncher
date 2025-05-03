@@ -6,7 +6,7 @@ pub enum DownloadError {
     InvalidURL,
     IO(std::io::Error),
     Status(reqwest::StatusCode),
-    Other(reqwest::Error)
+    Other(reqwest::Error),
 }
 
 #[derive(Debug)]
@@ -18,6 +18,7 @@ pub enum BackendError {
     EnvVarError(std::env::VarError),
     ZipExtractionError(String),
     ConfigError(String),
+    SerdeError(serde_json::Error),
     JavaVersionNotFound,
     JavaAlreadyExists,
     InvalidJavaPackage,
@@ -30,14 +31,11 @@ impl From<reqwest::Error> for DownloadError {
     fn from(value: reqwest::Error) -> Self {
         if value.is_builder() {
             DownloadError::InvalidURL
-        }
-        else if value.is_timeout() {
+        } else if value.is_timeout() {
             DownloadError::Timeout
-        }
-        else if let Some(status) = value.status() {
+        } else if let Some(status) = value.status() {
             DownloadError::Status(status)
-        }
-        else {
+        } else {
             DownloadError::Other(value)
         }
     }
@@ -82,5 +80,11 @@ impl From<regex::Error> for BackendError {
 impl From<std::env::VarError> for BackendError {
     fn from(value: std::env::VarError) -> Self {
         Self::EnvVarError(value)
+    }
+}
+
+impl From<serde_json::Error> for BackendError {
+    fn from(value: serde_json::Error) -> Self {
+        Self::SerdeError(value)
     }
 }

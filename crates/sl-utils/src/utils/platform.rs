@@ -5,7 +5,7 @@ pub fn get_os() -> String {
         "linux" => "linux",
         "macos" => "mac",
         "windows" => "windows",
-        _ => panic!("Unsupported OS!")
+        _ => panic!("Unsupported OS!"),
     }
     .to_string()
 }
@@ -14,7 +14,7 @@ pub fn get_arch() -> String {
     match env::consts::ARCH {
         "aarch64" => "aarch64",
         "x86_64" => "x64",
-        _ => panic!("Unsupported arch!")
+        _ => panic!("Unsupported arch!"),
     }
     .to_string()
 }

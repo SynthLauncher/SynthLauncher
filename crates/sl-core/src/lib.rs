@@ -4,10 +4,10 @@ use config::config_launcher_dir;
 use lazy_static::lazy_static;
 use sl_meta::json::{Arch, OsName};
 
-pub mod installations;
-pub mod config;
-pub mod json;
 pub mod auth;
+pub mod config;
+pub mod installations;
+pub mod json;
 
 pub const MULTI_PATH_SEPARATOR: &'static str = if cfg!(target_os = "windows") {
     ";"

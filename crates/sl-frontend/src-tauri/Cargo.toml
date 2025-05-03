@@ -25,3 +25,4 @@ tauri = { version = "2.5.0", features = [] }
 tauri-plugin-log = "2.0.0-rc"
 sl-core = { path = "../../sl-core" }
 sl-meta = { path = "../../sl-meta" }
+tokio = "1.44.2"
