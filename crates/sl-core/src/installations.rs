@@ -43,7 +43,7 @@ impl Installation {
             })
     }
 
-    pub fn get_installation_from_dir(name: String) -> Result<Self, BackendError> {
+    pub fn get_installation_from_dir(name: &str) -> Result<Self, BackendError> {
         let path = Path::new(&INSTALLATIONS_DIR.as_path())
             .join(&name)
             .join("client.json");
@@ -58,7 +58,7 @@ impl Installation {
         };
 
         Ok(Self {
-            name,
+            name: name.to_string(),
             version: mc_version,
         })
     }
@@ -191,6 +191,7 @@ impl Installation {
 
         let raw_args = client.arguments;
         let (mut jvm_args, mut game_args) = raw_args.into_raw();
+        let args = vec!["--versionType".to_string(), "SynthLauncher".to_string()];
 
         let regex = regex::Regex::new(r"\$\{(\w+)\}").expect("Failed to compile regex!");
 
@@ -204,7 +205,6 @@ impl Installation {
                 "version_name" => &self.version.version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
-                // This affects how
                 "auth_uuid" => "94240269-bb0f-4570-ab26-1e2a47dbc565",
                 "auth_player_name" => global_config.get("auth_player_name").unwrap(),
                 _ => config.get(arg)?,
@@ -232,7 +232,7 @@ impl Installation {
         println!("Game args: {:?}", game_args);
         println!("Java args: {:?}", jvm_args);
 
-        Ok([jvm_args, game_args].concat())
+        Ok([jvm_args, game_args, args].concat())
     }
 
     pub fn execute(&self) -> Result<(), BackendError> {
@@ -301,7 +301,7 @@ impl Installations {
         serde_json::to_writer_pretty(file, &existing_installations).unwrap();
     }
 
-    fn find_in_installations_dir(name: String) -> Option<Installation> {
+    fn find_in_installations_dir(name: &str) -> Option<Installation> {
         let path = Path::new(&INSTALLATIONS_DIR.as_path()).join(&name);
 
         if path.exists() && path.is_dir() {
@@ -314,7 +314,7 @@ impl Installations {
         None
     }
 
-    pub fn find(name: String) -> Option<Installation> {
+    pub fn find(name: &str) -> Option<Installation> {
         let installations = Self::load();
 
         installations

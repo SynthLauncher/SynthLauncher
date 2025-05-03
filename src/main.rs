@@ -26,7 +26,7 @@ async fn main() {
                 .update_config_field("auth_player_name", username.as_str())
                 .unwrap();
 
-            let instance = Installations::find(name).unwrap();
+            let instance = Installations::find(&name).unwrap();
             instance.execute().unwrap()
         }
         Commands::List => {

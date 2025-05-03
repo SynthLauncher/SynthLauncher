@@ -41,8 +41,9 @@ impl Config {
             .await
             .map_err(|_| BackendError::JavaVersionNotFound)?;
 
+        let java_binary = if cfg!(windows) { "java.exe" } else { "java" };
         return Ok(Self(hash_map_from! {
-            "java": new_java_path.join("bin").join("java.exe").to_string_lossy()
+            "java": new_java_path.join("bin").join(java_binary).to_string_lossy()
         }));
     }
 }

@@ -24,7 +24,7 @@ impl MinecraftVersionType {
         Self::Release
     ];
 
-    pub const SUPPIRTS_SERVER: [Self; 5] = [Self::Classic, Self::Alpha, Self::Beta, Self::Release, Self::AprilFools];
+    pub const SUPPORTS_SERVER: [Self; 5] = [Self::Classic, Self::Alpha, Self::Beta, Self::Release, Self::AprilFools];
 
     pub fn client_versions() -> Vec<Self> {
         Self::ALL.to_vec()

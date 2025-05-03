@@ -3,9 +3,6 @@ name = "synthlauncher"
 version = "0.1.0"
 edition = "2021"
 
-[workspace]
-members = ["crates/sl-frontend/src-tauri"]
-
 [dependencies]
 tokio = "1.44.1"
 clap = { version = "4.5.34", features = ["derive"] } 
