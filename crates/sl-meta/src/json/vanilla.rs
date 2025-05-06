@@ -1,8 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-use super::{version_manifest::VersionType, Os, OsName};
+use super::{version_manifest::VersionType, JavaClassName, Os, OsName};
 
 #[derive(Debug, Deserialize)]
 pub struct AssetObject {
@@ -17,14 +17,14 @@ pub struct AssetIndex {
     pub objects: HashMap<String, AssetObject>,
 }
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum RuleActionType {
     Allow,
     Disallow,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Rule {
     pub action: RuleActionType,
     pub features: Option<HashMap<String, bool>>,
@@ -51,8 +51,8 @@ impl Rule {
 pub struct Download {
     pub path: Option<PathBuf>,
     pub url: String,
-    pub sha1: String,
-    pub size: i32,
+    pub sha1: Option<String>,
+    pub size: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -60,14 +60,14 @@ pub struct Downloads {
     pub client: Download,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(untagged)]
 pub enum ArgumentValue {
     Value(String),
     Values(Vec<String>),
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(untagged)]
 pub enum Argument {
     Arg(String),
@@ -95,17 +95,40 @@ impl Argument {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Arguments {
+    /// Modern arguments.
     Args {
         game: Vec<Argument>,
         jvm: Vec<Argument>,
     },
+    /// Older versions of  Minecraft arguments.
     MinecraftArgs(String),
 }
 
 impl Arguments {
+    /// Concatenates two arguments.
+    /// panics if the arguments are not of the same type.
+    pub fn concat(self, other: Self) -> Self {
+        match (self, other) {
+            (
+                Self::Args { game, jvm },
+                Self::Args {
+                    game: game2,
+                    jvm: jvm2,
+                },
+            ) => Self::Args {
+                game: [game, game2].concat(),
+                jvm: [jvm, jvm2].concat(),
+            },
+            (Self::MinecraftArgs(args1), Self::MinecraftArgs(args2)) => {
+                Self::MinecraftArgs(format!("{args1} {args2}"))
+            }
+            _ => unimplemented!("cannot join arguments not of the same type"),
+        }
+    }
+
     pub fn into_raw(self) -> (Vec<String>, Vec<String>) {
         match self {
             Arguments::Args { game, jvm } => {
@@ -143,14 +166,15 @@ pub struct LibraryDownload {
     pub classifiers: Option<HashMap<String, Download>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Extract {
     pub exclude: Option<Vec<PathBuf>>,
 }
 
 pub type Natives = HashMap<OsName, String>;
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Library {
+    pub name: JavaClassName,
     pub downloads: LibraryDownload,
     pub extract: Option<Extract>,
     pub natives: Option<Natives>,

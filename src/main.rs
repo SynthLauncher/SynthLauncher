@@ -29,6 +29,20 @@ async fn main() {
             let instance = Installations::find(&name).unwrap();
             instance.execute().unwrap()
         }
+        Commands::InstallFabric {
+            instance_name,
+            loader_version,
+        } => {
+            let manifest = manifest_read();
+            let mut instance =
+                Installations::find(&instance_name).expect("failed to find instance");
+            instance
+                .install_fabric(&loader_version)
+                .await
+                .expect("failed to install fabric");
+            // has to reinstall probably it should reinstall every execute so if something went wrong.........
+            instance.install(&manifest).await.unwrap();
+        }
         Commands::List => {
             let installations = Installations::load();
 
