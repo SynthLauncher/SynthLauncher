@@ -3,8 +3,6 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 pub mod fabric;
-pub mod forge;
-pub mod optifine;
 pub mod vanilla;
 pub mod version_manifest;
 

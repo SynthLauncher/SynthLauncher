@@ -192,6 +192,7 @@ impl Library {
     pub fn native_from_platform(&self) -> Option<&Download> {
         let natives = self.natives.as_ref()?;
         let classifiers = self.downloads.classifiers.as_ref()?;
+        
         let mut results = natives
             .iter()
             .filter(|(os, _)| **os == crate::OS)

@@ -34,4 +34,8 @@ pub enum Commands {
     },
     /// List all installed Minecraft instances
     List,
+    LaunchPremium {
+        #[arg(required = true)]
+        name: String,
+    }
 }

@@ -17,7 +17,10 @@ use sl_meta::json::{
 use sl_utils::utils::errors::{BackendError, DownloadError};
 
 use crate::{
-    config::config::Config, json::{client, manifest::download_version}, ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR, MANIFEST, MULTI_PATH_SEPARATOR
+    auth::PlayerProfile,
+    config::config::Config,
+    json::{client, manifest::download_version},
+    ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR, MANIFEST, MULTI_PATH_SEPARATOR,
 };
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -229,7 +232,11 @@ impl Installation {
         }
     }
 
-    fn generate_arguments(&self, config: &Config) -> Result<Vec<String>, BackendError> {
+    fn generate_arguments(
+        &self,
+        config: &Config,
+        profile: Option<&PlayerProfile>,
+    ) -> Result<Vec<String>, BackendError> {
         let global_config = Config::read_global().unwrap();
         let client = self.read_client().expect("Failed to read client.json!");
         let classpath = self.classpath(&client);
@@ -238,7 +245,6 @@ impl Installation {
 
         let raw_args = client.arguments;
         let (mut jvm_args, mut game_args) = raw_args.into_raw();
-        let args = vec!["--versionType".to_string(), "SynthLauncher".to_string()];
 
         let regex = regex::Regex::new(r"\$\{(\w+)\}").expect("Failed to compile regex!");
 
@@ -252,8 +258,17 @@ impl Installation {
                 "version_name" => &self.version.version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
-                "auth_uuid" => "94240269-bb0f-4570-ab26-1e2a47dbc565",
-                "auth_player_name" => global_config.get("auth_player_name").unwrap(),
+                "auth_uuid" => profile
+                .map(|m| m.uuid.as_str())
+                .unwrap_or("0"),
+                "auth_access_token" => profile
+                    .map(|m| m.access_token.as_str())
+                    .unwrap_or("0"),
+                "auth_player_name" => profile
+                .map(|m| m.username.as_str())
+                .unwrap_or(global_config.get("auth_player_name").unwrap()),
+                "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
+                "version_type" => "SynthLauncher",
                 _ => config.get(arg)?,
             })
         };
@@ -279,10 +294,10 @@ impl Installation {
         println!("Game args: {:?}", game_args);
         println!("Java args: {:?}", jvm_args);
 
-        Ok([jvm_args, game_args, args].concat())
+        Ok([jvm_args, game_args].concat())
     }
 
-    pub fn execute(&self) -> Result<(), BackendError> {
+    pub fn execute(&self, profile: Option<&PlayerProfile>) -> Result<(), BackendError> {
         let config = self.read_config().unwrap();
 
         let current_java_path = config.get("java").unwrap();
@@ -292,7 +307,7 @@ impl Installation {
         let max_ram = config.get("max_ram").unwrap_or("2048");
         let min_ram = config.get("min_ram").unwrap_or("1024");
 
-        let args = self.generate_arguments(&config)?;
+        let args = self.generate_arguments(&config, profile)?;
 
         println!("Launching with args: {:?}", &args);
 
