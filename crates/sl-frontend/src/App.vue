@@ -15,23 +15,19 @@ async function greet() {
   <main class="container">
     <h1>SynthLauncher</h1>
 
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
     <p>Work in progress</p>
 
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-      <button type="submit">Greet</button>
-    </form>
+      <button type="button">Launch</button>
+      
+      
+
+      <select name="Versions" id="Versions" class="Version">
+  	<option value="1.20.4">1.20.4</option>
+  	<option value="1.19.4">1.19.4</option>
+  	<option value="1.8.9">1.8.9</option>
+  	<option value="1.7.10">1.7.10</option>
+      </select>
+
     <p>{{ greetMsg }}</p>
   </main>
 </template>
@@ -61,6 +57,16 @@ async function greet() {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+}
+
+select.Version {
+ 
+ position: relative;
+ height: 40px;
+ width: 150px;
+ left: 758px;
+ top: 250px;
+
 }
 
 .container {
@@ -110,10 +116,13 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
+  color: #000000;
+  background-color: #00ff22;
   transition: border-color 0.25s;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  position: relative;
+  top: 290px;
+  width: 715px;
 }
 
 button {
