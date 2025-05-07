@@ -31,7 +31,13 @@ fn verify_data(file: &mut File, sha1: &str) -> bool {
 
 #[inline(always)]
 async fn download_and_verify(download: &Download, path: &Path) -> Result<(), DownloadError> {
-    if File::open(path).is_ok_and(|mut f| verify_data(&mut f, &download.sha1)) {
+    if File::open(path).is_ok_and(|mut f| {
+        if let Some(sha1) = &download.sha1 {
+            verify_data(&mut f, sha1)
+        } else {
+            true
+        }
+    }) {
         return Ok(());
     }
 

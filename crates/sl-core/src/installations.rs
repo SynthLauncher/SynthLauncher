@@ -1,6 +1,7 @@
 use std::{
     borrow::Cow,
     fs::{self, File, OpenOptions},
+    future::Future,
     io::BufReader,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -9,10 +10,11 @@ use std::{
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 use sl_meta::json::{
+    fabric::{self, profile::FabricLoaderProfile},
     vanilla::Client,
     version_manifest::{MCVersion, VersionManifest, VersionType},
 };
-use sl_utils::utils::errors::BackendError;
+use sl_utils::utils::errors::{BackendError, DownloadError};
 
 use crate::{
     config::config::Config,
@@ -75,6 +77,45 @@ impl Installation {
         self.dir_path().join("client.json")
     }
 
+    fn fabric_json_path(&self) -> Option<PathBuf> {
+        let path = self.dir_path().join("fabric.json");
+        if path.exists() {
+            Some(path)
+        } else {
+            None
+        }
+    }
+
+    fn read_fabric(&self) -> Option<FabricLoaderProfile> {
+        let path = self.fabric_json_path()?;
+        let file = File::open(&path).ok()?;
+        let profile = serde_json::from_reader(file).ok()?;
+        Some(profile)
+    }
+
+    pub async fn install_fabric(&mut self, loader_version: &str) -> Result<(), DownloadError> {
+        if self.fabric_json_path().is_some() {
+            return Ok(());
+        }
+
+        let path = self.dir_path().join("fabric.json");
+
+        let make_request = async |url: &str| -> Result<Vec<u8>, DownloadError> {
+            let response = reqwest::get(url).await?;
+            let bytes = response.bytes().await?;
+            Ok(bytes.to_vec())
+        };
+
+        let profile = fabric::profile::get_loader_profile::<
+            fn(&str) -> dyn Future<Output = Result<Vec<u8>, DownloadError>>,
+            DownloadError,
+        >(&self.version.version, loader_version, make_request)
+        .await?;
+        let file = File::create(&path)?;
+        serde_json::to_writer_pretty(file, &profile).unwrap();
+        Ok(())
+    }
+
     fn client_jar_path(&self) -> PathBuf {
         self.dir_path().join("client.jar")
     }
@@ -85,9 +126,17 @@ impl Installation {
         Some(serde_json::from_str(&config).expect("Failed to deserialize config.json!"))
     }
 
-    fn read_client(&self) -> Option<Client> {
+    fn read_client_raw(&self) -> Option<Client> {
         let client = fs::read_to_string(self.client_json_path()).ok()?;
         Some(serde_json::from_str(&client).expect("Failed to deserialize client.json!"))
+    }
+
+    fn read_client(&self) -> Option<Client> {
+        let mut client = self.read_client_raw()?;
+        if let Some(fabric) = self.read_fabric() {
+            client = fabric.join_client(client);
+        }
+        Some(client)
     }
 
     fn override_config(&mut self, config: Config) -> Result<(), std::io::Error> {
