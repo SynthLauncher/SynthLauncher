@@ -37,5 +37,10 @@ pub enum Commands {
     LaunchPremium {
         #[arg(required = true)]
         name: String,
+    },
+    SearchModrinth {
+        name: String,
+        project_type: String,
+        version: String
     }
 }

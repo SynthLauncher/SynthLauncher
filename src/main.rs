@@ -4,6 +4,7 @@ use discord_rpc_client::Client;
 use sl_core::{
     auth::{AuthFlow, PlayerProfile}, config::{config::Config, init_launcher_dir}, installations::{Installation, Installations}
 };
+use sl_mod_manager::modrinth::search_modrinth;
 
 mod cli;
 
@@ -85,6 +86,9 @@ async fn main() {
 
             let instance = Installations::find(&name).unwrap();
             instance.execute(Some(&profile)).unwrap();
+        },
+        Commands::SearchModrinth { name, project_type, version } => {
+            search_modrinth(&name, &project_type, &version).await.unwrap();
         }
     }
 }
