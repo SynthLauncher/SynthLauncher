@@ -22,7 +22,7 @@
 ![ss3](assets/hypixel.png)
 
 3. **Added Discord RPC:**
-![ss4](assets/discord_rpc.png)
+![ss4](assets/discord-rpc.png)
 
 4. **Sound fixes for older versions**
 
