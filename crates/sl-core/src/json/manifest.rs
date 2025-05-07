@@ -4,7 +4,7 @@ use bytes::Bytes;
 use sl_meta::json::version_manifest::VersionManifest;
 use sl_utils::utils::{self, errors::BackendError};
 
-use crate::MANIFEST_PATH;
+use crate::{MANIFEST, MANIFEST_PATH};
 
 pub async fn fetch_version_manifest() {
     let res = utils::download::get_as_bytes(
@@ -25,10 +25,9 @@ pub fn manifest_read() -> VersionManifest {
 }
 
 pub async fn download_version(
-    manifest: &VersionManifest,
     version: &str,
 ) -> Result<Bytes, BackendError> {
-    let Some(version) = manifest.versions().find(|x| x.id == version) else {
+    let Some(version) = MANIFEST.versions().find(|x| x.id == version) else {
         return Err(BackendError::MinecraftVersionNotFound);
     };
 

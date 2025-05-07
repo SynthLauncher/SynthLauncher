@@ -12,14 +12,12 @@ use serde::{Deserialize, Serialize};
 use sl_meta::json::{
     fabric::{self, profile::FabricLoaderProfile},
     vanilla::Client,
-    version_manifest::{MCVersion, VersionManifest, VersionType},
+    version_manifest::{MCVersion, VersionType},
 };
 use sl_utils::utils::errors::{BackendError, DownloadError};
 
 use crate::{
-    config::config::Config,
-    json::{client, manifest::download_version},
-    ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR, MULTI_PATH_SEPARATOR,
+    config::config::Config, json::{client, manifest::download_version}, ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR, MANIFEST, MULTI_PATH_SEPARATOR
 };
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -29,8 +27,8 @@ pub struct Installation {
 }
 
 impl Installation {
-    pub fn new(name: String, version: String, manifest: &VersionManifest) -> Option<Self> {
-        manifest
+    pub fn new(name: String, version: String) -> Option<Self> {
+        MANIFEST
             .versions()
             .find(|x| x.id == version)
             .and_then(|version| {
@@ -148,8 +146,8 @@ impl Installation {
         Ok(())
     }
 
-    async fn reinit(&mut self, manifest: &VersionManifest) -> Result<Client, BackendError> {
-        let client_raw = download_version(&manifest, &self.version.version).await?;
+    async fn reinit(&mut self) -> Result<Client, BackendError> {
+        let client_raw = download_version(&self.version.version).await?;
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
 
@@ -165,15 +163,15 @@ impl Installation {
         Ok(client)
     }
 
-    pub async fn init(&mut self, manifest: &VersionManifest) -> Result<Client, BackendError> {
+    pub async fn init(&mut self) -> Result<Client, BackendError> {
         match self.read_client() {
             Some(client) => Ok(client),
-            None => self.reinit(manifest).await,
+            None => self.reinit().await,
         }
     }
 
-    pub async fn install(&mut self, manifest: &VersionManifest) -> Result<(), BackendError> {
-        let client = self.init(manifest).await?;
+    pub async fn install(&mut self) -> Result<(), BackendError> {
+        let client = self.init().await?;
         client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path().as_path()).await
     }
 

@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use config::config_launcher_dir;
 use lazy_static::lazy_static;
 use sl_meta::json::{Arch, OsName};
+use sl_meta::json::version_manifest::VersionManifest;
+use json::manifest::manifest_read;
 
 pub mod auth;
 pub mod config;
@@ -35,6 +37,7 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
     panic!("Unsupported Arch")
 };
 
+
 lazy_static! {
     #[derive(Debug)]
     pub static ref LAUNCHER_DIR: PathBuf = config_launcher_dir();
@@ -42,6 +45,7 @@ lazy_static! {
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
     pub static ref INSTALLATIONS_DIR: PathBuf = LAUNCHER_DIR.join("installations");
     pub static ref MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
+    pub static ref MANIFEST: VersionManifest = manifest_read();
     #[doc = r"Path to installations.json"]
     pub static ref INSTALLATIONS_PATH: PathBuf = LAUNCHER_DIR.join("installations.json");
 }

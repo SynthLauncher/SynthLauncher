@@ -2,8 +2,7 @@ use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::{
     config::{config::Config, init_launcher_dir},
-    installations::{Installation, Installations},
-    json::manifest::manifest_read,
+    installations::{Installation, Installations}
 };
 mod cli;
 
@@ -15,10 +14,9 @@ async fn main() {
 
     match cli.command {
         Commands::Install { name, version } => {
-            let manifest = manifest_read();
-            let mut instance = Installation::new(name, version, &manifest).unwrap();
+            let mut instance = Installation::new(name, version).unwrap();
 
-            instance.install(&manifest).await.unwrap();
+            instance.install().await.unwrap();
         }
         Commands::Launch { name, username } => {
             let mut config = Config::read_global().unwrap();
@@ -33,7 +31,6 @@ async fn main() {
             instance_name,
             loader_version,
         } => {
-            let manifest = manifest_read();
             let mut instance =
                 Installations::find(&instance_name).expect("failed to find instance");
             instance
@@ -41,7 +38,7 @@ async fn main() {
                 .await
                 .expect("failed to install fabric");
             // has to reinstall probably it should reinstall every execute so if something went wrong.........
-            instance.install(&manifest).await.unwrap();
+            instance.install().await.unwrap();
         }
         Commands::List => {
             let installations = Installations::load();
