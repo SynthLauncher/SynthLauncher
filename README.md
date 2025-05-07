@@ -14,20 +14,17 @@
 
 ## Current Status
 
-> [!WARNING]
-> Old status!
+1. **Added Fabric Loader:**
+![ss1](assets/fabric-1.png)
+![ss2](assets/fabric-2.png)
 
-**Launching the game is now possible! Every version works. We've added a Java installer and are planning to integrate Microsoft authentication. The latest code hasn't been pushed yet as we're still fixing some issues, but once everything is resolved, we'll push the update!**
+2. **Added Microsoft Auth:**
+![ss3](assets/hypixel.png)
 
-![ss1](https://i.imgur.com/waxsWEb.png)
-![ss2](https://i.imgur.com/BlP1VOD.png)
+3. **Added Discord RPC:**
+![ss4](assets/discord_rpc.png)
 
-> [!NOTE]
-> 27.4.2025 Status
-
-**Working on the frontend, but it is not finished yet!**
-
-![ss3](https://i.imgur.com/GO3gffk.png)
+4. **Sound fixes for older versions**
 
 ## Contributing
 
