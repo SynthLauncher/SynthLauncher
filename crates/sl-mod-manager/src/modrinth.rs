@@ -67,3 +67,11 @@ pub async fn search_modrinth(query: &str, project_type: &str, version: &str) -> 
 
     Ok(())
 }
+
+// pub fn async get_mod() {
+
+// }
+
+// pub async fn add_mod() {
+
+// }
