@@ -22,7 +22,7 @@ pub async fn install_version(
     let package_type = package_type.to_lowercase();
 
     if !["jdk", "jre"].contains(&package_type.as_str()) {
-        return Err(BackendError::InvalidJavaPackage);
+        return Err(BackendError::JavaError("Invalid java package type!".to_string()));
     }
 
     let url = format!(
@@ -46,7 +46,7 @@ pub async fn install_version(
     let java_home = install_path.join(format!("{}-{}", package_type, semver));
 
     if java_home.exists() && !force {
-        return Err(BackendError::JavaAlreadyExists);
+        return Err(BackendError::JavaError("Java already exists!".to_string()));
     }
 
     fs::create_dir_all(&java_home)?;

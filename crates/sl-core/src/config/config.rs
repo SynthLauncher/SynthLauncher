@@ -39,7 +39,7 @@ impl Config {
 
         let new_java_path = install_version(java_version, None, "jdk".to_string(), true)
             .await
-            .map_err(|_| BackendError::JavaVersionNotFound)?;
+            .map_err(|_| BackendError::JavaError("Java version not found!".to_string()))?;
 
         let java_binary = if cfg!(windows) { "java.exe" } else { "java" };
         return Ok(Self(hash_map_from! {

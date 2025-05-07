@@ -1,30 +1,56 @@
+use thiserror::Error;
 use zip::result::ZipError;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum DownloadError {
+    #[error("Request timed out")]
     Timeout,
+    
+    #[error("Invalid URL")]
     InvalidURL,
-    IO(std::io::Error),
+    
+    #[error("I/O error: {0}")]
+    IO(#[from] std::io::Error),
+
+    #[error("HTTP request failed with status code: {0}")]
     Status(reqwest::StatusCode),
+
+    #[error("Some other request error: {0}")]
     Other(reqwest::Error),
 }
 
-#[derive(Debug)]
+// TODO: Make errors better
+#[derive(Debug, Error)]
 pub enum BackendError {
-    ZipError(ZipError),
-    DownloadError(DownloadError),
-    IOError(std::io::Error),
-    RegexError(regex::Error),
-    EnvVarError(std::env::VarError),
+    #[error("Zip error: {0}")]
+    ZipError(#[from] ZipError),
+
+    #[error("Download error: {0}")]
+    DownloadError(#[from] DownloadError),
+    
+    #[error("I/O error: {0}")]
+    IOError(#[from] std::io::Error),
+    
+    #[error("Regex error: {0}")]
+    RegexError(#[from] regex::Error),
+    
+    #[error("Environmental variable error: {0}")]
+    EnvVarError(#[from] std::env::VarError),
+    
+    #[error("Zip extraction error: {0}")]
     ZipExtractionError(String),
+    
+    #[error("Configuration error: {0}")]
     ConfigError(String),
-    SerdeError(serde_json::Error),
-    JavaVersionNotFound,
-    JavaAlreadyExists,
-    InvalidJavaPackage,
-    MinecraftVersionNotFound,
-    FailedToSaveInstallation,
-    FailedToExecuteInstallation,
+    
+    #[error("JSON serialization error: {0}")]
+    SerdeError(#[from] serde_json::Error),
+    
+    #[error("Java error: {0}")]
+    JavaError(String),
+
+    #[error("Installation error: {0}")]
+    InstallationError(String),
 }
 
 impl From<reqwest::Error> for DownloadError {
@@ -41,50 +67,8 @@ impl From<reqwest::Error> for DownloadError {
     }
 }
 
-impl From<std::io::Error> for DownloadError {
-    fn from(value: std::io::Error) -> Self {
-        DownloadError::IO(value)
-    }
-}
-
 impl From<reqwest::Error> for BackendError {
     fn from(value: reqwest::Error) -> Self {
-        Self::DownloadError(DownloadError::from(value))
-    }
-}
-
-impl From<DownloadError> for BackendError {
-    fn from(value: DownloadError) -> Self {
-        Self::DownloadError(value)
-    }
-}
-
-impl From<std::io::Error> for BackendError {
-    fn from(value: std::io::Error) -> Self {
-        Self::IOError(value)
-    }
-}
-
-impl From<ZipError> for BackendError {
-    fn from(value: ZipError) -> Self {
-        Self::ZipError(value)
-    }
-}
-
-impl From<regex::Error> for BackendError {
-    fn from(value: regex::Error) -> Self {
-        Self::RegexError(value)
-    }
-}
-
-impl From<std::env::VarError> for BackendError {
-    fn from(value: std::env::VarError) -> Self {
-        Self::EnvVarError(value)
-    }
-}
-
-impl From<serde_json::Error> for BackendError {
-    fn from(value: serde_json::Error) -> Self {
-        Self::SerdeError(value)
+        BackendError::DownloadError(DownloadError::from(value))
     }
 }

@@ -321,7 +321,7 @@ impl Installation {
             .output()?;
 
         if !output.status.success() {
-            return Err(BackendError::FailedToExecuteInstallation);
+            return Err(BackendError::InstallationError("Failed to execute the installation!".to_string()));
         }
 
         Ok(())

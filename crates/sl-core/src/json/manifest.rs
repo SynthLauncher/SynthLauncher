@@ -28,7 +28,7 @@ pub async fn download_version(
     version: &str,
 ) -> Result<Bytes, BackendError> {
     let Some(version) = MANIFEST.versions().find(|x| x.id == version) else {
-        return Err(BackendError::MinecraftVersionNotFound);
+        return Err(BackendError::InstallationError("Minecraft version not found!".to_string()));
     };
 
     let res = utils::download::get_as_bytes(&version.url).await?;

@@ -21,8 +21,7 @@ pub async fn get_as_bytes(url: &str) -> Result<Bytes, DownloadError> {
     For Java Manager
 */
 pub async fn download_file(url: &str, path: &Path) -> Result<(), BackendError> {
-    let client = reqwest::Client::new();
-    let mut res = client.get(url).send().await?;
+    let mut res = reqwest::get(url).await?;
     let mut file = File::create(path)?;
 
     while let Some(chunk) = res.chunk().await? {

@@ -6,7 +6,6 @@ const greetMsg = ref("");
 const name = ref("");
 
 async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
 }
 </script>
@@ -17,16 +16,14 @@ async function greet() {
 
     <p>Work in progress</p>
 
-      <button type="button">Launch</button>
-      
-      
+    <button type="button">Launch</button>
 
-      <select name="Versions" id="Versions" class="Version">
-  	<option value="1.20.4">1.20.4</option>
-  	<option value="1.19.4">1.19.4</option>
-  	<option value="1.8.9">1.8.9</option>
-  	<option value="1.7.10">1.7.10</option>
-      </select>
+    <select name="Versions" id="Versions" class="Version">
+      <option value="1.20.4">1.20.4</option>
+      <option value="1.19.4">1.19.4</option>
+      <option value="1.8.9">1.8.9</option>
+      <option value="1.7.10">1.7.10</option>
+    </select>
 
     <p>{{ greetMsg }}</p>
   </main>
@@ -40,7 +37,6 @@ async function greet() {
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #249b73);
 }
-
 </style>
 <style>
 :root {
@@ -60,13 +56,11 @@ async function greet() {
 }
 
 select.Version {
- 
- position: relative;
- height: 40px;
- width: 150px;
- left: 758px;
- top: 250px;
-
+  position: relative;
+  height: 40px;
+  width: 150px;
+  left: 758px;
+  top: 250px;
 }
 
 .container {
@@ -165,5 +159,4 @@ button {
     background-color: #0f0f0f69;
   }
 }
-
 </style>
