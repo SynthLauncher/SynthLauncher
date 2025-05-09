@@ -14,7 +14,7 @@ use sl_meta::json::{
     vanilla::Client,
     version_manifest::VersionType,
 };
-use sl_utils::utils::errors::{BackendError, DownloadError};
+use sl_utils::utils::errors::{BackendError, DownloadError, InstallationError};
 
 use crate::{
     auth::PlayerProfile,
@@ -328,7 +328,7 @@ impl Installation {
 
         if !output.status.success() {
             return Err(BackendError::InstallationError(
-                "Failed to execute the installation!".to_string(),
+                InstallationError::FailedToExecute(self.name.clone()),
             ));
         }
 
@@ -404,7 +404,7 @@ impl Installations {
         }
 
         Err(BackendError::InstallationError(
-            "Provided installation doesn't exist!".to_string(),
+            InstallationError::InstallationNotFound(name.to_string()),
         ))
     }
 

@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use sl_utils::utils::errors::BackendError;
+use sl_utils::utils::errors::{BackendError, ZipExtractionError};
 
 pub fn extract_package(package_path: &Path, java: &Path) -> Result<(), BackendError> {
     let file = File::open(package_path)?;
@@ -55,10 +55,10 @@ pub fn extract_package(package_path: &Path, java: &Path) -> Result<(), BackendEr
                 }
             }
         }
-        _ => {
-            return Err(BackendError::ZipExtractionError(String::from(
-                "Unsupported file extension!",
-            )))
+        ex => {
+            return Err(BackendError::ZipExtractionError(
+                ZipExtractionError::UnsupportedFileExt(ex.to_string()),
+            ))
         }
     }
 

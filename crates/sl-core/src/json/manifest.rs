@@ -2,7 +2,10 @@ use std::fs;
 
 use bytes::Bytes;
 use sl_meta::json::version_manifest::VersionManifest;
-use sl_utils::utils::{self, errors::BackendError};
+use sl_utils::utils::{
+    self,
+    errors::{BackendError, InstallationError},
+};
 
 use crate::{MANIFEST, MANIFEST_PATH};
 
@@ -24,11 +27,12 @@ pub fn manifest_read() -> VersionManifest {
     serde_json::from_str(buffer.as_str()).expect("Failed to parse file: version_manifest.json")
 }
 
-pub async fn download_version(
-    version: &str,
-) -> Result<Bytes, BackendError> {
+pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
     let Some(version) = MANIFEST.versions().find(|x| x.id == version) else {
-        return Err(BackendError::InstallationError("Minecraft version not found!".to_string()));
+        // TODO: Use a different type for version instead of String
+        return Err(BackendError::InstallationError(
+            InstallationError::VersionNotFound(version.to_string()),
+        ));
     };
 
     let res = utils::download::get_as_bytes(&version.url).await?;

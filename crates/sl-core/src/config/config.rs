@@ -8,7 +8,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sl_java_manager::{installer::installer::install_version, JavaInstallation};
-use sl_utils::utils::errors::BackendError;
+use sl_utils::utils::errors::{BackendError, JavaError};
 use velcro::hash_map_from;
 
 use crate::LAUNCHER_DIR;
@@ -39,7 +39,7 @@ impl Config {
 
         let new_java_path = install_version(java_version, None, "jdk".to_string(), true)
             .await
-            .map_err(|_| BackendError::JavaError("Java version not found!".to_string()))?;
+            .map_err(|_| BackendError::JavaError(JavaError::VersionNotFound(java_version)))?;
 
         let java_binary = if cfg!(windows) { "java.exe" } else { "java" };
         return Ok(Self(hash_map_from! {
