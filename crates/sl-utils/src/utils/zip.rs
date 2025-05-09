@@ -41,7 +41,7 @@ impl<'a> ZipExtractor<'a> {
 
             let output = output.join(&file_path);
             if file_path.is_dir() {
-                fs::create_dir_all(output).unwrap();
+                fs::create_dir_all(output)?;
             } else {
                 if let Some(p) = output.parent() {
                     if !p.exists() {

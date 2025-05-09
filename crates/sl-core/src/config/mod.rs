@@ -44,8 +44,7 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
         .write(true)
         .create(true) 
         .append(true) 
-        .open(&*INSTALLATIONS_PATH)
-        .unwrap();
+        .open(&*INSTALLATIONS_PATH)?;
     
     fetch_version_manifest().await;
 

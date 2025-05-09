@@ -27,15 +27,6 @@ pub struct Version {
     pub compliance_level: u8,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct MCVersion {
-    #[serde(rename = "id")]
-    pub version: String,
-    pub release_time: String,
-    pub r#type: Option<VersionType>,
-}
-
 #[derive(Debug, Deserialize, Clone)]
 pub struct VersionManifest {
     pub latest: Latest,

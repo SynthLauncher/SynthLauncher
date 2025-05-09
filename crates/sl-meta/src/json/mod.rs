@@ -43,6 +43,10 @@ pub struct JavaClassName {
     version: String,
 }
 
+/* 
+    Example of what this does:
+    Deserializing "ca.weblite:java-objc-bridge:1.1" -> "ca.weblite", "java-objc-bridge", "1.1"
+*/
 impl<'de> Deserialize<'de> for JavaClassName {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -51,8 +55,9 @@ impl<'de> Deserialize<'de> for JavaClassName {
         let s = String::deserialize(deserializer)?;
         let parts: Vec<&str> = s.split(':').collect();
         if parts.len() < 3 {
-            return Err(serde::de::Error::custom("invalid Java class name format"));
+            return Err(serde::de::Error::custom("Invalid Java class name format!"));
         }
+
         Ok(JavaClassName {
             group_id: parts[0].to_string(),
             artifact_id: parts[1].to_string(),

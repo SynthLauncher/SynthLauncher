@@ -38,9 +38,14 @@ pub enum Commands {
         #[arg(required = true)]
         name: String,
     },
-    SearchModrinth {
+    AddMod {
+        #[arg(required = true)]
         name: String,
-        project_type: String,
-        version: String
+        #[arg(required = true)]
+        id: String
+    },
+    RemoveInstallation {
+        #[arg(required = true)]
+        name: String
     }
 }

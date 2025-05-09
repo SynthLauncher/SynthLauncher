@@ -12,8 +12,6 @@ pub struct AssetObject {
 
 #[derive(Debug, Deserialize)]
 pub struct AssetIndex {
-    #[serde(default)]
-    pub map_to_resources: bool,
     pub objects: HashMap<String, AssetObject>,
 }
 
@@ -180,6 +178,7 @@ pub struct Library {
     pub natives: Option<Natives>,
     pub rules: Option<Vec<Rule>>,
 }
+
 impl Library {
     pub fn is_allowed(&self) -> bool {
         self.rules.is_none()

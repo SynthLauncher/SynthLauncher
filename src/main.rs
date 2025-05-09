@@ -4,12 +4,13 @@ use discord_rpc_client::Client;
 use sl_core::{
     auth::{AuthFlow, PlayerProfile}, config::{config::Config, init_launcher_dir}, installations::{Installation, Installations}
 };
-use sl_mod_manager::modrinth::search_modrinth;
+use sl_mod_manager::modrinth::install_modrinth_file;
+use sl_utils::utils::errors::BackendError;
 
 mod cli;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), BackendError> {
     init_launcher_dir().await.unwrap();
 
     let cli = Cli::parse();
@@ -63,7 +64,7 @@ async fn main() {
             instance.install().await.unwrap();
         }
         Commands::List => {
-            let installations = Installations::load();
+            let installations = Installations::load()?;
             let mut count: i32 = 1;
             for installation in installations.0 {
                 println!("{}: {}", count, installation.name);
@@ -87,9 +88,18 @@ async fn main() {
             let instance = Installations::find(&name).unwrap();
             instance.execute(Some(&profile)).unwrap();
         },
-        Commands::SearchModrinth { name, project_type, version } => {
-            search_modrinth(&name, &project_type, &version).await.unwrap();
+        Commands::AddMod { name, id } => {
+            let installation = Installations::find(&name).unwrap();
+            let dest = installation.dir_path().join("mods");
+
+            println!("{:?}", dest);
+            install_modrinth_file(&id, &dest).await.unwrap();
+        },
+        Commands::RemoveInstallation { name } => {
+            Installations::remove(&name)?;
         }
     }
+
+    Ok(())
 }
 

@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use sl_meta::json::{
     fabric::{self, profile::FabricLoaderProfile},
     vanilla::Client,
-    version_manifest::{MCVersion, VersionType},
+    version_manifest::VersionType,
 };
 use sl_utils::utils::errors::{BackendError, DownloadError};
 
@@ -24,9 +24,18 @@ use crate::{
 };
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallationInfo {
+    #[serde(rename = "id")]
+    pub version: String,
+    pub release_time: String,
+    pub r#type: Option<VersionType>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Installation {
     pub name: String,
-    pub version: MCVersion,
+    pub info: InstallationInfo,
 }
 
 impl Installation {
@@ -37,7 +46,7 @@ impl Installation {
             .and_then(|version| {
                 Some(Self {
                     name,
-                    version: MCVersion {
+                    info: InstallationInfo {
                         version: version.id.clone(),
                         release_time: version.release_time.clone(),
                         r#type: Some(version.r#type),
@@ -54,7 +63,7 @@ impl Installation {
         let reader = BufReader::new(file);
         let client: Client = serde_json::from_reader(reader)?;
 
-        let mc_version = MCVersion {
+        let info = InstallationInfo {
             release_time: client.release_time,
             r#type: Some(client.r#type),
             version: client.id,
@@ -62,11 +71,11 @@ impl Installation {
 
         Ok(Self {
             name: name.to_string(),
-            version: mc_version,
+            info,
         })
     }
 
-    fn dir_path(&self) -> PathBuf {
+    pub fn dir_path(&self) -> PathBuf {
         INSTALLATIONS_DIR.join(&self.name)
     }
 
@@ -94,7 +103,7 @@ impl Installation {
         Some(profile)
     }
 
-    pub async fn install_fabric(&mut self, loader_version: &str) -> Result<(), DownloadError> {
+    pub async fn install_fabric(&mut self, loader_version: &str) -> Result<(), BackendError> {
         if self.fabric_json_path().is_some() {
             return Ok(());
         }
@@ -110,10 +119,12 @@ impl Installation {
         let profile = fabric::profile::get_loader_profile::<
             fn(&str) -> dyn Future<Output = Result<Vec<u8>, DownloadError>>,
             DownloadError,
-        >(&self.version.version, loader_version, make_request)
+        >(&self.info.version, loader_version, make_request)
         .await?;
         let file = File::create(&path)?;
-        serde_json::to_writer_pretty(file, &profile).unwrap();
+
+        serde_json::to_writer_pretty(file, &profile)?;
+
         Ok(())
     }
 
@@ -150,13 +161,12 @@ impl Installation {
     }
 
     async fn reinit(&mut self) -> Result<Client, BackendError> {
-        let client_raw = download_version(&self.version.version).await?;
+        let client_raw = download_version(&self.info.version).await?;
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
 
-        let config = Config::create_config(client.java_version.as_ref().unwrap().major_version)
-            .await
-            .unwrap();
+        let config =
+            Config::create_config(client.java_version.as_ref().unwrap().major_version).await?;
         let config = config.merge(Config::read_global().unwrap());
         self.override_config(config)?;
 
@@ -201,15 +211,15 @@ impl Installation {
     }
 
     fn generate_sound_arguments(&self, jvm_args: &mut Vec<String>) {
-        if self.version.r#type == Some(VersionType::OldBeta)
-            || self.version.r#type == Some(VersionType::OldAlpha)
+        if self.info.r#type == Some(VersionType::OldBeta)
+            || self.info.r#type == Some(VersionType::OldAlpha)
         {
             jvm_args.push("-Dhttp.proxyHost=betacraft.uk".to_owned());
 
-            if self.version.version.starts_with("c0.") {
+            if self.info.version.starts_with("c0.") {
                 // Classic
                 jvm_args.push("-Dhttp.proxyPort=11701".to_owned());
-            } else if self.version.r#type == Some(VersionType::OldAlpha) {
+            } else if self.info.r#type == Some(VersionType::OldAlpha) {
                 // Indev, Infdev and Alpha (mostly same)
                 jvm_args.push("-Dhttp.proxyPort=11702".to_owned());
             } else {
@@ -222,7 +232,7 @@ impl Installation {
         } else {
             // 1.5.2 release date
             let v1_5_2 = DateTime::parse_from_rfc3339("2013-04-25T15:45:00+00:00").unwrap();
-            let release = DateTime::parse_from_rfc3339(&self.version.release_time).unwrap();
+            let release = DateTime::parse_from_rfc3339(&self.info.release_time).unwrap();
 
             if release <= v1_5_2 {
                 // 1.0 - 1.5.2
@@ -255,18 +265,14 @@ impl Installation {
                 "game_directory" => game_dir.to_str().unwrap(),
                 "assets_root" | "game_assets" => ASSETS_DIR.to_str().unwrap(),
                 "assets_index_name" => &client.assets,
-                "version_name" => &self.version.version,
+                "version_name" => &self.info.version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
-                "auth_uuid" => profile
-                .map(|m| m.uuid.as_str())
-                .unwrap_or("0"),
-                "auth_access_token" => profile
-                    .map(|m| m.access_token.as_str())
-                    .unwrap_or("0"),
+                "auth_uuid" => profile.map(|m| m.uuid.as_str()).unwrap_or("0"),
+                "auth_access_token" => profile.map(|m| m.access_token.as_str()).unwrap_or("0"),
                 "auth_player_name" => profile
-                .map(|m| m.username.as_str())
-                .unwrap_or(global_config.get("auth_player_name").unwrap()),
+                    .map(|m| m.username.as_str())
+                    .unwrap_or(global_config.get("auth_player_name").unwrap()),
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
                 "version_type" => "SynthLauncher",
                 _ => config.get(arg)?,
@@ -321,7 +327,9 @@ impl Installation {
             .output()?;
 
         if !output.status.success() {
-            return Err(BackendError::InstallationError("Failed to execute the installation!".to_string()));
+            return Err(BackendError::InstallationError(
+                "Failed to execute the installation!".to_string(),
+            ));
         }
 
         Ok(())
@@ -337,14 +345,24 @@ impl Installations {
         Installations(Vec::new())
     }
 
-    pub fn load() -> Self {
-        let content = fs::read_to_string(INSTALLATIONS_PATH.as_path())
-            .expect("Failed to read installations.json!");
-        serde_json::from_str(&content).unwrap_or(Installations::new())
+    pub fn load() -> Result<Self, BackendError> {
+        let content = fs::read_to_string(INSTALLATIONS_PATH.as_path())?;
+        Ok(serde_json::from_str(&content).unwrap_or(Installations::new()))
     }
 
-    pub fn add(installation: &Installation) {
-        let mut existing_installations = Self::load();
+    pub fn overwrite(installations: &Installations) -> Result<(), BackendError> {
+        let file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(INSTALLATIONS_PATH.as_path())?;
+
+        serde_json::to_writer_pretty(file, &installations)?;
+
+        Ok(())
+    }
+
+    pub fn add(installation: &Installation) -> Result<(), BackendError> {
+        let mut existing_installations = Self::load()?;
 
         if !existing_installations
             .0
@@ -354,35 +372,53 @@ impl Installations {
             existing_installations.0.push(installation.clone());
         }
 
-        let file = OpenOptions::new()
-            .write(true)
-            .truncate(true)
-            .open(INSTALLATIONS_PATH.as_path())
-            .unwrap();
+        Installations::overwrite(&existing_installations)?;
 
-        serde_json::to_writer_pretty(file, &existing_installations).unwrap();
+        Ok(())
     }
 
-    fn find_in_installations_dir(name: &str) -> Option<Installation> {
+    pub fn remove(name: &str) -> Result<(), BackendError> {
+        let mut existing_installations = Self::load()?;
+
+        existing_installations
+            .0
+            .retain(|existing| existing.name != name);
+
+        println!("{:?}", existing_installations);
+
+        Installations::overwrite(&existing_installations)?;
+
+        fs::remove_dir_all(INSTALLATIONS_DIR.join(name))?;
+
+        Ok(())
+    }
+
+    fn find_in_installations_dir(name: &str) -> Result<Installation, BackendError> {
         let path = Path::new(&INSTALLATIONS_DIR.as_path()).join(&name);
 
         if path.exists() && path.is_dir() {
-            let instance = Installation::get_installation_from_dir(name).unwrap();
-            Installations::add(&instance);
+            let instance = Installation::get_installation_from_dir(name)?;
+            Installations::add(&instance)?;
 
-            return Some(instance);
+            return Ok(instance);
         }
 
-        None
+        Err(BackendError::InstallationError(
+            "Provided installation doesn't exist!".to_string(),
+        ))
     }
 
-    pub fn find(name: &str) -> Option<Installation> {
-        let installations = Self::load();
+    pub fn find(name: &str) -> Result<Installation, BackendError> {
+        let installations = Self::load()?;
 
-        installations
+        if let Some(installation) = installations
             .0
             .into_iter()
             .find(|installation| installation.name == name)
-            .or_else(|| Self::find_in_installations_dir(name))
+        {
+            Ok(installation)
+        } else {
+            Self::find_in_installations_dir(name)
+        }
     }
 }
