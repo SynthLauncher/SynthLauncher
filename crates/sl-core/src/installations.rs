@@ -2,7 +2,7 @@ use std::{
     borrow::Cow,
     fs::{self, File, OpenOptions},
     future::Future,
-    io::BufReader,
+    io::{self, BufReader},
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
@@ -14,7 +14,7 @@ use sl_meta::json::{
     vanilla::Client,
     version_manifest::VersionType,
 };
-use sl_utils::utils::errors::{BackendError, DownloadError};
+use sl_utils::utils::errors::{BackendError, DownloadError, InstallationError};
 
 use crate::{
     auth::PlayerProfile,
@@ -328,7 +328,7 @@ impl Installation {
 
         if !output.status.success() {
             return Err(BackendError::InstallationError(
-                "Failed to execute the installation!".to_string(),
+                InstallationError::FailedToExecute(self.name.clone()),
             ));
         }
 
@@ -345,12 +345,12 @@ impl Installations {
         Installations(Vec::new())
     }
 
-    pub fn load() -> Result<Self, BackendError> {
+    pub fn load() -> io::Result<Self> {
         let content = fs::read_to_string(INSTALLATIONS_PATH.as_path())?;
         Ok(serde_json::from_str(&content).unwrap_or(Installations::new()))
     }
 
-    pub fn overwrite(installations: &Installations) -> Result<(), BackendError> {
+    pub fn overwrite(installations: &Installations) -> io::Result<()> {
         let file = OpenOptions::new()
             .write(true)
             .truncate(true)
@@ -361,7 +361,7 @@ impl Installations {
         Ok(())
     }
 
-    pub fn add(installation: &Installation) -> Result<(), BackendError> {
+    pub fn add(installation: &Installation) -> io::Result<()> {
         let mut existing_installations = Self::load()?;
 
         if !existing_installations
@@ -377,7 +377,7 @@ impl Installations {
         Ok(())
     }
 
-    pub fn remove(name: &str) -> Result<(), BackendError> {
+    pub fn remove(name: &str) -> io::Result<()> {
         let mut existing_installations = Self::load()?;
 
         existing_installations
@@ -404,7 +404,7 @@ impl Installations {
         }
 
         Err(BackendError::InstallationError(
-            "Provided installation doesn't exist!".to_string(),
+            InstallationError::InstallationNotFound(name.to_string()),
         ))
     }
 

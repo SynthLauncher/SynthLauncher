@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf};
 use serde_json::Value;
 use sl_utils::utils::{
     download::download_file,
-    errors::BackendError,
+    errors::{BackendError, JavaError},
     platform::{default_install_path, get_arch, get_os},
 };
 use tempfile::TempDir;
@@ -22,7 +22,9 @@ pub async fn install_version(
     let package_type = package_type.to_lowercase();
 
     if !["jdk", "jre"].contains(&package_type.as_str()) {
-        return Err(BackendError::JavaError("Invalid java package type!".to_string()));
+        return Err(BackendError::JavaError(JavaError::InvalidPackageType(
+            package_type,
+        )));
     }
 
     let url = format!(
@@ -46,7 +48,7 @@ pub async fn install_version(
     let java_home = install_path.join(format!("{}-{}", package_type, semver));
 
     if java_home.exists() && !force {
-        return Err(BackendError::JavaError("Java already exists!".to_string()));
+        return Err(BackendError::JavaError(JavaError::AlreadyExists));
     }
 
     fs::create_dir_all(&java_home)?;
