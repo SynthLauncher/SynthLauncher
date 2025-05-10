@@ -1,8 +1,6 @@
 import { useCallback } from "react";
 import "./App.css";
 import { Button } from "./components/ui/button";
-import { VscChromeMinimize } from "react-icons/vsc";
-import { IoClose } from "react-icons/io5";
 import { X } from "lucide-react";
 
 function App() {
@@ -14,13 +12,13 @@ function App() {
 
   return (
     <div className="bg-[#2c323b] min-h-screen">
-      <nav className="w-full flex p-1">
+      <nav className="w-full flex p-1 bg-slate-700 justify-end" data-tauri-drag-region>
         <Button
-          onClick={handleMinimize}
           variant="ghost"
-          className="group hover:bg-red-400 hover:scale-105 rounded-full p-0 flex items-center justify-center w-16 h-16 transition-all duration-200"
+          onClick={handleMinimize}
+          className="group hover:bg-red-400 rounded-full p-0 flex items-center justify-center w-14 h-14 transition-all duration-200"
         >
-          <X className="text-white group-hover:text-black" size={128} />
+          <X className="text-white group-hover:text-black transition-all duration-200 transform group-hover:scale-105" />
         </Button>
       </nav>
     </div>

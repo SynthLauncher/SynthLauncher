@@ -15,7 +15,9 @@
         "title": "sl-frontend",
         "width": 800,
         "height": 600,
-        "minimizable": true
+        "minimizable": true,
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {
