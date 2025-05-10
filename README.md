@@ -1,6 +1,7 @@
 # SynthLauncher
 
 ![SynthLauncher Logo](assets/logo.png)
+![SynthLauncher Logotest](assets/testlogo.png)
 
 **SynthLauncher** is an open-source Minecraft launcher. Our goal is to provide a seamless, optimized experience that enhances performance across all types of systems. Currently, the launcher is in active development, and we welcome contributions from the community.
 

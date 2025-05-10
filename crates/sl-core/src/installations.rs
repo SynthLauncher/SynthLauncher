@@ -297,9 +297,6 @@ impl Installation {
 
         jvm_args.push(client.main_class.clone());
 
-        println!("Game args: {:?}", game_args);
-        println!("Java args: {:?}", jvm_args);
-
         Ok([jvm_args, game_args].concat())
     }
 
@@ -383,8 +380,6 @@ impl Installations {
         existing_installations
             .0
             .retain(|existing| existing.name != name);
-
-        println!("{:?}", existing_installations);
 
         Installations::overwrite(&existing_installations)?;
 

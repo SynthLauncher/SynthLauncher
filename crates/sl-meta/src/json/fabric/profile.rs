@@ -1,4 +1,4 @@
-//! wrapper for fabric's meta /v2/versions/loader/:game_version/:loader_version/profile/json endpoint
+// ! wrapper for fabric's meta /v2/versions/loader/:game_version/:loader_version/profile/json endpoint
 use serde::{Deserialize, Serialize};
 
 use crate::json::{vanilla, version_manifest::VersionType, JavaClassName};

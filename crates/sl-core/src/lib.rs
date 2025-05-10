@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use config::config_launcher_dir;
 use lazy_static::lazy_static;
+use config::config_launcher_dir;
+use json::manifest::manifest_read;
 use sl_meta::json::{Arch, OsName};
 use sl_meta::json::version_manifest::VersionManifest;
-use json::manifest::manifest_read;
 
 pub mod auth;
 pub mod config;
