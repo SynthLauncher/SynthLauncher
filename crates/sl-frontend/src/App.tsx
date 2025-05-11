@@ -3,7 +3,9 @@ import "./App.css";
 import { Button } from "./components/ui/button";
 import { Maximize, Minus, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
-import { Input } from "./components/ui/input";
+import Sidebar from "./components/sidebar";
+import HomePage from "./pages/HomePage";
+import ProfileSidebar from "./components/profilesidebar";
 
 function App() {
   async function launch() {
@@ -34,17 +36,11 @@ function App() {
   }, []);
 
   return (
-    <div className="bg-[#282c32] h-screen flex flex-col overflow-hidden">
+    <div className="bg-[#0b0b22] h-screen flex-col overflow-hidden">
       <nav
-        className="w-full flex h-15 justify-between items-center p-1"
+        className="bg-gray-900 w-full flex h-15 justify-end items-center p-1"
         data-tauri-drag-region
       >
-        <div className="flex pl-2">
-          <h1 className="text-2xl text-white font-semibold font-sans">
-            synthlauncher
-          </h1>
-        </div>
-
         <div className="flex">
           <Button
             variant="ghost"
@@ -71,15 +67,13 @@ function App() {
         </div>
       </nav>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-20"></div>
+      <div className="flex overflow-hidden h-full">
+        <Sidebar setActiveTab={() => {}} activeTab="home" />
 
-        <div className="bg-[#181a1e] border-[#4e4c57] border-l-2 border-t-2 w-full h-full  rounded-tl-2xl p-4">
-          <div className="min-h-screen">
-            <Button className="bg-sky-400 text-black rounded-lg" onClick={launch}>
-              Create an installation
-            </Button>
-          </div>
+        <div className="flex w-full border-l-2 border-t-2 border-gray-800 rounded-tl-2xl">
+          <HomePage />
+
+          <ProfileSidebar />
         </div>
       </div>
     </div>
