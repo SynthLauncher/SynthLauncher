@@ -29,7 +29,8 @@ pub struct InstallationInfo {
     #[serde(rename = "id")]
     pub version: String,
     pub release_time: String,
-    pub r#type: Option<VersionType>,
+    pub r#type: Option<VersionType>
+    // TODO: Add icon
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -39,17 +40,17 @@ pub struct Installation {
 }
 
 impl Installation {
-    pub fn new(name: String, version: String) -> Option<Self> {
+    pub fn new(name: &str, version: &str) -> Option<Self> {
         MANIFEST
             .versions()
             .find(|x| x.id == version)
             .and_then(|version| {
                 Some(Self {
-                    name,
+                    name: name.to_owned(),
                     info: InstallationInfo {
                         version: version.id.clone(),
                         release_time: version.release_time.clone(),
-                        r#type: Some(version.r#type),
+                        r#type: Some(version.r#type)
                     },
                 })
             })

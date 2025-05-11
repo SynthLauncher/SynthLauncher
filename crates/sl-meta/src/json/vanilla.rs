@@ -56,6 +56,7 @@ pub struct Download {
 #[derive(Debug, Deserialize)]
 pub struct Downloads {
     pub client: Download,
+    pub server: Download
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

@@ -17,7 +17,7 @@ async fn main() -> Result<(), BackendError> {
 
     match cli.command {
         Commands::Install { name, version } => {
-            let mut instance = Installation::new(name, version).unwrap();
+            let mut instance = Installation::new(&name, &version).unwrap();
             instance.install().await.unwrap();
         }
         Commands::Launch { name, username } => {
