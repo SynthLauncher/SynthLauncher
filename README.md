@@ -44,6 +44,12 @@ We appreciate and welcome contributions! If you’re interested in helping out, 
 
 If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker, Email: [STierProgrammer@gmail.com](mailto:stierprogrammer@gmail.com) or Discord: `stierprogrammer`.
 
+### Inspired by:
+
+1. [CrabLauncher](https://github.com/safiworks/CrabLauncher)
+2. [QuantumLauncher](https://github.com/Mrmayman/quantum-launcher)
+3. [SmallLauncher](https://github.com/smallauncher/smallauncher)
+
 ---
 
 ## **SynthLauncher** - A Minecraft Launcher for Everyone
