@@ -1,26 +1,19 @@
-use sl_core::installations::Installations;
+use crate::commands::{launch, get_username, edit_username, get_installations};
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-async fn create_installation() {
-    
-}
-
-#[tauri::command]
-async fn launch() {
-    let instance = Installations::find("schoolsmp").unwrap();
-    instance.execute(None).unwrap();
-}
+mod commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, launch])
+        .invoke_handler(tauri::generate_handler![
+            launch,
+            get_username,
+            edit_username,
+            get_installations,
+            // create_installation
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

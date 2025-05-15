@@ -29,8 +29,7 @@ pub struct InstallationInfo {
     #[serde(rename = "id")]
     pub version: String,
     pub release_time: String,
-    pub r#type: Option<VersionType>
-    // TODO: Add icon
+    pub r#type: Option<VersionType>, // TODO: Add icon
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -50,7 +49,7 @@ impl Installation {
                     info: InstallationInfo {
                         version: version.id.clone(),
                         release_time: version.release_time.clone(),
-                        r#type: Some(version.r#type)
+                        r#type: Some(version.r#type),
                     },
                 })
             })
@@ -186,7 +185,7 @@ impl Installation {
 
     pub async fn install(&mut self) -> Result<(), BackendError> {
         let client = self.init().await?;
-        client::install_client(&ASSETS_DIR, &LIBS_DIR, client, self.dir_path().as_path()).await
+        client::install_client(client, self.dir_path()).await
     }
 
     fn classpath(&self, client: &Client) -> String {
@@ -211,6 +210,7 @@ impl Installation {
         classpath.join(MULTI_PATH_SEPARATOR)
     }
 
+    // Thanks MrMayMan
     fn generate_sound_arguments(&self, jvm_args: &mut Vec<String>) {
         if self.info.r#type == Some(VersionType::OldBeta)
             || self.info.r#type == Some(VersionType::OldAlpha)

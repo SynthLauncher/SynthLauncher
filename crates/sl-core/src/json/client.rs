@@ -13,6 +13,8 @@ use sl_utils::utils::{
     zip::ZipExtractor,
 };
 
+use crate::{ASSETS_DIR, LIBS_DIR};
+
 #[inline(always)]
 fn verify_data(file: &mut File, sha1: &str) -> bool {
     let mut hasher = Sha1::new();
@@ -101,9 +103,9 @@ where
     outputs
 }
 
-async fn install_assets(assets_root: &Path, client: &Client) -> Result<(), DownloadError> {
+async fn install_assets(client: &Client) -> Result<(), DownloadError> {
     let id = &client.assets;
-    let indexes_dir = assets_root.join("indexes");
+    let indexes_dir = ASSETS_DIR.join("indexes");
     let indexes_path = indexes_dir.join(format!("{}.json", id));
 
     let download = download_and_read_file(&client.asset_index, &indexes_path).await?;
@@ -113,7 +115,7 @@ async fn install_assets(assets_root: &Path, client: &Client) -> Result<(), Downl
 
     let download_object = async |object: AssetObject| -> Result<(), DownloadError> {
         let dir_name = &object.hash[0..2];
-        let dir = assets_root.join("objects").join(dir_name);
+        let dir = ASSETS_DIR.join("objects").join(dir_name);
         let path = dir.join(&object.hash);
 
         if path.exists() {
@@ -145,15 +147,15 @@ async fn install_assets(assets_root: &Path, client: &Client) -> Result<(), Downl
     Ok(())
 }
 
-async fn install_libs(libs_root: &Path, client: &Client, path: &Path) -> Result<(), BackendError> {
+async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> {
     println!("Downloading libraries...");
     let download_lib = async |lib: &Library| -> Result<(), BackendError> {
         if let Some(ref artifact) = lib.downloads.artifact {
-            download_to(artifact, libs_root).await?;
+            download_to(artifact, &LIBS_DIR).await?;
         }
 
         if let Some(native) = lib.native_from_platform() {
-            let bytes = download_and_read_file(native, libs_root).await?;
+            let bytes = download_and_read_file(native, &LIBS_DIR).await?;
 
             if let Some(ref extract_rules) = lib.extract {
                 let natives_dir = path.join(".natives");
@@ -181,13 +183,11 @@ async fn install_libs(libs_root: &Path, client: &Client, path: &Path) -> Result<
 }
 
 pub async fn install_client(
-    assets_root: &Path,
-    libs_root: &Path,
     client: Client,
-    path: &Path,
+    path: PathBuf,
 ) -> Result<(), BackendError> {
-    install_assets(assets_root, &client).await?;
-    install_libs(libs_root, &client, path).await?;
+    install_assets(&client).await?;
+    install_libs(&client, &path).await?; // I commented this line!!!
 
     let client_path = path.join("client.jar");
 
