@@ -32,13 +32,28 @@ pub async fn get_installations() -> Result<Installations, String> {
     Ok(installations)
 }
 
-// #[tauri::command]
-// pub async fn create_installation(name: String, version: String) -> Result<(), String> {
-//     let mut instance = Installation::new(&name, &version).unwrap();
-//     instance.install().await.unwrap();
+#[tauri::command]
+pub async fn create_installation(name: &str, version: &str) -> Result<(), String> {
+    let mut instance = Installation::new(&name, &version).unwrap();
+    Installations::add(&instance).unwrap();
+    instance.install().await.unwrap();
 
-//     Ok(())
-// }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn remove_installation(name: &str) -> Result<(), String> {
+    Installations::remove(name).unwrap();
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn load_all_installations() -> Result<(), String> {
+    for instance in Installations::load_all_installations().unwrap().0 {
+        Installations::add(&instance).unwrap();
+    }
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn launch(name: &str) -> Result<(), String> {

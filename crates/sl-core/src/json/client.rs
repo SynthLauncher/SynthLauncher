@@ -13,7 +13,7 @@ use sl_utils::utils::{
     zip::ZipExtractor,
 };
 
-use crate::{ASSETS_DIR, LIBS_DIR};
+use crate::{ASSETS_DIR, LIBS_DIR, TEMP_CLIENT};
 
 #[inline(always)]
 fn verify_data(file: &mut File, sha1: &str) -> bool {
@@ -103,12 +103,14 @@ where
     outputs
 }
 
-async fn install_assets(client: &Client) -> Result<(), DownloadError> {
-    let id = &client.assets;
+async fn install_assets(
+    // client: &Client
+) -> Result<(), DownloadError> {
+    let id = (*TEMP_CLIENT).lock().await.as_ref().unwrap().assets.clone();
     let indexes_dir = ASSETS_DIR.join("indexes");
     let indexes_path = indexes_dir.join(format!("{}.json", id));
 
-    let download = download_and_read_file(&client.asset_index, &indexes_path).await?;
+    let download = download_and_read_file(&(*TEMP_CLIENT).lock().await.as_ref().unwrap().asset_index, &indexes_path).await?;
 
     let index: AssetIndex = serde_json::from_slice(&download).unwrap();
     let objects = index.objects;
@@ -147,30 +149,34 @@ async fn install_assets(client: &Client) -> Result<(), DownloadError> {
     Ok(())
 }
 
-async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> {
+async fn install_libs(
+    path: PathBuf
+) -> Result<(), BackendError> {
     println!("Downloading libraries...");
+
     let download_lib = async |lib: &Library| -> Result<(), BackendError> {
         if let Some(ref artifact) = lib.downloads.artifact {
             download_to(artifact, &LIBS_DIR).await?;
         }
 
-        if let Some(native) = lib.native_from_platform() {
-            let bytes = download_and_read_file(native, &LIBS_DIR).await?;
+        // !!! This needs to be fixed!!!
+        // if let Some(native) = lib.native_from_platform() {
+        //     let bytes = download_and_read_file(native, &LIBS_DIR).await?;
 
-            if let Some(ref extract_rules) = lib.extract {
-                let natives_dir = path.join(".natives");
+        //     if let Some(ref extract_rules) = lib.extract {
+        //         let natives_dir = path.join(".natives");
 
-                let exclude = extract_rules.exclude.as_deref().unwrap_or_default();
-                let paths = exclude.iter().map(PathBuf::as_path).collect::<Vec<_>>();
-                let zip = ZipExtractor::new(&bytes).exclude(&paths);
+        //         let exclude = extract_rules.exclude.as_deref().unwrap_or_default();
+        //         let paths = exclude.iter().map(PathBuf::as_path).collect::<Vec<_>>();
+        //         let zip = ZipExtractor::new(&bytes).exclude(&paths);
 
-                zip.extract(&natives_dir)?;
-            }
-        }
+        //         zip.extract(&natives_dir)?;
+        //     }
+        // }
         Ok(())
     };
 
-    let outputs = download_futures(client.libraries(), 5, download_lib).await;
+    let outputs = download_futures((*TEMP_CLIENT).lock().await.as_ref().unwrap().libraries(), 5, download_lib).await;
     for (i, output) in outputs.into_iter().enumerate() {
         if let Err(err) = output {
             println!("Failed to download library indexed {i}: {err:?}");
@@ -183,15 +189,14 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
 }
 
 pub async fn install_client(
-    client: Client,
     path: PathBuf,
 ) -> Result<(), BackendError> {
-    install_assets(&client).await?;
-    install_libs(&client, &path).await?; // I commented this line!!!
+    install_assets().await?;
+    install_libs(path.clone()).await?;
 
     let client_path = path.join("client.jar");
 
-    download_to(&client.downloads.client, &client_path).await?;
+    download_to(&(*TEMP_CLIENT).lock().await.take().unwrap().downloads.client, &client_path).await?;
 
     Ok(())
 }

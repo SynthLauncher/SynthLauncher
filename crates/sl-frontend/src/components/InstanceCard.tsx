@@ -1,76 +1,96 @@
-import React from 'react';
-import { Play, MoreVertical, Clock, Calendar } from 'lucide-react';
+import React from "react";
+import {
+  Play,
+  MoreVertical,
+  Clock,
+  Blocks,
+  Gem,
+  Pickaxe,
+  Sword,
+} from "lucide-react";
+import { Installation, InstanceCardProps } from "@/lib/types";
+import { launchInstance, removeInstance } from "@/lib/commands";
 
-type InstanceCardProps = {
-  title: string;
-  version: string;
-  modLoader?: string;
-  modCount?: number;
-  lastPlayed: string;
-  image: string;
-  favorite?: boolean;
-};
-
-const InstanceCard: React.FC<InstanceCardProps> = ({
-  title,
-  version,
-  modLoader,
-  modCount,
-  lastPlayed,
-  image,
-  favorite,
+const InstanceCard: React.FC<Installation> = ({
+  name,
+  info
+  // modLoader,
+  // modCount,
+  // lastPlayed,
+  // favorite,
 }) => {
+  const getIconByTitle = (title: string) => {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes("survival"))
+      return <Pickaxe className="w-8 h-8 text-emerald-500" />;
+    if (lowerTitle.includes("pvp") || lowerTitle.includes("combat"))
+      return <Sword className="w-8 h-8 text-red-500" />;
+    if (lowerTitle.includes("creative"))
+      return <Gem className="w-8 h-8 text-purple-500" />;
+    return <Blocks className="w-8 h-8 text-blue-500" />;
+  };
+
   return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden group transition-all duration-200 hover:shadow-lg hover:shadow-emerald-900/10">
-      <div className="relative h-35 overflow-hidden">
-        <img 
-          src={image} 
-          alt={title} 
-          className="w-full h-full object-cover transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
-        
-        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <div>
-            <h3 className="text-white font-bold text-lg leading-tight">{title}</h3>
-            <div className="flex items-center gap-1.5 text-xs text-gray-300 mt-0.5">
-              <span>{version}</span>
-              {modLoader && (
-                <>
-                  <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                  <span>{modLoader}</span>
-                </>
-              )}
-              {modCount !== undefined && (
-                <>
-                  <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                  <span>{modCount} mods</span>
-                </>
-              )}
-            </div>
+    <div className="bg-gray-800 rounded-xl overflow-hidden group transition-all duration-200 hover:shadow-lg hover:shadow-emerald-900/10 hover:-translate-y-1">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center">
+            {getIconByTitle(name)}
           </div>
-          
+{/* 
           {favorite && (
             <div className="bg-amber-500/90 text-amber-950 text-xs rounded-full px-2 py-0.5 font-medium">
               Favorite
             </div>
-          )}
+          )} */}
         </div>
-      </div>
-      
-      <div className="p-3 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          <Clock size={14} />
-          <span>{lastPlayed}</span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button className="text-gray-400 hover:text-white transition-colors p-1">
-            <MoreVertical size={18} />
-          </button>
-          <button className="bg-purple-600 hover:bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors">
-            <Play size={16} className="ml-0.5" />
-          </button>
+
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-white font-semibold text-lg leading-tight mb-1">
+              {name}
+            </h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded-md">
+                {info.version}
+              </span>
+              {/* {modLoader && (
+                <span className="bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded-md">
+                  {modLoader}
+                </span>
+              )}
+              {modCount !== undefined && (
+                <span className="bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded-md">
+                  {modCount} mods
+                </span>
+              )} */}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-gray-700/50">
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <Clock size={14} />
+              {/* <span>{lastPlayed}</span> */}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                className="text-gray-400 hover:text-white transition-colors p-1.5 hover:bg-gray-700/50 rounded-lg"
+                title="More options"
+                onClick={() => removeInstance(name)}
+              >
+                <MoreVertical size={18} />
+              </button>
+              <button
+                className="bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-3 py-1.5 flex items-center gap-1.5 transition-colors"
+                title="Play instance"
+                onClick={() => launchInstance(name)}
+              >
+                <Play size={16} />
+                <span className="font-medium">Play</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

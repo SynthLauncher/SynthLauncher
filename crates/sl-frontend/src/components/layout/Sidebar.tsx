@@ -1,15 +1,6 @@
 import React from "react";
-import {
-  Home,
-  Blocks,
-  Package,
-  Server,
-  Download,
-  Settings,
-  Newspaper,
-  FileCode,
-} from "lucide-react";
-import { Button } from "./ui/button";
+import { Home, Blocks, Package, Settings } from "lucide-react";
+import { Button } from "../ui/button";
 
 type NavItemProps = {
   icon: React.ReactNode;
@@ -51,30 +42,28 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <div className="bg-gray-900 h-full p-4 flex flex-col items-center">
-      <div className="flex flex-col justify-between h-full">
-        <div className="flex flex-col gap-1">
-          {navItems1.map((item) => (
-            <NavItem
-              key={item.id}
-              icon={item.icon}
-              label={item.label}
-              active={activeTab === item.id}
-              onClick={() => setActiveTab(item.id)}
-            />
-          ))}
-        </div>
-        <div className="flex flex-col gap-1">
-          {navItems2.map((item) => (
-            <NavItem
-              key={item.id}
-              icon={item.icon}
-              label={item.label}
-              active={activeTab === item.id}
-              onClick={() => setActiveTab(item.id)}
-            />
-          ))}
-        </div>{" "}
+    <div className="bg-gray-900 h-full p-4 flex flex-col items-center justify-between">
+      <div className="flex flex-col gap-1">
+        {navItems1.map((item) => (
+          <NavItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            active={activeTab === item.id}
+            onClick={() => setActiveTab(item.id)}
+          />
+        ))}
+      </div>
+      <div className="flex flex-col gap-1">
+        {navItems2.map((item) => (
+          <NavItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            active={activeTab === item.id}
+            onClick={() => setActiveTab(item.id)}
+          />
+        ))}
       </div>
     </div>
   );

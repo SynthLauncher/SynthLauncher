@@ -53,7 +53,7 @@ pub struct Download {
     pub size: Option<i32>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Downloads {
     pub client: Download,
 }
@@ -151,7 +151,7 @@ impl Arguments {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct JavaVersion {
     pub component: String,
@@ -200,7 +200,7 @@ impl Library {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Client {
     #[serde(alias = "minecraftArguments")]

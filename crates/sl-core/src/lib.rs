@@ -5,6 +5,10 @@ use config::config_launcher_dir;
 use json::manifest::manifest_read;
 use sl_meta::json::{Arch, OsName};
 use sl_meta::json::version_manifest::VersionManifest;
+use sl_meta::json::vanilla::Client;
+use once_cell::sync::Lazy;
+use tokio::sync::Mutex;
+use std::sync::Arc;
 
 pub mod auth;
 pub mod config;
@@ -47,4 +51,7 @@ lazy_static! {
     pub static ref INSTALLATIONS_PATH: PathBuf = LAUNCHER_DIR.join("installations.json");
     pub static ref MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
     pub static ref MANIFEST: VersionManifest = manifest_read();
+    pub static ref TEMP_CLIENT: Lazy<Arc<Mutex<Option<Client>>>> = Lazy::new(|| {
+        Arc::new(Mutex::new(None))
+    });
 }

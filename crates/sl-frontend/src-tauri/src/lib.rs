@@ -1,4 +1,4 @@
-use crate::commands::{launch, get_username, edit_username, get_installations};
+use crate::commands::{launch, get_username, edit_username, get_installations, create_installation, remove_installation, load_all_installations};
 
 mod commands;
 
@@ -12,7 +12,9 @@ pub fn run() {
             get_username,
             edit_username,
             get_installations,
-            // create_installation
+            create_installation,
+            remove_installation,
+            load_all_installations
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

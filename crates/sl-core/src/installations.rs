@@ -21,6 +21,7 @@ use crate::{
     config::config::Config,
     json::{client, manifest::download_version},
     ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LIBS_DIR, MANIFEST, MULTI_PATH_SEPARATOR,
+    TEMP_CLIENT,
 };
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -185,7 +186,9 @@ impl Installation {
 
     pub async fn install(&mut self) -> Result<(), BackendError> {
         let client = self.init().await?;
-        client::install_client(client, self.dir_path()).await
+        *TEMP_CLIENT.lock().await = Some(client);
+
+        client::install_client(self.dir_path()).await
     }
 
     fn classpath(&self, client: &Client) -> String {
@@ -416,5 +419,27 @@ impl Installations {
         } else {
             Self::find_in_installations_dir(name)
         }
+    }
+
+    pub fn load_all_installations() -> Result<Installations, BackendError> {
+        let mut names = Vec::new();
+        let mut installations: Installations = Installations(Vec::new());
+
+        for entry in fs::read_dir(INSTALLATIONS_DIR.as_path())? {
+            let entry = entry?;
+            let entry_path = entry.path();
+
+            if entry_path.is_dir() {
+                if let Some(folder_name_str) = entry_path.file_name().and_then(|f| f.to_str()) {
+                    names.push(folder_name_str.to_string());
+                }
+            }
+        }
+
+        for name in names {
+            installations.0.push(Installations::find(&name)?);
+        }
+
+        Ok(installations)
     }
 }
