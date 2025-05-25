@@ -7,11 +7,11 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sl_java_manager::{installer::installer::install_version, JavaInstallation};
-use sl_utils::utils::errors::{BackendError, JavaError};
+use sl_meta::json::jre_manifest::JreManifestDownloadType;
+use sl_utils::utils::errors::BackendError;
 use velcro::hash_map_from;
 
-use crate::LAUNCHER_DIR;
+use crate::{json::jre_manifest::download_jre_manifest_version, JAVAS_DIR, LAUNCHER_DIR};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
@@ -22,39 +22,6 @@ impl Config {
             "auth_player_name": "synther",
             "auth_access_token": "0",
         }))
-    }
-
-    pub async fn create_config(java_version: u16) -> Result<Self, BackendError> {
-        let javas = JavaInstallation::get_installations().unwrap();
-
-        for java in javas {
-            if JavaInstallation::extract_java_version(&java.version.as_str()).unwrap()
-                == java_version
-            {
-                return Ok(Self(hash_map_from! {
-                    "java": java.path.to_string_lossy()
-                }));
-            }
-        }
-
-        let new_java_path = install_version(java_version, None, "jdk".to_string(), true)
-            .await
-            .map_err(|_| BackendError::JavaError(JavaError::VersionNotFound(java_version)))?;
-
-        let java_binary = if cfg!(windows) { "java.exe" } else { "java" };
-        return Ok(Self(hash_map_from! {
-            "java": new_java_path.join("bin").join(java_binary).to_string_lossy()
-        }));
-    }
-}
-
-impl Config {
-    pub fn new(map: HashMap<String, String>) -> Self {
-        Self(map)
-    }
-
-    pub fn empty() -> Self {
-        Self(HashMap::new())
     }
 
     fn global_config_path() -> PathBuf {
@@ -76,6 +43,39 @@ impl Config {
         };
 
         Ok(config)
+    }
+}
+
+impl Config {
+    pub fn new(map: HashMap<String, String>) -> Self {
+        Self(map)
+    }
+
+    pub async fn create_config(component: &str) -> Result<Self, BackendError> {
+        let java_path = JAVAS_DIR.join(component);
+
+        let java_binary = if cfg!(target_os = "windows") {
+            "java.exe"
+        } else {
+            "java"
+        };
+
+        if java_path.exists() {
+            return Ok(Self(hash_map_from! {
+                "java": java_path.join("bin").join(java_binary).to_string_lossy().to_string()
+            }));
+        }
+
+        let jre_manifest_download_type = JreManifestDownloadType::from(component);
+        download_jre_manifest_version(jre_manifest_download_type).await?;
+
+        Ok(Self(hash_map_from! {
+            "java": java_path.join("bin").join(java_binary).to_string_lossy().to_string()
+        }))
+    }
+
+    pub fn empty() -> Self {
+        Self(HashMap::new())
     }
 
     pub fn update_config_field(

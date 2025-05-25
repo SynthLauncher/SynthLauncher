@@ -11,7 +11,7 @@ itertools = "0.14.0"
 regex = "1.11.1"
 lazy_static = "1.5.0"
 bytes = "1.10.1"
-reqwest = { version = "0.12.14", features = ["blocking", "json"]}
+reqwest = { version = "0.12.14", features = ["json"]}
 tokio = { version = "1.44.1", features = ["full"] }
 serde_json = "1.0.140"
 sha1 = "0.10.6"
@@ -25,7 +25,6 @@ cfg-if = "1.0.0"
 tempfile = "3.19.1"
 semver = "1.0.26"
 which = "7.0.3"
-
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
 winapi = { version = "0.3", features = ["winuser"] }

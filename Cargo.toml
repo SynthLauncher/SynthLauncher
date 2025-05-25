@@ -12,7 +12,6 @@ clap = { version = "4.5.34", features = ["derive"] }
 sl-omniarchive = { path = "crates/sl-omniarchive" }
 sl-meta = { path = "crates/sl-meta" }
 sl-utils = { path = "crates/sl-utils" }
-sl-java-manager = { path = "crates/sl-java-manager" }
 sl-core ={ path = "crates/sl-core"}
 sl-mod-manager = { path = "crates/sl-mod-manager" }
 discord-rpc-client = "^0.4"

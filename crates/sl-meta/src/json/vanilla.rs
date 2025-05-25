@@ -206,7 +206,7 @@ pub struct Client {
     #[serde(alias = "minecraftArguments")]
     pub arguments: Arguments,
     pub libraries: Vec<Library>,
-    pub java_version: Option<JavaVersion>,
+    pub java_version: JavaVersion,
     pub main_class: String,
     pub downloads: Downloads,
     pub assets: String,

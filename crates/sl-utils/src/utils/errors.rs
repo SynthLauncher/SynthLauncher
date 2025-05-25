@@ -27,6 +27,8 @@ pub enum InstallationError {
     VersionNotFound(String),
     #[error("Installation {0} was not found")]
     InstallationNotFound(String),
+    #[error("An unknown error occured: {0}")]
+    OtherInstallationError(String)
 }
 
 #[derive(Debug, Error)]

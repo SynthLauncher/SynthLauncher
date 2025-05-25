@@ -34,7 +34,33 @@ pub struct VersionManifest {
 }
 
 impl VersionManifest {
+    #[inline]
+    fn versions_by_type(&self, kind: VersionType) -> impl Iterator<Item = &Version> {
+        self.versions.iter().filter(move |v| v.r#type == kind)
+    }
+
+    /// Returns all Minecraft versions
     pub fn versions(&self) -> impl Iterator<Item = &Version> {
         self.versions.iter()
+    }
+
+    /// Returns only Release versions of Minecraft
+    pub fn release_versions(&self) -> impl Iterator<Item = &Version> {
+        self.versions_by_type(VersionType::Release)
+    }
+
+    /// Returns only Alpha versions of Minecraft
+    pub fn alpha_versions(&self) -> impl Iterator<Item = &Version> {
+        self.versions_by_type(VersionType::OldAlpha)
+    }
+
+    /// Returns only Beta versions of Minecraft
+    pub fn beta_versions(&self) -> impl Iterator<Item = &Version> {
+        self.versions_by_type(VersionType::OldBeta)
+    }
+
+    /// Returns only Snapshot versions of Minecraft
+    pub fn snapshot_versions(&self) -> impl Iterator<Item = &Version> {
+        self.versions_by_type(VersionType::Snapshot)
     }
 }

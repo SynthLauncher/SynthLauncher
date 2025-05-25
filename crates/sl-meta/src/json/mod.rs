@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub mod fabric;
 pub mod vanilla;
 pub mod version_manifest;
+pub mod jre_manifest;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Hash, Clone)]
 #[serde(rename_all = "snake_case")]

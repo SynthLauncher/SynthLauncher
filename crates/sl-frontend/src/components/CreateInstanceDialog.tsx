@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog"
+} from "../components/ui/dialog";
 
 interface CreateInstanceDialogProps {
   open: boolean;
@@ -17,17 +17,17 @@ interface CreateInstanceDialogProps {
 const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
   open,
   onOpenChange,
-  onCreate
+  onCreate,
 }) => {
   const [name, setName] = useState("");
   const [version, setVersion] = useState("1.21.5");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-gray-900 border-gray-700 border-2">
         <DialogHeader>
-          <DialogTitle>Create New Instance</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-white">Create New Instance</DialogTitle>
+          <DialogDescription className="text-gray-300">
             Configure your new Minecraft instance.
           </DialogDescription>
         </DialogHeader>
@@ -44,9 +44,12 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          
+
           <div className="grid gap-2">
-            <label htmlFor="version" className="text-sm font-medium text-gray-200">
+            <label
+              htmlFor="version"
+              className="text-sm font-medium text-gray-200"
+            >
               Minecraft Version
             </label>
             <select
@@ -60,9 +63,12 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
               <option value="1.18.2">1.18.2</option>
             </select>
           </div>
-          
+
           <div className="grid gap-2">
-            <label htmlFor="modloader" className="text-sm font-medium text-gray-200">
+            <label
+              htmlFor="modloader"
+              className="text-sm font-medium text-gray-200"
+            >
               Mod Loader
             </label>
             <select
@@ -74,7 +80,7 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
               <option value="vanilla">Vanilla</option>
             </select>
           </div>
-          
+
           <div className="grid gap-2">
             <label htmlFor="icon" className="text-sm font-medium text-gray-200">
               Instance Icon

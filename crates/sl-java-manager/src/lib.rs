@@ -10,8 +10,6 @@ use serde::{Deserialize, Serialize};
 use sl_utils::utils::errors::BackendError;
 use which::which_all;
 
-pub mod installer;
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JavaInstallation {
     pub version: String,
@@ -37,7 +35,6 @@ impl JavaInstallation {
         installations.dedup_by(|a, b| a.path == b.path);
         installations.sort_by(|a, b| Self::compare_versions(&b.version, &a.version));
 
-        println!("{:?}", installations);
         Ok(installations)
     }
 
@@ -129,7 +126,6 @@ impl JavaInstallation {
             }
         }
 
-        println!("{:?}", installations);
         Ok(installations)
     }
 

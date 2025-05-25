@@ -1,10 +1,17 @@
 pub mod config;
 
-use std::{env, fs::{self, OpenOptions}, path::PathBuf};
+use std::{
+    env,
+    fs::{self, OpenOptions},
+    path::PathBuf,
+};
 
 use sl_utils::utils::errors::BackendError;
 
-use crate::{json::manifest::fetch_version_manifest, ASSETS_DIR, INSTALLATIONS_DIR, INSTALLATIONS_PATH, LAUNCHER_DIR, LIBS_DIR};
+use crate::{
+    json::{jre_manifest::fetch_jre_manifest, version_manifest::fetch_version_manifest}, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH,
+    LAUNCHER_DIR, LIBS_DIR,
+};
 
 pub fn config_launcher_dir() -> PathBuf {
     #[cfg(target_os = "windows")]
@@ -38,15 +45,16 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     fs::create_dir_all(&(*LAUNCHER_DIR)).unwrap();
     fs::create_dir_all(&(*LIBS_DIR)).unwrap();
     fs::create_dir_all(&(*ASSETS_DIR)).unwrap();
-    fs::create_dir_all(&(*INSTALLATIONS_DIR)).unwrap();
-    
+    fs::create_dir_all(&(*INSTANCES_DIR)).unwrap();
+
     OpenOptions::new()
         .write(true)
-        .create(true) 
-        .append(true) 
-        .open(&*INSTALLATIONS_PATH)?;
-    
+        .create(true)
+        .append(true)
+        .open(&*INSTANCES_PATH)?;
+
     fetch_version_manifest().await;
+    fetch_jre_manifest().await;
 
     Ok(())
 }
