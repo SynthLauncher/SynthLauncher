@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+pub mod quilt;
 pub mod fabric;
 pub mod vanilla;
 pub mod version_manifest;

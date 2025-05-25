@@ -16,24 +16,22 @@ async fn main() -> Result<(), BackendError> {
     match cli.command {
         Commands::Install { instance_name, version, loader, loader_version } => {
             let mut instance = Instance::new(&instance_name, &version, loader, None)?;
-            
+
             match instance.instance_type {
                 InstanceType::Vanilla => instance.install().await?,
-                InstanceType::Fabric => {
-                    instance.install_loader(&loader_version)
-                        .await?
-                },
+                _ => {
+                    instance.install().await?;
+                    instance.install_loader(&loader_version).await?;
+                }
             }
         }
         Commands::Launch { instance_name, username } => {
             let mut config = Config::read_global().unwrap();
-            println!("1");
             config
                 .update_config_field("auth_player_name", username.as_str())
                 .unwrap();
-            println!("2");
+
             let instance = Instances::find(&instance_name)?;
-            println!("3");
             instance.execute(None).await.unwrap();
         }
         Commands::LaunchPremium { name } => {

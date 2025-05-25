@@ -12,9 +12,7 @@ use std::{
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 use sl_meta::json::{
-    fabric::{self, profile::FabricLoaderProfile},
-    vanilla::Client,
-    version_manifest::VersionType,
+    fabric::{self, profile::FabricLoaderProfile}, quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile}, vanilla::Client, version_manifest::VersionType
 };
 use sl_utils::utils::errors::{BackendError, DownloadError, InstallationError};
 use tokio::process::Command;
@@ -26,12 +24,14 @@ use crate::{
 #[derive(Debug, Deserialize)]
 pub enum Loaders {
     Fabric(FabricLoaderProfile),
+    Quilt(QuiltLoaderProfile)
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub enum InstanceType {
     Vanilla,
     Fabric,
+    Quilt
     // We will add more
 }
 
@@ -40,6 +40,7 @@ impl fmt::Display for InstanceType {
         let s = match self {
             InstanceType::Vanilla => "vanilla",
             InstanceType::Fabric => "fabric",
+            InstanceType::Quilt => "quilt"
         };
         write!(f, "{}", s)
     }
@@ -50,6 +51,7 @@ impl From<String> for InstanceType {
         match value.as_str() {
             "vanilla" => InstanceType::Vanilla,
             "fabric" => InstanceType::Fabric,
+            "quilt" => InstanceType::Quilt,
             _ => {
                 panic!("Unknown instance type: {}", value)
             }
@@ -117,6 +119,8 @@ impl Instance {
             if let Some(file_name) = path.file_name().and_then(OsStr::to_str) {
                 if file_name.contains("fabric.json") {
                     return Ok(InstanceType::Fabric);
+                } else if file_name.contains("quilt.json") {
+                    return Ok(InstanceType::Quilt);
                 }
             }
         }
@@ -156,16 +160,19 @@ impl Instance {
     }
 
     fn client_json_path(&self) -> PathBuf {
-        // VERSIONS_DIR
-        //     .join(&self.game_info.version)
-        //     .join("client.json")
-        INSTANCES_DIR.join(&self.name).join("client.json")
+        self.dir_path().join("client.json")
+    }
+
+    fn client_jar_path(&self) -> PathBuf {
+        self.dir_path().join("client.jar")
     }
 
     fn loader_json_path(&self) -> Option<PathBuf> {
         let path = format!("{}.json", self.instance_type);
+        let path = self.dir_path().join(path);
         match self.instance_type {
-            InstanceType::Fabric => Some(PathBuf::from(path)),
+            InstanceType::Fabric => Some(path),
+            InstanceType::Quilt => Some(path),
             InstanceType::Vanilla => None,
         }
     }
@@ -174,10 +181,17 @@ impl Instance {
         match self.instance_type {
             InstanceType::Fabric => {
                 let path = self.loader_json_path()?;
+                
                 let file = File::open(&path).ok()?;
                 let profile: FabricLoaderProfile = serde_json::from_reader(file).ok()?;
                 Some(Loaders::Fabric(profile))
-            }
+            },
+            InstanceType::Quilt => {
+                let path = self.loader_json_path()?;
+                let file = File::open(&path).ok()?;
+                let profile: QuiltLoaderProfile = serde_json::from_reader(file).ok()?;
+                Some(Loaders::Quilt(profile))
+            },
             InstanceType::Vanilla => None,
         }
     }
@@ -205,15 +219,27 @@ impl Instance {
                 serde_json::to_writer_pretty(file, &profile)?;
 
                 Ok(())
+            },
+            InstanceType::Quilt => {
+                let path = self.dir_path().join("quilt.json");
+                let make_req = async |url: &str| -> Result<Vec<u8>, DownloadError> {
+                    let res = reqwest::get(url).await?;
+                    let bytes = res.bytes().await?;
+                    Ok(bytes.to_vec())
+                };
+
+                let profile = get_quilt_loader_profile::<
+                    fn(&str) -> dyn Future<Output = Result<Vec<u8>, DownloadError>>,
+                    DownloadError,
+                >(&self.game_info.version, loader_version, make_req)
+                .await?;
+                let file = File::create(&path)?;
+
+                serde_json::to_writer_pretty(file, &profile)?;
+
+                Ok(())
             }
         }
-    }
-
-    fn client_jar_path(&self) -> PathBuf {
-        // VERSIONS_DIR
-        //     .join(&self.game_info.version)
-        //     .join("client.jar")
-        INSTANCES_DIR.join(&self.name).join("client.jar")
     }
 
     async fn read_client_raw(&self) -> Option<Client> {
@@ -231,6 +257,10 @@ impl Instance {
                 Loaders::Fabric(fabric) => {
                     client = fabric.join_client(client);
                     return Some(client);
+                },
+                Loaders::Quilt(quilt) => {
+                    client = quilt.join_client(client);
+                    return Some(client)
                 }
             }
         }
@@ -239,7 +269,6 @@ impl Instance {
     }
 
     async fn read_config(&self) -> Option<Config> {
-        println!("{}", self.config_path().display());
         let config = tokio::fs::read_to_string(self.config_path()).await.ok()?;
 
         Some(serde_json::from_str(&config).expect("Failed to deserialize config.json!"))
@@ -400,11 +429,8 @@ impl Instance {
 
     pub async fn execute(&self, profile: Option<&PlayerProfile>) -> Result<(), BackendError> {
         let config = self.read_config().await.unwrap();
-        print!("{:#?}", config);
         let current_java_path = config.get("java").unwrap();
-
-        println!("Trying to launch Java from: {}", &current_java_path);
-
+        
         let max_ram = config.get("max_ram").unwrap_or("2048");
         let min_ram = config.get("min_ram").unwrap_or("1024");
 

@@ -139,7 +139,7 @@ async fn install_assets(client: &Client) -> Result<(), DownloadError> {
 
     let iter = objects.into_iter();
     let iter = iter.map(|(_, object)| object);
-    let outputs = download_futures(iter, 20, download_object).await;
+    let outputs = download_futures(iter, 5, download_object).await;
     for (i, output) in outputs.into_iter().enumerate() {
         if let Err(err) = output {
             println!("Failed to download object indexed {i}: {err:?}");
@@ -159,7 +159,6 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
             download_to(artifact, &LIBS_DIR).await?;
         }
 
-        // !!! This needs to be fixed!!!
         if let Some(native) = lib.native_from_platform() {
             let bytes = download_and_read_file(native, &LIBS_DIR).await?;
 
