@@ -12,27 +12,32 @@ use std::{
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 use sl_meta::json::{
-    fabric::{self, profile::FabricLoaderProfile}, quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile}, vanilla::Client, version_manifest::VersionType
+    fabric::{self, profile::FabricLoaderProfile},
+    quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile},
+    vanilla::Client,
+    version_manifest::VersionType,
 };
 use sl_utils::utils::errors::{BackendError, DownloadError, InstallationError};
 use tokio::process::Command;
 
 use crate::{
-    config::config::Config, json::{vanilla, version_manifest::download_version}, profiles::player::PlayerProfile, ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST
+    config::config::Config,
+    json::{vanilla, version_manifest::download_version},
+    profiles::player::PlayerProfile,
+    ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST,
 };
 
 #[derive(Debug, Deserialize)]
 pub enum Loaders {
     Fabric(FabricLoaderProfile),
-    Quilt(QuiltLoaderProfile)
+    Quilt(QuiltLoaderProfile),
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub enum InstanceType {
     Vanilla,
     Fabric,
-    Quilt
-    // We will add more
+    Quilt, // We will add more
 }
 
 impl fmt::Display for InstanceType {
@@ -40,7 +45,7 @@ impl fmt::Display for InstanceType {
         let s = match self {
             InstanceType::Vanilla => "vanilla",
             InstanceType::Fabric => "fabric",
-            InstanceType::Quilt => "quilt"
+            InstanceType::Quilt => "quilt",
         };
         write!(f, "{}", s)
     }
@@ -181,17 +186,17 @@ impl Instance {
         match self.instance_type {
             InstanceType::Fabric => {
                 let path = self.loader_json_path()?;
-                
+
                 let file = File::open(&path).ok()?;
                 let profile: FabricLoaderProfile = serde_json::from_reader(file).ok()?;
                 Some(Loaders::Fabric(profile))
-            },
+            }
             InstanceType::Quilt => {
                 let path = self.loader_json_path()?;
                 let file = File::open(&path).ok()?;
                 let profile: QuiltLoaderProfile = serde_json::from_reader(file).ok()?;
                 Some(Loaders::Quilt(profile))
-            },
+            }
             InstanceType::Vanilla => None,
         }
     }
@@ -219,7 +224,7 @@ impl Instance {
                 serde_json::to_writer_pretty(file, &profile)?;
 
                 Ok(())
-            },
+            }
             InstanceType::Quilt => {
                 let path = self.dir_path().join("quilt.json");
                 let make_req = async |url: &str| -> Result<Vec<u8>, DownloadError> {
@@ -257,10 +262,10 @@ impl Instance {
                 Loaders::Fabric(fabric) => {
                     client = fabric.join_client(client);
                     return Some(client);
-                },
+                }
                 Loaders::Quilt(quilt) => {
                     client = quilt.join_client(client);
-                    return Some(client)
+                    return Some(client);
                 }
             }
         }
@@ -288,9 +293,7 @@ impl Instance {
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
 
-        let config =
-            Config::create_config(&client.java_version.component).await?;
-
+        let config = Config::create_config(&client.java_version.component).await?;
         self.override_config(config).await?;
 
         tokio::fs::create_dir_all(self.dir_path()).await?;
@@ -430,7 +433,7 @@ impl Instance {
     pub async fn execute(&self, profile: Option<&PlayerProfile>) -> Result<(), BackendError> {
         let config = self.read_config().await.unwrap();
         let current_java_path = config.get("java").unwrap();
-        
+
         let max_ram = config.get("max_ram").unwrap_or("2048");
         let min_ram = config.get("min_ram").unwrap_or("1024");
 

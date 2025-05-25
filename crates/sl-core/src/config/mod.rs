@@ -10,7 +10,7 @@ use sl_utils::utils::errors::BackendError;
 
 use crate::{
     json::{jre_manifest::fetch_jre_manifest, version_manifest::fetch_version_manifest}, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH,
-    LAUNCHER_DIR, LIBS_DIR,
+    LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH,
 };
 
 pub fn config_launcher_dir() -> PathBuf {
@@ -52,6 +52,11 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
         .create(true)
         .append(true)
         .open(&*INSTANCES_PATH)?;
+    OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(true)
+        .open(&*PROFILES_PATH)?;
 
     fetch_version_manifest().await;
     fetch_jre_manifest().await;

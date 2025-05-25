@@ -49,7 +49,7 @@ async fn main() -> Result<(), BackendError> {
                 auth.wait_for_login().await.unwrap();
                 auth.login_in_xbox_live().await.unwrap();
                 let minecraft = auth.login_in_minecraft().await.unwrap();
-                let profile = PlayerProfile::new(minecraft.access_token.clone())
+                let profile = PlayerProfile::premium_account(minecraft.access_token.clone())
                     .await
                     .unwrap();
                 config
@@ -60,7 +60,7 @@ async fn main() -> Result<(), BackendError> {
                 instance.execute(Some(&profile)).await?;
             }
 
-            let profile = PlayerProfile::new(auth_access_token.to_string())
+            let profile = PlayerProfile::premium_account(auth_access_token.to_string())
                 .await
                 .unwrap();
             let instance = Instances::find(&name).unwrap();
