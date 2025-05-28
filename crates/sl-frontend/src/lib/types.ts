@@ -1,18 +1,26 @@
 enum VersionType {
-    OldBeta,
-    OldAlpha,
-    Release,
-    Snapshot
-};
-
-interface InstallationInfo {
-    type: VersionType,
-    version: string
+  OldBeta,
+  OldAlpha,
+  Release,
+  Snapshot,
 }
 
-export interface Installation {
-    name: string,
-    info: InstallationInfo
+enum InstanceType {
+  Vanilla,
+  Fabric,
+  Quilt,
+}
+
+interface InstanceGameInfo {
+  version: string;
+  release_time: string;
+  type: VersionType;
+}
+
+export interface Instance {
+  name: string;
+  game_info: InstanceGameInfo;
+  instance_type: InstanceType;
 }
 
 export type InstanceCardProps = {

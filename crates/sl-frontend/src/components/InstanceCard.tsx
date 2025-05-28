@@ -8,16 +8,14 @@ import {
   Pickaxe,
   Sword,
 } from "lucide-react";
-import { Installation, InstanceCardProps } from "@/lib/types";
-import { launchInstance, removeInstance } from "@/lib/commands";
 
-const InstanceCard: React.FC<Installation> = ({
+import { launchInstance, removeInstance } from "@/lib/commands";
+import { Instance } from "@/lib/types";
+
+const InstanceCard: React.FC<Instance> = ({
   name,
-  info
-  // modLoader,
-  // modCount,
-  // lastPlayed,
-  // favorite,
+  game_info,
+  instance_type
 }) => {
   const getIconByTitle = (title: string) => {
     const lowerTitle = title.toLowerCase();
@@ -37,7 +35,7 @@ const InstanceCard: React.FC<Installation> = ({
           <div className="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center">
             {getIconByTitle(name)}
           </div>
-{/* 
+          {/* 
           {favorite && (
             <div className="bg-amber-500/90 text-amber-950 text-xs rounded-full px-2 py-0.5 font-medium">
               Favorite
@@ -52,7 +50,7 @@ const InstanceCard: React.FC<Installation> = ({
             </h3>
             <div className="flex flex-wrap items-center gap-2">
               <span className="bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded-md">
-                {info.version}
+                {game_info.version}
               </span>
               {/* {modLoader && (
                 <span className="bg-gray-700/50 text-gray-300 text-xs px-2 py-1 rounded-md">

@@ -88,11 +88,8 @@ pub struct Instance {
         If none instance tries to get it from
         INSTANCES_PATH/instance_name/icon.png
     */
+    // TODO: Change this to a string
     pub icon: Option<PathBuf>,
-
-    /*
-
-    */
     pub instance_type: InstanceType,
 }
 
@@ -404,7 +401,7 @@ impl Instance {
                 "version_name" => &self.game_info.version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
-                "auth_uuid" => profile.map(|m| m.uuid.as_str()).unwrap_or("0"),
+                "auth_uuid" => profile.map(|m| m.uuid.as_str()).unwrap_or("8667ba71-b85a-4004-af54-457a9734eed7"),
                 "auth_access_token" => profile.map(|m| m.access_token.as_str()).unwrap_or("0"),
                 "auth_player_name" => profile
                     .map(|m| m.username.as_str())

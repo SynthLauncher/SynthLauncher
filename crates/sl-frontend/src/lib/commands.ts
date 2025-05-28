@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { message } from "@tauri-apps/plugin-dialog";
-import { Installation } from "./types";
+import { Instance } from "./types";
 
 // TODO: Add unmaximizing!!!
 export const handleWinndowMaximize = async () => {
@@ -44,9 +44,9 @@ export const launchInstance = async (name: string) => {
   }
 };
 
-export const getInstances = async (setInstances: (instances: Installation[]) => void) => {
+export const getInstances = async (setInstances: (instances: Instance[]) => void) => {
   try {
-    const instances: Installation[] = await invoke("get_installations");
+    const instances: Instance[] = await invoke("get_installations");
     setInstances(instances);
   } catch (error) {
     await message(`Failed to get instances: ${error}`, {

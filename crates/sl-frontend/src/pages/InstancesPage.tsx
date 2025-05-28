@@ -3,11 +3,11 @@ import { Plus } from 'lucide-react';
 import InstanceCard from '../components/InstanceCard';
 import CreateInstanceDialog from '../components/CreateInstanceDialog';
 import { createInstance, getInstances, loadInstances } from '@/lib/commands';
-import { Installation } from '@/lib/types';
+import { Instance } from '@/lib/types';
 
 const InstancesPage: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [instances, setInstances] = useState([] as Installation[])
+  const [instances, setInstances] = useState([] as Instance[])
 
   getInstances(setInstances);
 
