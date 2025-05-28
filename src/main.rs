@@ -1,7 +1,11 @@
 use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::{
-    profiles::player::PlayerProfile, profiles::auth::AuthFlow, config::{config::Config, init_launcher_dir}, instance::{Instance, InstanceType}, instances::Instances
+    config::{config::Config, init_launcher_dir},
+    instance::{Instance, InstanceType},
+    instances::Instances,
+    profiles::auth::AuthFlow,
+    profiles::player::PlayerProfile,
 };
 use sl_utils::utils::errors::BackendError;
 
@@ -14,7 +18,14 @@ async fn main() -> Result<(), BackendError> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Install { instance_name, version, loader, loader_version } => {
+        Commands::Install {
+            instance_name,
+            version,
+            loader_info,
+        } => {
+            let loader = loader_info.loader.unwrap_or_default();
+            let loader_version = loader_info.loader_version.unwrap_or_default();
+
             let mut instance = Instance::new(&instance_name, &version, loader, None)?;
 
             match instance.instance_type {
@@ -25,7 +36,10 @@ async fn main() -> Result<(), BackendError> {
                 }
             }
         }
-        Commands::Launch { instance_name, username } => {
+        Commands::Launch {
+            instance_name,
+            username,
+        } => {
             let mut config = Config::read_global().unwrap();
             config
                 .update_config_field("auth_player_name", username.as_str())

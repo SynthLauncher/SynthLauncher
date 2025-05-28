@@ -40,6 +40,12 @@ pub enum InstanceType {
     Quilt, // We will add more
 }
 
+impl Default for InstanceType {
+    fn default() -> Self {
+        Self::Vanilla
+    }
+}
+
 impl fmt::Display for InstanceType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
