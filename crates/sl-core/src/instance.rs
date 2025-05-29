@@ -2,12 +2,13 @@ use std::{
     borrow::Cow,
     ffi::OsStr,
     fmt,
-    fs::{self, File},
+    fs::{self},
     future::Future,
     io::BufReader,
     path::{Path, PathBuf},
     process::Stdio,
 };
+use tokio::fs::File;
 
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
@@ -19,6 +20,7 @@ use sl_meta::json::{
 };
 use sl_utils::utils::errors::{BackendError, DownloadError, InstallationError};
 use tokio::process::Command;
+use tokio_util::io::SyncIoBridge;
 
 use crate::{
     config::config::Config,
@@ -185,19 +187,21 @@ impl Instance {
         }
     }
 
-    fn read_loader(&self) -> Option<Loaders> {
+    async fn read_loader(&self) -> Option<Loaders> {
         match self.instance_type {
             InstanceType::Fabric => {
                 let path = self.loader_json_path()?;
 
-                let file = File::open(&path).ok()?;
-                let profile: FabricLoaderProfile = serde_json::from_reader(file).ok()?;
+                let file = File::open(&path).await.ok()?;
+                let reader = SyncIoBridge::new(file);
+                let profile: FabricLoaderProfile = serde_json::from_reader(reader).ok()?;
                 Some(Loaders::Fabric(profile))
             }
             InstanceType::Quilt => {
                 let path = self.loader_json_path()?;
-                let file = File::open(&path).ok()?;
-                let profile: QuiltLoaderProfile = serde_json::from_reader(file).ok()?;
+                let file = File::open(&path).await.ok()?;
+                let reader = SyncIoBridge::new(file);
+                let profile: QuiltLoaderProfile = serde_json::from_reader(reader).ok()?;
                 Some(Loaders::Quilt(profile))
             }
             InstanceType::Vanilla => None,
@@ -222,9 +226,10 @@ impl Instance {
                     DownloadError,
                 >(&self.game_info.version, loader_version, make_req)
                 .await?;
-                let file = File::create(&path)?;
 
-                serde_json::to_writer_pretty(file, &profile)?;
+                let file = File::create(&path).await?;
+                let writer = tokio_util::io::SyncIoBridge::new(file);
+                serde_json::to_writer_pretty(writer, &profile)?;
 
                 Ok(())
             }
@@ -241,9 +246,9 @@ impl Instance {
                     DownloadError,
                 >(&self.game_info.version, loader_version, make_req)
                 .await?;
-                let file = File::create(&path)?;
-
-                serde_json::to_writer_pretty(file, &profile)?;
+                let file = File::create(&path).await?;
+                let writer = SyncIoBridge::new(file);
+                serde_json::to_writer_pretty(writer, &profile)?;
 
                 Ok(())
             }
@@ -260,7 +265,7 @@ impl Instance {
     async fn read_client(&self) -> Option<Client> {
         let mut client = self.read_client_raw().await?;
 
-        if let Some(loader) = self.read_loader() {
+        if let Some(loader) = self.read_loader().await {
             match loader {
                 Loaders::Fabric(fabric) => {
                     client = fabric.join_client(client);
@@ -277,9 +282,10 @@ impl Instance {
     }
 
     async fn read_config(&self) -> Option<Config> {
-        let config = tokio::fs::read_to_string(self.config_path()).await.ok()?;
+        let file = tokio::fs::File::open(self.config_path()).await.ok()?;
+        let reader = SyncIoBridge::new(file);
 
-        Some(serde_json::from_str(&config).expect("Failed to deserialize config.json!"))
+        Some(serde_json::from_reader(reader).expect("Failed to deserialize config.json!"))
     }
 
     async fn override_config(&mut self, config: Config) -> Result<(), std::io::Error> {
@@ -287,7 +293,9 @@ impl Instance {
         let config_path = self.config_path();
 
         tokio::fs::create_dir_all(&installation_dir).await?;
-        tokio::fs::write(&config_path, serde_json::to_string_pretty(&config)?).await?;
+        let file = tokio::fs::File::create(config_path).await?;
+        let writer = SyncIoBridge::new(file);
+        serde_json::to_writer_pretty(writer, &config)?;
         Ok(())
     }
 
@@ -401,7 +409,9 @@ impl Instance {
                 "version_name" => &self.game_info.version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
-                "auth_uuid" => profile.map(|m| m.uuid.as_str()).unwrap_or("8667ba71-b85a-4004-af54-457a9734eed7"),
+                "auth_uuid" => profile
+                    .map(|m| m.uuid.as_str())
+                    .unwrap_or("8667ba71-b85a-4004-af54-457a9734eed7"),
                 "auth_access_token" => profile.map(|m| m.access_token.as_str()).unwrap_or("0"),
                 "auth_player_name" => profile
                     .map(|m| m.username.as_str())
