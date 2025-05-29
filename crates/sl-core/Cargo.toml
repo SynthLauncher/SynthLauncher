@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 sl-meta = { path = "../sl-meta" }
 sl-utils = { path = "../sl-utils" }
-sl-java-manager = { path = "../sl-java-manager" }
+
 serde = { version = "1.0.219", features = ["derive"] }
 regex = "1.11.1"
 lazy_static = "1.5.0"

@@ -7,9 +7,6 @@ use futures_util::StreamExt;
 
 use super::errors::{BackendError, DownloadError};
 
-/*
-    For SynthLauncher Core
-*/
 pub async fn get_as_bytes(url: &str, client: &Client) -> Result<Bytes, DownloadError> {
     let res = client.get(url).send().await?;
     if !res.status().is_success() {
