@@ -4,8 +4,7 @@ use sl_core::{
     config::{config::Config, init_launcher_dir},
     instance::{Instance, InstanceType},
     instances::Instances,
-    profiles::auth::AuthFlow,
-    profiles::player::PlayerProfile,
+    profiles::{auth::AuthFlow, player::{PlayerProfile, PlayerProfiles}},
 };
 use sl_utils::utils::errors::BackendError;
 
@@ -82,6 +81,10 @@ async fn main() -> Result<(), BackendError> {
         }
         Commands::RemoveInstallation { name } => {
             Instances::remove(&name)?;
+        },
+        Commands::AddOfflineProfile { name } => {
+            let profile = PlayerProfile::offline_account(name).await?;
+            PlayerProfiles::add(profile)?;
         }
     }
 

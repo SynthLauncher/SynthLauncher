@@ -42,4 +42,8 @@ pub enum Commands {
         #[arg(required = true)]
         name: String,
     },
+    AddOfflineProfile {
+        #[arg(required = true)]
+        name: String,
+    },
 }

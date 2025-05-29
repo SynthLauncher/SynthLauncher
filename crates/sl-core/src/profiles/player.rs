@@ -10,14 +10,17 @@ use sl_utils::utils::errors::BackendError;
 use crate::PROFILES_PATH;
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct PlayerProfile {
+pub struct PlayerProfileData {
     #[serde(rename = "name")]
     pub username: String,
     #[serde(rename = "id")]
     pub uuid: String,
-    #[serde(skip)]
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PlayerProfile {
+    pub data: PlayerProfileData,
     pub access_token: String,
-    #[serde(skip)]
     pub premium: bool,
 }
 
@@ -39,20 +42,23 @@ impl PlayerProfile {
             return Err(format!("API error: {}", response.status()).into());
         }
 
-        let mut profile: PlayerProfile = response.json().await?;
-        profile.access_token = access_token;
-        profile.premium = true;
-        Ok(profile)
+        let data: PlayerProfileData = response.json().await?;
+
+        Ok(PlayerProfile {
+            data,
+            access_token,
+            premium: true,
+        })
     }
 
-    pub async fn offline_account(
-        username: String,
-    ) -> Result<PlayerProfile, Box<dyn std::error::Error>> {
+    pub async fn offline_account(username: String) -> Result<PlayerProfile, BackendError> {
         Ok(PlayerProfile {
             access_token: "0".to_string(),
             premium: false,
-            username,
-            uuid: "0".to_string(),
+            data: PlayerProfileData {
+                username,
+                uuid: "8667ba71-b85a-4004-af54-457a9734eed7".to_string(),
+            },
         })
     }
 }
@@ -61,9 +67,13 @@ impl PlayerProfile {
 pub struct PlayerProfiles(Vec<PlayerProfile>);
 
 impl PlayerProfiles {
+    pub fn new() -> Self {
+        PlayerProfiles(Vec::new())
+    }
+
     pub fn load() -> std::io::Result<Self> {
         let content = fs::read_to_string(&PROFILES_PATH.as_path())?;
-        Ok(serde_json::from_str(&content)?)
+        Ok(serde_json::from_str(&content).unwrap_or(PlayerProfiles::new()))
     }
 
     pub fn overwrite(profiles: &PlayerProfiles) -> std::io::Result<()> {
@@ -83,7 +93,7 @@ impl PlayerProfiles {
         if !existing_profiles
             .0
             .iter()
-            .any(|existing| existing.username == profile.username)
+            .any(|existing| existing.data.username == profile.data.username)
         {
             existing_profiles.0.push(profile);
         }
@@ -93,13 +103,13 @@ impl PlayerProfiles {
         Ok(())
     }
 
-    pub fn find(name: &str) -> Result<Option<PlayerProfile>, BackendError> {
+    pub fn find(name: &str, premium: bool) -> Result<Option<PlayerProfile>, BackendError> {
         let profiles = Self::load()?;
 
         if let Some(profile) = profiles
             .0
             .into_iter()
-            .find(|profile| profile.username == name)
+            .find(|profile| profile.data.username == name && profile.premium == premium)
         {
             return Ok(Some(profile));
         }

@@ -401,14 +401,14 @@ impl Instance {
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
                 "auth_uuid" => profile
-                    .map(|m| m.uuid.as_str())
+                    .map(|m| m.data.uuid.as_str())
                     .unwrap_or("8667ba71-b85a-4004-af54-457a9734eed7"),
                 "auth_access_token" => profile.map(|m| m.access_token.as_str()).unwrap_or("0"),
                 "auth_player_name" => profile
-                    .map(|m| m.username.as_str())
+                    .map(|m| m.data.username.as_str())
                     .unwrap_or(global_config.get("auth_player_name").unwrap()),
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
-                "version_type" => "SynthLauncher",
+                "version_type" => "SL",
                 _ => config.get(arg)?,
             })
         };

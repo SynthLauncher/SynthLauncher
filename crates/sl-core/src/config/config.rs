@@ -66,8 +66,7 @@ impl Config {
             }));
         }
 
-        let jre_manifest_download_type = JreManifestDownloadType::from(component);
-        download_jre_manifest_version(jre_manifest_download_type).await?;
+        download_jre_manifest_version(JreManifestDownloadType::from(component)).await?;
 
         Ok(Self(hash_map_from! {
             "java": java_path.join("bin").join(java_binary).to_string_lossy().to_string()
