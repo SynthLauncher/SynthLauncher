@@ -44,8 +44,8 @@ async fn create_installation_inner(name: String, version: String) -> Result<(), 
 
 #[tauri::command]
 pub async fn create_installation(name: String, version: String) -> Result<(), String> {
-    let results = tokio::task::spawn_local(create_installation_inner(name, version));
-    results.await.unwrap().map_err(|e| e.to_string())
+    let results = create_installation_inner(name, version).await;
+    results.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
