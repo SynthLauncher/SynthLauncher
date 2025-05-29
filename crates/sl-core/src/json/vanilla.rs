@@ -109,9 +109,9 @@ where
 }
 
 async fn install_assets(client: &Client) -> Result<(), DownloadError> {
-    let id = &client.id;
+    let assets = &client.assets;
     let indexes_dir = ASSETS_DIR.join("indexes");
-    let indexes_path = indexes_dir.join(format!("{}.json", id));
+    let indexes_path = indexes_dir.join(format!("{}.json", assets));
 
     let download = download_and_read_file(&client.asset_index, &indexes_path).await?;
 
@@ -151,7 +151,7 @@ async fn install_assets(client: &Client) -> Result<(), DownloadError> {
         }
     }
 
-    println!("Downloaded assets for {}", id);
+    println!("Downloaded assets for {}", assets);
     Ok(())
 }
 
