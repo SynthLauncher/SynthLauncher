@@ -304,7 +304,7 @@ impl Instance {
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
 
-        let config = Config::create_config(&client.java_version.component).await?;
+        let config = Config::create_local_config(&client.java_version.component).await?;
         self.override_config(config).await?;
 
         tokio::fs::create_dir_all(self.dir_path()).await?;

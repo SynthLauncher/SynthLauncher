@@ -16,16 +16,16 @@ use crate::{json::jre_manifest::download_jre_manifest_version, JAVAS_DIR, LAUNCH
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
 
-impl Config {
+impl Config {    
+    fn global_config_path() -> PathBuf {
+        LAUNCHER_DIR.join("config.json")
+    }
+
     fn create_default_global() -> Result<Self, std::io::Error> {
         Ok(Self(hash_map_from! {
             "auth_player_name": "synther",
             "auth_access_token": "0",
         }))
-    }
-
-    fn global_config_path() -> PathBuf {
-        LAUNCHER_DIR.join("config.json")
     }
 
     pub fn read_global() -> Result<Self, std::io::Error> {
@@ -34,12 +34,12 @@ impl Config {
         let config = if !path.exists() {
             let config = Self::create_default_global()?;
             let file = File::create(path)?;
-            serde_json::to_writer_pretty(file, &config).unwrap();
+            serde_json::to_writer_pretty(file, &config)?;
             config
         } else {
             let file = File::open(path)?;
             let reader = BufReader::new(file);
-            serde_json::from_reader(reader).unwrap()
+            serde_json::from_reader(reader)?
         };
 
         Ok(config)
@@ -51,7 +51,7 @@ impl Config {
         Self(map)
     }
 
-    pub async fn create_config(component: &str) -> Result<Self, BackendError> {
+    pub async fn create_local_config(component: &str) -> Result<Self, BackendError> {
         let java_path = JAVAS_DIR.join(component);
 
         let java_binary = if cfg!(target_os = "windows") {
@@ -72,10 +72,6 @@ impl Config {
         Ok(Self(hash_map_from! {
             "java": java_path.join("bin").join(java_binary).to_string_lossy().to_string()
         }))
-    }
-
-    pub fn empty() -> Self {
-        Self(HashMap::new())
     }
 
     pub fn update_config_field(
