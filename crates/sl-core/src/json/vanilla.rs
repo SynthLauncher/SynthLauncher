@@ -80,6 +80,10 @@ async fn download_to(download: &Download, path: &Path) -> Result<(), DownloadErr
 #[inline(always)]
 async fn download_futures<T, F, R, I>(to_download: I, download_max: usize, download: F) -> Vec<R>
 where
+    T: Send,
+    I: Send,
+    F: Send,
+    R: Send,
     I: Iterator<Item = T>,
     F: AsyncFn(T) -> R,
 {
@@ -153,8 +157,9 @@ async fn install_assets(client: &Client) -> Result<(), DownloadError> {
 
 async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> {
     println!("Downloading libraries...");
+    let path = path.to_path_buf();
 
-    let download_lib = async |lib: &Library| -> Result<(), BackendError> {
+    let download_lib = async move |lib: &Library| -> Result<(), BackendError> {
         if let Some(ref artifact) = lib.downloads.artifact {
             download_to(artifact, &LIBS_DIR).await?;
         }
@@ -169,7 +174,7 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
                 let paths = exclude.iter().map(PathBuf::as_path).collect::<Vec<_>>();
                 let zip = ZipExtractor::new(&bytes).exclude(&paths);
 
-                zip.extract(&natives_dir).await?;
+                zip.extract(&natives_dir)?;
             }
         }
         Ok(())
