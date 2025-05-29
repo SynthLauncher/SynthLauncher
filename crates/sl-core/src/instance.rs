@@ -8,7 +8,6 @@ use std::{
     path::{Path, PathBuf},
     process::Stdio,
 };
-use tokio::fs::File;
 
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
@@ -20,7 +19,6 @@ use sl_meta::json::{
 };
 use sl_utils::utils::errors::{BackendError, DownloadError, InstallationError};
 use tokio::process::Command;
-use tokio_util::io::SyncIoBridge;
 
 use crate::{
     config::config::Config,
@@ -187,21 +185,19 @@ impl Instance {
         }
     }
 
-    async fn read_loader(&self) -> Option<Loaders> {
+    fn read_loader(&self) -> Option<Loaders> {
         match self.instance_type {
             InstanceType::Fabric => {
                 let path = self.loader_json_path()?;
 
-                let file = File::open(&path).await.ok()?;
-                let reader = SyncIoBridge::new(file);
-                let profile: FabricLoaderProfile = serde_json::from_reader(reader).ok()?;
+                let file = fs::File::open(&path).ok()?;
+                let profile: FabricLoaderProfile = serde_json::from_reader(file).ok()?;
                 Some(Loaders::Fabric(profile))
             }
             InstanceType::Quilt => {
                 let path = self.loader_json_path()?;
-                let file = File::open(&path).await.ok()?;
-                let reader = SyncIoBridge::new(file);
-                let profile: QuiltLoaderProfile = serde_json::from_reader(reader).ok()?;
+                let file = fs::File::open(&path).ok()?;
+                let profile: QuiltLoaderProfile = serde_json::from_reader(file).ok()?;
                 Some(Loaders::Quilt(profile))
             }
             InstanceType::Vanilla => None,
@@ -227,9 +223,8 @@ impl Instance {
                 >(&self.game_info.version, loader_version, make_req)
                 .await?;
 
-                let file = File::create(&path).await?;
-                let writer = tokio_util::io::SyncIoBridge::new(file);
-                serde_json::to_writer_pretty(writer, &profile)?;
+                let file = fs::File::create(&path)?;
+                serde_json::to_writer_pretty(file, &profile)?;
 
                 Ok(())
             }
@@ -246,9 +241,8 @@ impl Instance {
                     DownloadError,
                 >(&self.game_info.version, loader_version, make_req)
                 .await?;
-                let file = File::create(&path).await?;
-                let writer = SyncIoBridge::new(file);
-                serde_json::to_writer_pretty(writer, &profile)?;
+                let file = fs::File::create(&path)?;
+                serde_json::to_writer_pretty(file, &profile)?;
 
                 Ok(())
             }
@@ -265,7 +259,7 @@ impl Instance {
     async fn read_client(&self) -> Option<Client> {
         let mut client = self.read_client_raw().await?;
 
-        if let Some(loader) = self.read_loader().await {
+        if let Some(loader) = self.read_loader() {
             match loader {
                 Loaders::Fabric(fabric) => {
                     client = fabric.join_client(client);
@@ -281,11 +275,9 @@ impl Instance {
         Some(client)
     }
 
-    async fn read_config(&self) -> Option<Config> {
-        let file = tokio::fs::File::open(self.config_path()).await.ok()?;
-        let reader = SyncIoBridge::new(file);
-
-        Some(serde_json::from_reader(reader).expect("Failed to deserialize config.json!"))
+    fn read_config(&self) -> Option<Config> {
+        let file = fs::File::open(self.config_path()).ok()?;
+        Some(serde_json::from_reader(file).expect("Failed to deserialize config.json!"))
     }
 
     async fn override_config(&mut self, config: Config) -> Result<(), std::io::Error> {
@@ -293,9 +285,8 @@ impl Instance {
         let config_path = self.config_path();
 
         tokio::fs::create_dir_all(&installation_dir).await?;
-        let file = tokio::fs::File::create(config_path).await?;
-        let writer = SyncIoBridge::new(file);
-        serde_json::to_writer_pretty(writer, &config)?;
+        let file = fs::File::create(config_path)?;
+        serde_json::to_writer_pretty(file, &config)?;
         Ok(())
     }
 
@@ -444,7 +435,7 @@ impl Instance {
     }
 
     pub async fn execute(&self, profile: Option<&PlayerProfile>) -> Result<(), BackendError> {
-        let config = self.read_config().await.unwrap();
+        let config = self.read_config().unwrap();
         let current_java_path = config.get("java").unwrap();
 
         let max_ram = config.get("max_ram").unwrap_or("2048");
