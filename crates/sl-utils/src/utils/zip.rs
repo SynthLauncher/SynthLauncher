@@ -20,7 +20,8 @@ impl<'a> ZipExtractor<'a> {
         self
     }
 
-    pub async fn extract(self, output: &Path) -> Result<(), ZipError> {
+    // TODO: make async with the help of tokio_utils
+    pub fn extract(self, output: &Path) -> Result<(), ZipError> {
         let exclude = self.exclude.unwrap_or_default();
         let reader = Cursor::new(self.bytes);
         let mut archive = ZipArchive::new(reader)?;
@@ -41,15 +42,15 @@ impl<'a> ZipExtractor<'a> {
 
             let output = output.join(&file_path);
             if file_path.is_dir() {
-                tokio::fs::create_dir_all(output).await?;
+                fs::create_dir_all(output)?;
             } else {
                 if let Some(p) = output.parent() {
                     if !p.exists() {
-                        tokio::fs::create_dir_all(&p).await?;
+                        fs::create_dir_all(&p)?;
                     }
                 }
-                
-                // TODO: Make this async 
+
+                // TODO: Make this async
                 let mut outfile = fs::File::create(&output)?;
                 std::io::copy(&mut file, &mut outfile)?;
             }
