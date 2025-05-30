@@ -25,6 +25,18 @@ pub struct PlayerProfile {
 }
 
 impl PlayerProfile {
+    pub fn default_profile() -> PlayerProfile {
+        PlayerProfile {
+            access_token: "0".to_string(),
+            premium: false,
+            data: PlayerProfileData {
+                username: "synther".to_string(),
+                uuid: "8667ba71-b85a-4004-af54-457a9734eed7".to_string(),
+            },
+        }
+    }
+
+    // TODO: Add backend error instead of Box<dyn std::error::Error>
     pub async fn premium_account(
         access_token: String,
     ) -> Result<PlayerProfile, Box<dyn std::error::Error>> {
@@ -64,11 +76,17 @@ impl PlayerProfile {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct PlayerProfiles(Vec<PlayerProfile>);
+pub struct PlayerProfiles {
+    current_profile_index: usize,
+    profiles: Vec<PlayerProfile>,
+}
 
 impl PlayerProfiles {
     pub fn new() -> Self {
-        PlayerProfiles(Vec::new())
+        PlayerProfiles {
+            current_profile_index: 0,
+            profiles: vec![PlayerProfile::default_profile()],
+        }
     }
 
     pub fn load() -> std::io::Result<Self> {
@@ -87,33 +105,40 @@ impl PlayerProfiles {
         Ok(())
     }
 
-    pub fn add(profile: PlayerProfile) -> std::io::Result<()> {
-        let mut existing_profiles = Self::load()?;
-
-        if !existing_profiles
-            .0
+    pub fn add(&mut self, profile: PlayerProfile) -> std::io::Result<()> {
+        if !self
+            .profiles
             .iter()
             .any(|existing| existing.data.username == profile.data.username)
         {
-            existing_profiles.0.push(profile);
+            self.profiles.push(profile);
         }
 
-        Self::overwrite(&existing_profiles)?;
+        Self::overwrite(&self)?;
 
         Ok(())
     }
 
-    pub fn find(name: &str, premium: bool) -> Result<Option<PlayerProfile>, BackendError> {
-        let profiles = Self::load()?;
-
-        if let Some(profile) = profiles
-            .0
-            .into_iter()
-            .find(|profile| profile.data.username == name && profile.premium == premium)
+    pub fn find(&self, name: &str, premium: bool) -> Result<(Option<&PlayerProfile>, usize), BackendError> {
+        if let Some((index, profile)) = self
+            .profiles
+            .iter()
+            .enumerate()
+            .find(|(_, profile)| profile.data.username.eq_ignore_ascii_case(name) && profile.premium == premium)
         {
-            return Ok(Some(profile));
+            return Ok((Some(profile), index));
         }
 
-        Ok(None)
+        Ok((None, usize::MAX))
+    }
+
+    pub fn current_profile(&self) -> Option<&PlayerProfile> {
+        self.profiles.get(self.current_profile_index)
+    }
+
+    pub fn set_current_profile(&mut self, index: usize) -> Result<(), BackendError> {
+        self.current_profile_index = index;
+        Self::overwrite(&self)?;
+        Ok(())
     }
 }

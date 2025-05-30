@@ -62,10 +62,10 @@ pub async fn load_all_installations() -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-pub async fn launch(name: &str) -> Result<(), String> {
-    let instance = Instances::find(name).map_err(|e| e.to_string())?;
-    instance.execute(None).await.map_err(|e| e.to_string())?;
+// #[tauri::command]
+// pub async fn launch(name: &str) -> Result<(), String> {
+//     let instance = Instances::find(name).map_err(|e| e.to_string())?;
+//     instance.execute(None).await.map_err(|e| e.to_string())?;
 
-    Ok(())
-}
+//     Ok(())
+// }

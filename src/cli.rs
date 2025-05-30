@@ -1,4 +1,4 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{ArgAction, Args, Parser, Subcommand};
 use sl_core::instance::InstanceType;
 
 #[derive(Parser)]
@@ -31,19 +31,16 @@ pub enum Commands {
     Launch {
         #[arg(required = true)]
         instance_name: String,
-        #[arg(required = true)]
-        username: String,
-    },
-    LaunchPremium {
-        #[arg(required = true)]
-        name: String,
-    },
-    RemoveInstallation {
-        #[arg(required = true)]
-        name: String,
     },
     AddOfflineProfile {
         #[arg(required = true)]
         name: String,
+    },
+    AddPremiumProfile,
+    SetCurrentProfile {
+        #[arg(required = true)]
+        name: String,
+        #[arg(long, action = ArgAction::SetTrue)]
+        premium: bool,
     },
 }

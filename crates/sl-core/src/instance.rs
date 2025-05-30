@@ -374,9 +374,8 @@ impl Instance {
     async fn generate_arguments(
         &self,
         config: &Config,
-        profile: Option<&PlayerProfile>,
+        profile: &PlayerProfile,
     ) -> Result<Vec<String>, BackendError> {
-        let global_config = Config::read_global().unwrap();
         let client = self
             .read_client()
             .await
@@ -400,13 +399,9 @@ impl Instance {
                 "version_name" => &self.game_info.version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
-                "auth_uuid" => profile
-                    .map(|m| m.data.uuid.as_str())
-                    .unwrap_or("8667ba71-b85a-4004-af54-457a9734eed7"),
-                "auth_access_token" => profile.map(|m| m.access_token.as_str()).unwrap_or("0"),
-                "auth_player_name" => profile
-                    .map(|m| m.data.username.as_str())
-                    .unwrap_or(global_config.get("auth_player_name").unwrap()),
+                "auth_uuid" => &profile.data.uuid,
+                "auth_access_token" => &profile.access_token,
+                "auth_player_name" => &profile.data.username,
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
                 "version_type" => "SL",
                 _ => config.get(arg)?,
@@ -434,7 +429,7 @@ impl Instance {
         Ok([jvm_args, game_args].concat())
     }
 
-    pub async fn execute(&self, profile: Option<&PlayerProfile>) -> Result<(), BackendError> {
+    pub async fn execute(&self, profile: &PlayerProfile) -> Result<(), BackendError> {
         let config = self.read_config().unwrap();
         let current_java_path = config.get("java").unwrap();
 

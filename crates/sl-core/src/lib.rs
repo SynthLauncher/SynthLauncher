@@ -7,6 +7,7 @@ use lazy_static::lazy_static;
 use sl_meta::json::jre_manifest::JreManifest;
 use sl_meta::json::version_manifest::VersionManifest;
 use sl_meta::json::{Arch, OsName};
+use profiles::player::PlayerProfile;
 
 pub mod config;
 pub mod instance;
@@ -47,7 +48,7 @@ lazy_static! {
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
     pub static ref INSTANCES_DIR: PathBuf = LAUNCHER_DIR.join("instances");
     pub static ref JAVAS_DIR: PathBuf = LAUNCHER_DIR.join("javas");
-
+    
     pub static ref INSTANCES_PATH: PathBuf = LAUNCHER_DIR.join("instances.json");
     pub static ref VERSION_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
     pub static ref JRE_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("jre_manifest.json");
@@ -56,4 +57,5 @@ lazy_static! {
     pub static ref JRE_MANIFEST: JreManifest = jre_manifest_read();
     pub static ref VERSION_MANIFEST: VersionManifest = version_manifest_read();
     pub static ref HTTP_CLIENT: reqwest::Client = reqwest::Client::new();
+    pub static ref CURRENT_PROFILE: Option<PlayerProfile> = None;
 }
