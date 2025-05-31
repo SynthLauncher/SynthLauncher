@@ -3893,6 +3893,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "sl-utils",
  "synrinth",
 ]
 
@@ -3906,6 +3907,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "synrinth",
  "thiserror 2.0.12",
  "tokio",
  "zip",
@@ -4077,15 +4079,16 @@ dependencies = [
 
 [[package]]
 name = "synrinth"
-version = "0.1.0"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8da9946b9239990ff3eb802a93efd9b2355f90e1a805858038a3c5bbde6634fd"
+checksum = "a077a97ab3c72c7639d014ca8f220599450696c649dc5a3b0c46805af4f3e5a3"
 dependencies = [
  "reqwest",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
  "tokio",
+ "zip",
 ]
 
 [[package]]

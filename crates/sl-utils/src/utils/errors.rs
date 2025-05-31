@@ -1,3 +1,4 @@
+use synrinth::errors::SynrinthErrors;
 use thiserror::Error;
 use zip::result::ZipError;
 
@@ -81,6 +82,9 @@ pub enum BackendError {
 
     #[error("Installation error: {0}")]
     InstallationError(#[from] InstallationError),
+
+    #[error("Synrinth: {0}")]
+    SynrinthError(#[from] SynrinthErrors)
 }
 
 impl From<reqwest::Error> for DownloadError {

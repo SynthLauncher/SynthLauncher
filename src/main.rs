@@ -43,7 +43,7 @@ async fn main() -> Result<(), BackendError> {
             let current_profile = profiles.current_profile().unwrap();
 
             let instance = Instances::find(&instance_name)?;
-            instance.execute(current_profile).await.unwrap();
+            instance.execute(current_profile).await?;
         },
         Commands::AddOfflineProfile { name } => {
             let mut profiles = PlayerProfiles::load()?;

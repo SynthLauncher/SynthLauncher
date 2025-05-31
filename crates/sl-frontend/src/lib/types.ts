@@ -32,3 +32,4 @@ export type InstanceCardProps = {
   image: string;
   favorite?: boolean;
 };
+
