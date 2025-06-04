@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
-import InstanceCard from '../components/InstanceCard';
-import CreateInstanceDialog from '../components/CreateInstanceDialog';
-import { createInstance, getInstances, loadInstances } from '@/lib/commands';
-import { Instance } from '@/lib/types';
+import React from 'react';
+// import InstanceCard from '../components/InstanceCard';
+// import CreateInstanceDialog from '../components/CreateInstanceDialog';
+// import { createInstance, getInstances, loadInstances } from '@/lib/commands';
+// import { Instance } from '@/lib/types';
 
 const InstancesPage: React.FC = () => {
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [instances, setInstances] = useState([] as Instance[])
+  // const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  // const [instances, setInstances] = useState([] as Instance[])
 
-  getInstances(setInstances);
+  // getInstances(setInstances);
 
   return (
     <div className="p-6 w-full overflow-auto pb-20">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {instances.map((instance) => (
           <InstanceCard key={instance.name} {...instance} />
         ))}
@@ -34,7 +33,7 @@ const InstancesPage: React.FC = () => {
         </button>
       </div>
 
-      <CreateInstanceDialog onOpenChange={setCreateDialogOpen} open={createDialogOpen} onCreate={createInstance} />
+      <CreateInstanceDialog onOpenChange={setCreateDialogOpen} open={createDialogOpen} onCreate={createInstance} /> */}
     </div>
   );
 };

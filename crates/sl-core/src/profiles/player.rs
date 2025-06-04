@@ -5,11 +5,11 @@ use reqwest::{
     Client,
 };
 use serde::{Deserialize, Serialize};
-use sl_utils::utils::errors::BackendError;
+use sl_utils::utils::errors::{BackendError, HttpError};
 
 use crate::PROFILES_PATH;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerProfileData {
     #[serde(rename = "name")]
     pub username: String,
@@ -17,7 +17,7 @@ pub struct PlayerProfileData {
     pub uuid: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerProfile {
     pub data: PlayerProfileData,
     pub access_token: String,
@@ -36,10 +36,9 @@ impl PlayerProfile {
         }
     }
 
-    // TODO: Add backend error instead of Box<dyn std::error::Error>
     pub async fn premium_account(
         access_token: String,
-    ) -> Result<PlayerProfile, Box<dyn std::error::Error>> {
+    ) -> Result<PlayerProfile, BackendError> {
         let client = Client::new();
         let response = client
             .get("https://api.minecraftservices.com/minecraft/profile")
@@ -51,7 +50,7 @@ impl PlayerProfile {
             .await?;
 
         if !response.status().is_success() {
-            return Err(format!("API error: {}", response.status()).into());
+            return Err(BackendError::HttpError(HttpError::Status(response.status())));
         }
 
         let data: PlayerProfileData = response.json().await?;
@@ -63,7 +62,8 @@ impl PlayerProfile {
         })
     }
 
-    pub async fn offline_account(username: String) -> Result<PlayerProfile, BackendError> {
+    pub async fn offline_account<U: Into<String>>(username: U) -> Result<PlayerProfile, BackendError> {
+        let username = username.into();
         Ok(PlayerProfile {
             access_token: "0".to_string(),
             premium: false,
@@ -119,19 +119,20 @@ impl PlayerProfiles {
         Ok(())
     }
 
-    pub fn find(&self, name: &str, premium: bool) -> Result<(Option<&PlayerProfile>, usize), BackendError> {
-        if let Some((index, profile)) = self
-            .profiles
-            .iter()
-            .enumerate()
-            .find(|(_, profile)| profile.data.username.eq_ignore_ascii_case(name) && profile.premium == premium)
-        {
+    pub fn find(
+        &self,
+        name: &str,
+        premium: bool,
+    ) -> Result<(Option<&PlayerProfile>, usize), BackendError> {
+        if let Some((index, profile)) = self.profiles.iter().enumerate().find(|(_, profile)| {
+            profile.data.username.eq_ignore_ascii_case(name) && profile.premium == premium
+        }) {
             return Ok((Some(profile), index));
         }
 
         Ok((None, usize::MAX))
     }
-
+    
     pub fn current_profile(&self) -> Option<&PlayerProfile> {
         self.profiles.get(self.current_profile_index)
     }

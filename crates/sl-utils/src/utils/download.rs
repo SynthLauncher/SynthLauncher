@@ -5,12 +5,12 @@ use reqwest::Client;
 use tokio::io::AsyncWriteExt;
 use futures_util::StreamExt; 
 
-use super::errors::{BackendError, DownloadError};
+use super::errors::{BackendError, HttpError};
 
-pub async fn get_as_bytes(url: &str, client: &Client) -> Result<Bytes, DownloadError> {
+pub async fn get_as_bytes(url: &str, client: &Client) -> Result<Bytes, HttpError> {
     let res = client.get(url).send().await?;
     if !res.status().is_success() {
-        return Err(DownloadError::Status(res.status()));
+        return Err(HttpError::Status(res.status()));
     }
 
     let bytes = res.bytes().await?;

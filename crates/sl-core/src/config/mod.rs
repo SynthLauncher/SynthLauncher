@@ -47,7 +47,7 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     fs::create_dir_all(&(*ASSETS_DIR)).unwrap();
     fs::create_dir_all(&(*INSTANCES_DIR)).unwrap();
     fs::create_dir_all(&(*JAVAS_DIR)).unwrap();
-
+  
     OpenOptions::new()
         .write(true)
         .create(true)

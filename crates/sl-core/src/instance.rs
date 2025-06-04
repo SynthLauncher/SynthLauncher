@@ -17,7 +17,7 @@ use sl_meta::json::{
     vanilla::Client,
     version_manifest::VersionType,
 };
-use sl_utils::utils::errors::{BackendError, DownloadError, InstallationError};
+use sl_utils::utils::errors::{BackendError, HttpError, InstallationError};
 use tokio::process::Command;
 
 use crate::{
@@ -211,15 +211,15 @@ impl Instance {
             }
             InstanceType::Fabric => {
                 let path = self.dir_path().join("fabric.json");
-                let make_req = async |url: &str| -> Result<Vec<u8>, DownloadError> {
+                let make_req = async |url: &str| -> Result<Vec<u8>, HttpError> {
                     let res = reqwest::get(url).await?;
                     let bytes = res.bytes().await?;
                     Ok(bytes.to_vec())
                 };
 
                 let profile = fabric::profile::get_loader_profile::<
-                    fn(&str) -> dyn Future<Output = Result<Vec<u8>, DownloadError>>,
-                    DownloadError,
+                    fn(&str) -> dyn Future<Output = Result<Vec<u8>, HttpError>>,
+                    HttpError,
                 >(&self.game_info.version, loader_version, make_req)
                 .await?;
 
@@ -230,15 +230,15 @@ impl Instance {
             }
             InstanceType::Quilt => {
                 let path = self.dir_path().join("quilt.json");
-                let make_req = async |url: &str| -> Result<Vec<u8>, DownloadError> {
+                let make_req = async |url: &str| -> Result<Vec<u8>, HttpError> {
                     let res = reqwest::get(url).await?;
                     let bytes = res.bytes().await?;
                     Ok(bytes.to_vec())
                 };
 
                 let profile = get_quilt_loader_profile::<
-                    fn(&str) -> dyn Future<Output = Result<Vec<u8>, DownloadError>>,
-                    DownloadError,
+                    fn(&str) -> dyn Future<Output = Result<Vec<u8>, HttpError>>,
+                    HttpError,
                 >(&self.game_info.version, loader_version, make_req)
                 .await?;
                 let file = fs::File::create(&path)?;

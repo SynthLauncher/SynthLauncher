@@ -43,4 +43,5 @@ pub enum Commands {
         #[arg(long, action = ArgAction::SetTrue)]
         premium: bool,
     },
+
 }

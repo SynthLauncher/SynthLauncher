@@ -73,7 +73,7 @@ async fn main() -> Result<(), BackendError> {
             } else {
                 return Ok(());
             }
-        }
+        },
     }
 
     Ok(())
