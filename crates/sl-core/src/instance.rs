@@ -21,7 +21,10 @@ use sl_utils::utils::errors::{BackendError, HttpError, InstallationError};
 use tokio::process::Command;
 
 use crate::{
-    config::config::Config, json::{vanilla, version_manifest::download_version}, profiles::player::PlayerProfile, ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST
+    config::config::Config,
+    json::{vanilla, version_manifest::download_version},
+    profiles::player::PlayerProfile,
+    ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST,
 };
 
 #[derive(Debug, Deserialize)]
