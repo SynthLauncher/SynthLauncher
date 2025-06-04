@@ -1,73 +1,39 @@
-use std::path::Path;
-
 use reqwest::Client;
+use sl_core::{instance::{Instance, InstanceType}, INSTANCES_DIR};
 use sl_utils::utils::errors::BackendError;
-use synrinth::{api::query_search, structs::{FacetFilter, FacetOp, FacetType, ProjectFile, QueryParams, Search}};
+use synrinth::{api::{mrpack::{download_modpack_files, read_modpack_file, unpack_modpack}, project::{download_project_file, query_project_version}}, models::{mrpack::DependencyID, project::Project}};
 
-pub async fn query_mods(client: &Client) -> Result<Search, BackendError> {
-    let filter = FacetFilter {
-        facet: FacetType::ProjectType,
-        op: FacetOp::Eq,
-        value: "mods".to_string()
-    };
-
-    let params = QueryParams {
-        facets: Some(vec![vec![filter]]),
-        query: None
-    };
-
-    Ok(query_search(&client, params).await?)
-}
-
-pub async fn query_resourcepacks() {
-
-}
-
-pub async fn query_shaderpacks() {
-
-}
-
-pub async fn query_modpacks() {
-
-}
-
-pub async fn install_mod(
+// !!! UNFINISHED DO NOT TOUCH OR COPY THIS CODE
+// !!! THERE MAY BE A LOT OF PROBLEMS HERE
+pub async fn create_modpack_instance(
     client: &Client,
-    project_file: ProjectFile,
-    instance_path: &Path,
+    project: &Project,
+    version: &str
 ) -> Result<(), BackendError> {
-    let mods_dir = instance_path.join("mods");
-    synrinth::api::download_project_file(&client, &project_file, &mods_dir).await?;
-
-    Ok(())
-}
-
-pub async fn install_resourcepack(
-    client: &Client,
-    project_file: ProjectFile,
-    instance_path: &Path,
-) -> Result<(), BackendError> {
-    let resourcepack_dir = instance_path.join("resourcepacks");
-    synrinth::api::download_project_file(&client, &project_file, &resourcepack_dir).await?;
-
-    Ok(())
-}
-
-pub async fn install_shaderpack(
-    client: &Client,
-    project_file: ProjectFile,
-    instance_path: &Path,
-) -> Result<(), BackendError> {
-    let shaderpack_dir = instance_path.join("shaderpacks");
-    synrinth::api::download_project_file(&client, &project_file, &shaderpack_dir).await?;
-
-    Ok(())
-}
-
-pub async fn install_modpack(
-    client: &Client,
-    project_file: ProjectFile,
-    instance_path: &Path
-) {
+    let project_version = query_project_version(&client, &project.slug, version).await?;
+    let name = &project.slug;
+    let project_file = &project_version.files[0];
+    let loader = &project_version.loaders[0];
+    let instance_path = INSTANCES_DIR.join(name);
     
+    std::fs::create_dir_all(&instance_path)?;
+
+    let loader = DependencyID::from(loader.as_str());
+    let vanilla = DependencyID::Minecraft;
+
+    let path = download_project_file(&client, &project_file, &instance_path).await?;
+    unpack_modpack(&path, &instance_path).await?;
+    
+    let mrpack = read_modpack_file(&instance_path).await?;
+    let loader_version = mrpack.dependencies.get(&loader).unwrap();
+    let vanilla_version = mrpack.dependencies.get(&vanilla).unwrap();
+
+    let mut instance = Instance::new(&name, &vanilla_version, InstanceType::Fabric, None)?;
+    instance.install().await?;
+    instance.install_loader(loader_version).await?;
+    let modpack_files = &mrpack.files;
+
+    download_modpack_files(&client, &instance_path, modpack_files).await?;
+    Ok(())
 }
+

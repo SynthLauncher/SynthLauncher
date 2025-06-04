@@ -6,7 +6,7 @@ use sha1::{Digest, Sha1};
 use sl_meta::json::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
 use sl_utils::utils::{
     self,
-    errors::{BackendError, DownloadError},
+    errors::{BackendError, HttpError},
     zip::ZipExtractor,
 };
 use tokio::{fs::File, io::AsyncReadExt};
@@ -31,7 +31,7 @@ pub async fn verify_data(file: &mut File, sha1: &str) -> bool {
 }
 
 #[inline(always)]
-async fn download_and_verify(download: &Download, path: &Path) -> Result<(), DownloadError> {
+async fn download_and_verify(download: &Download, path: &Path) -> Result<(), HttpError> {
     if let Ok(mut f) = tokio::fs::File::open(path).await {
         let valid = match &download.sha1 {
             Some(sha1) => verify_data(&mut f, sha1).await,
@@ -52,7 +52,7 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Dow
     Ok(())
 }
 
-async fn download_and_read_file(download: &Download, path: &Path) -> Result<Bytes, DownloadError> {
+async fn download_and_read_file(download: &Download, path: &Path) -> Result<Bytes, HttpError> {
     let full_path = if let Some(ref child) = download.path {
         &path.join(child)
     } else {
@@ -67,7 +67,7 @@ async fn download_and_read_file(download: &Download, path: &Path) -> Result<Byte
     ))
 }
 
-async fn download_to(download: &Download, path: &Path) -> Result<(), DownloadError> {
+async fn download_to(download: &Download, path: &Path) -> Result<(), HttpError> {
     let full_path = if let Some(ref child) = download.path {
         &path.join(child)
     } else {
@@ -108,7 +108,7 @@ where
     outputs
 }
 
-async fn install_assets(client: &Client) -> Result<(), DownloadError> {
+async fn install_assets(client: &Client) -> Result<(), HttpError> {
     let assets = &client.assets;
     let indexes_dir = ASSETS_DIR.join("indexes");
     let indexes_path = indexes_dir.join(format!("{}.json", assets));
@@ -118,7 +118,7 @@ async fn install_assets(client: &Client) -> Result<(), DownloadError> {
     let index: AssetIndex = serde_json::from_slice(&download).unwrap();
     let objects = index.objects;
 
-    let download_object = async |object: AssetObject| -> Result<(), DownloadError> {
+    let download_object = async |object: AssetObject| -> Result<(), HttpError> {
         let dir_name = &object.hash[0..2];
         let dir = ASSETS_DIR.join("objects").join(dir_name);
         let path = dir.join(&object.hash);

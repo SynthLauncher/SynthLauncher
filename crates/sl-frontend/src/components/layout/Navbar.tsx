@@ -4,7 +4,7 @@ import {
   handleWindowClose,
   handleWindowMinimize,
   handleWinndowMaximize,
-} from "@/lib/commands";
+} from "@/lib/commands/window";
 
 export const Navbar = () => {
   return (
