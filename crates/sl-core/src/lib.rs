@@ -4,12 +4,13 @@ use config::config_launcher_dir;
 use json::jre_manifest::jre_manifest_read;
 use json::version_manifest::version_manifest_read;
 use lazy_static::lazy_static;
+use profiles::player::PlayerProfile;
 use sl_meta::json::jre_manifest::JreManifest;
 use sl_meta::json::version_manifest::VersionManifest;
 use sl_meta::json::{Arch, OsName};
-use profiles::player::PlayerProfile;
 
 pub mod config;
+mod forge;
 pub mod instance;
 pub mod instances;
 pub mod json;
@@ -48,7 +49,7 @@ lazy_static! {
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
     pub static ref INSTANCES_DIR: PathBuf = LAUNCHER_DIR.join("instances");
     pub static ref JAVAS_DIR: PathBuf = LAUNCHER_DIR.join("javas");
-    
+
     pub static ref INSTANCES_PATH: PathBuf = LAUNCHER_DIR.join("instances.json");
     pub static ref VERSION_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
     pub static ref JRE_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("jre_manifest.json");
