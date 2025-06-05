@@ -7,14 +7,13 @@ use sl_core::{
     profiles::{
         auth::AuthFlow,
         player::{PlayerProfile, PlayerProfiles},
-    }, 
+    },
 };
 use sl_utils::utils::errors::BackendError;
 
 mod cli;
 
-#[tokio::main]
-async fn main() -> Result<(), BackendError> {
+async fn run_cli() -> Result<(), BackendError> {
     init_launcher_dir().await?;
 
     let cli = Cli::parse();
@@ -33,8 +32,8 @@ async fn main() -> Result<(), BackendError> {
             match instance.instance_type {
                 InstanceType::Vanilla => instance.install().await?,
                 _ => {
-                    instance.install().await?;
                     instance.install_loader(&loader_version).await?;
+                    instance.install().await?;
                 }
             }
         }
@@ -44,7 +43,7 @@ async fn main() -> Result<(), BackendError> {
 
             let instance = Instances::find(&instance_name)?;
             instance.execute(current_profile).await?;
-        },
+        }
         Commands::AddOfflineProfile { name } => {
             let mut profiles = PlayerProfiles::load()?;
             let profile = PlayerProfile::offline_account(name).await?;
@@ -64,7 +63,7 @@ async fn main() -> Result<(), BackendError> {
                 .await
                 .unwrap();
             profiles.add(profile)?;
-        },
+        }
         Commands::SetCurrentProfile { name, premium } => {
             let mut profiles = PlayerProfiles::load()?;
             let (profile, index) = profiles.find(&name, premium)?;
@@ -73,8 +72,16 @@ async fn main() -> Result<(), BackendError> {
             } else {
                 return Ok(());
             }
-        },
+        }
     }
 
+    Ok(())
+}
+#[tokio::main]
+async fn main() -> Result<(), ()> {
+    if let Err(err) = run_cli().await {
+        eprintln!("{err}");
+        return Err(());
+    }
     Ok(())
 }
