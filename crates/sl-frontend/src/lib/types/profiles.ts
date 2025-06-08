@@ -6,3 +6,4 @@ export interface PlayerProfile {
   access_token: string,
   premium: boolean;
 }
+

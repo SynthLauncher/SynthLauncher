@@ -15,3 +15,8 @@ pub async fn get_current_profile() -> Result<PlayerProfile, String> {
     }
 }
 
+#[tauri::command]
+pub async fn get_other_profiles() -> Result<Vec<PlayerProfile>, String> {
+    let profiles = get_profiles()?;
+    Ok(profiles.load_other_profiles())
+}

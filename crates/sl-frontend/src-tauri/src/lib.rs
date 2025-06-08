@@ -1,6 +1,6 @@
 mod commands;
 
-use commands::{instances::{get_instances, create_instance, remove_instance}, profiles::{get_current_profile, get_profiles}};
+use commands::{instances::{get_instances, create_instance, remove_instance}, profiles::{get_current_profile, get_profiles, get_other_profiles}};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -12,7 +12,8 @@ pub fn run() {
             create_instance,
             remove_instance,
             get_current_profile,
-            get_profiles
+            get_profiles,
+            get_other_profiles
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

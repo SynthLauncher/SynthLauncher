@@ -435,7 +435,8 @@ impl Instance {
 
         let args = self.generate_arguments(&config, profile).await?;
 
-        println!("Launching with args: {:?}", &args);
+        // !!! Warning if you're recording your auth_token may get leaked XD
+        // println!("Launching with args: {:?}", &args);
 
         let output = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))

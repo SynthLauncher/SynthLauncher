@@ -1,7 +1,11 @@
 use reqwest::Client;
 use sl_core::{instance::{Instance, InstanceType}, INSTANCES_DIR};
 use sl_utils::utils::errors::BackendError;
-use synrinth::{api::{mrpack::{download_modpack_files, read_modpack_file, unpack_modpack}, project::{download_project_file, query_project_version}}, models::{mrpack::DependencyID, project::Project}};
+use synrinth::{api::{mrpack::{download_modpack_files, read_modpack_file, unpack_modpack}, project::{download_project_file, query_project_version}, search::query_search}, models::{mrpack::DependencyID, project::Project, search::{QueryParams, Search}}};
+
+pub async fn search_query_default(client: &Client, query: QueryParams) -> Result<Search, BackendError> {
+    Ok(query_search(&client, query).await?)
+}
 
 // !!! UNFINISHED DO NOT TOUCH OR COPY THIS CODE
 // !!! THERE MAY BE A LOT OF PROBLEMS HERE

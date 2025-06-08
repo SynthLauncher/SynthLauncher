@@ -36,9 +36,7 @@ impl PlayerProfile {
         }
     }
 
-    pub async fn premium_account(
-        access_token: String,
-    ) -> Result<PlayerProfile, BackendError> {
+    pub async fn premium_account(access_token: String) -> Result<PlayerProfile, BackendError> {
         let client = Client::new();
         let response = client
             .get("https://api.minecraftservices.com/minecraft/profile")
@@ -50,7 +48,9 @@ impl PlayerProfile {
             .await?;
 
         if !response.status().is_success() {
-            return Err(BackendError::HttpError(HttpError::Status(response.status())));
+            return Err(BackendError::HttpError(HttpError::Status(
+                response.status(),
+            )));
         }
 
         let data: PlayerProfileData = response.json().await?;
@@ -62,7 +62,9 @@ impl PlayerProfile {
         })
     }
 
-    pub async fn offline_account<U: Into<String>>(username: U) -> Result<PlayerProfile, BackendError> {
+    pub async fn offline_account<U: Into<String>>(
+        username: U,
+    ) -> Result<PlayerProfile, BackendError> {
         let username = username.into();
         Ok(PlayerProfile {
             access_token: "0".to_string(),
@@ -132,9 +134,23 @@ impl PlayerProfiles {
 
         Ok((None, usize::MAX))
     }
-    
+
     pub fn current_profile(&self) -> Option<&PlayerProfile> {
         self.profiles.get(self.current_profile_index)
+    }
+
+    pub fn load_other_profiles(&self) -> Vec<PlayerProfile> {
+        self.profiles
+            .iter()
+            .enumerate()
+            .filter_map(|(i, profile)| {
+                if i != self.current_profile_index {
+                    Some(profile.clone()) // clone here
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     pub fn set_current_profile(&mut self, index: usize) -> Result<(), BackendError> {
