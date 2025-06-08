@@ -36,8 +36,10 @@ pub enum InstallationError {
 pub enum ForgeInstallerErr {
     #[error("Error while downloading forge: `{0}`")]
     Download(#[from] HttpError),
-    #[error("javac err stdout:\n{stdout}\nstderr:\n{stderr}")]
+    #[error("Error while compiling using javac\nstdout:\n{stdout}\nstderr:\n{stderr}")]
     CompileErr { stdout: String, stderr: String },
+    #[error("Error while running installer using java\nstdout:\n{stdout}\nstderr:\n{stderr}")]
+    JavaRunErr { stdout: String, stderr: String },
     #[error("Forge Installation failed, more details: {0}")]
     IOErr(#[from] std::io::Error),
 }

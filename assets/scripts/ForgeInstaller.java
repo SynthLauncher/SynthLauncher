@@ -28,7 +28,7 @@ public class ForgeInstaller {
             if (
                 !action
                     .getAction(install, monitor)
-                    .run(new File("."), a -> true, installer)
+                    .run(new File("."), installer)
             ) {
                 System.out.println("Error");
                 System.exit(1);

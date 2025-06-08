@@ -1,4 +1,7 @@
-use std::{path::PathBuf, process::Command};
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use sl_meta::json::forge::ForgeVersions;
 use sl_utils::utils::{
@@ -76,48 +79,45 @@ impl<'a> ForgeInstaller<'a> {
 
     fn file_type(&self) -> &'static str {
         if self.major_version < 14 {
-            "universal"
-        } else {
             "installer"
+        } else {
+            "universal"
         }
     }
 
     fn file_type_flipped(&self) -> &'static str {
         if self.major_version < 14 {
-            "installer"
-        } else {
             "universal"
+        } else {
+            "installer"
         }
     }
 
     /// Downloads the forge installer's library and returns it's path
     async fn download(&self) -> Result<PathBuf, HttpError> {
         let (file_type, file_type_flipped) = (self.file_type(), self.file_type_flipped());
-        let installer_bytes = self.try_downloading_from_urls(&[
-            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type}.jar", ver = self.short_version),
-            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type}.jar", ver = self.norm_version),
-            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type_flipped}.jar", ver = self.short_version),
-            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type_flipped}.jar", ver = self.norm_version),
-            // Minecraft 1.1 to 1.5.1: Install as jarmod
-            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{}/forge-{}-client.zip", self.short_version, self.short_version),
-            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{}/forge-{}-client.zip", self.norm_version, self.norm_version),
-            &format!("https://maven.minecraftforge.net/net/minecraftforge/forge/{}/forge-{}-universal.zip", self.short_version, self.short_version),
-            &format!("https://maven.minecraftforge.net/net/minecraftforge/forge/{}/forge-{}-universal.zip", self.norm_version, self.norm_version),
-        ]).await?;
-
         let installer_path = self
             .cache_dir
             .path()
             .join(format!("forge-{}-{file_type}.jar", self.short_version));
-        tokio::fs::write(&installer_path, installer_bytes).await?;
+        let file = tokio::fs::File::create_new(&installer_path).await?;
+
+        self.try_downloading_from_urls(&[
+            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type}.jar", ver = self.short_version),
+            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type}.jar", ver = self.norm_version),
+            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type_flipped}.jar", ver = self.short_version),
+            &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type_flipped}.jar", ver = self.norm_version),
+        ], &installer_path).await?;
+
+        file.sync_all().await?;
         Ok(installer_path)
     }
 
-    async fn try_downloading_from_urls(&self, urls: &[&str]) -> Result<Vec<u8>, HttpError> {
+    async fn try_downloading_from_urls(&self, urls: &[&str], path: &Path) -> Result<(), HttpError> {
         for url in urls {
-            let downloaded = utils::download::get_as_bytes(url, &HTTP_CLIENT).await;
+            let downloaded = utils::download::download_file(&HTTP_CLIENT, url, path).await;
             match downloaded {
-                Ok(data) => return Ok(data.to_vec()),
+                Ok(_) => return Ok(()),
                 Err(HttpError::Status(s)) if s == reqwest::StatusCode::NOT_FOUND => continue,
                 Err(e) => return Err(e),
             }
@@ -130,8 +130,10 @@ impl<'a> ForgeInstaller<'a> {
         // This is just a library we link against `java_forge_installer` to get the actual installer
         let forge_installer_lib_path = self.download().await?;
         let java_forge_installer = &self.java_forge_installer;
+
         // we link using javac
         let javac = self.instance.get_javac();
+
         let output = Command::new(javac)
             .arg("-cp")
             .arg(&forge_installer_lib_path)
@@ -156,9 +158,34 @@ impl<'a> ForgeInstaller<'a> {
         Ok((classpath, compiled_file))
     }
 
-    async fn install(self) -> Result<(), ForgeInstallerErr> {
+    async fn install(mut self) -> Result<(), ForgeInstallerErr> {
         let (classpath, compiled_path) = self.compile_installer().await?;
         println!("{classpath} => {}", compiled_path.display());
+        // Create files to trick forge into thinking the cache dir is the launcher root
+        tokio::fs::create_dir(self.cache_dir.path().join("launcher_profiles.json")).await?;
+        tokio::fs::create_dir(
+            self.cache_dir
+                .path()
+                .join("launcher_profiles_microsoft_store.json"),
+        )
+        .await?;
+
+        let java = self.instance.get_java();
+
+        let output = Command::new(java)
+            .arg("-cp")
+            .arg(classpath)
+            .arg(compiled_path.file_name().unwrap())
+            .current_dir(self.cache_dir.path())
+            .output()?;
+
+        self.cache_dir.disable_cleanup(true);
+        if !output.status.success() {
+            let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+            let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+            return Err(ForgeInstallerErr::JavaRunErr { stdout, stderr });
+        }
         Ok(())
     }
 }

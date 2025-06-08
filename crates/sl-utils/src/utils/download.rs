@@ -1,11 +1,11 @@
 use std::path::Path;
 
 use bytes::Bytes;
+use futures_util::StreamExt;
 use reqwest::Client;
 use tokio::io::AsyncWriteExt;
-use futures_util::StreamExt; 
 
-use super::errors::{BackendError, HttpError};
+use super::errors::HttpError;
 
 pub async fn get_as_bytes(url: &str, client: &Client) -> Result<Bytes, HttpError> {
     let res = client.get(url).send().await?;
@@ -17,7 +17,11 @@ pub async fn get_as_bytes(url: &str, client: &Client) -> Result<Bytes, HttpError
     Ok(bytes)
 }
 
-pub async fn download_file(client: &Client, url: &str, path: &Path) -> Result<(), BackendError> {
+pub async fn download_file(
+    client: &Client,
+    url: &str,
+    path: &Path,
+) -> Result<(), super::errors::HttpError> {
     let response = client.get(url).send().await?;
 
     let mut file = tokio::fs::File::create(path).await?;
