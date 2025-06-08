@@ -1,4 +1,4 @@
-use std::{fs, path::{Path, PathBuf}};
+use std::fs;
 
 use sl_meta::json::jre_manifest::{JavaFiles, JreManifest, JreManifestDownloadType};
 use sl_utils::utils::{self, download::download_file, errors::BackendError};
@@ -25,7 +25,9 @@ pub fn jre_manifest_read() -> JreManifest {
     serde_json::from_str(buffer.as_str()).expect("Failed to parse file: jre_manifest.json")
 }
 
-pub async fn download_jre_manifest_version(download: JreManifestDownloadType) -> Result<(), BackendError> {
+pub async fn download_jre_manifest_version(
+    download: JreManifestDownloadType,
+) -> Result<(), BackendError> {
     let client = &HTTP_CLIENT;
     let downloads = JRE_MANIFEST.get_jre_manifest_download(&download);
     let download_str = download.to_string();
@@ -37,40 +39,16 @@ pub async fn download_jre_manifest_version(download: JreManifestDownloadType) ->
         let manifest: JavaFiles = serde_json::from_slice(&bytes)?;
         let files = manifest.java_file_by_type("file");
 
-        for file in files {
-            let original_path = dir.join(file.0);
-            let java_file = file.1;
+        for (file, java_file) in files {
+            let path = dir.join(file);
 
-            let path = Path::new(&original_path);
-            let mut components: Vec<String> = path
-                .components()
-                .map(|comp| comp.as_os_str().to_string_lossy().into_owned())
-                .collect();
+            if let Some(parent) = path.parent() {
+                tokio::fs::create_dir_all(parent).await?;
+            }
 
-            if let Some(filename) = components.pop() {
-                let transformed_dirs: Vec<String> = components
-                    .iter()
-                    .map(|comp| comp.replace('.', "/"))
-                    .collect();
-
-                let mut transformed_path = PathBuf::new();
-                for dir in transformed_dirs {
-                    transformed_path.push(dir);
-                }
-                transformed_path.push(filename);
-
-                if let Some(parent) = transformed_path.parent() {
-                    tokio::fs::create_dir_all(parent).await?;
-                }
-
-                if let Some(downloads) = java_file.downloads.as_ref() {
-                    if let Some(lzma_file) = &downloads.lzma {
-                        download_file(&client, &lzma_file.url, &transformed_path).await?;
-                    }
-
-                    if let Some(raw_file) = &downloads.raw {
-                        download_file(&client, &raw_file.url, &transformed_path).await?;
-                    }
+            if let Some(downloads) = java_file.downloads.as_ref() {
+                if let Some(raw_file) = &downloads.raw {
+                    download_file(&client, &raw_file.url, &path).await?;
                 }
             }
         }

@@ -10,7 +10,7 @@ pub struct Cli {
 
 #[derive(Args, Default)]
 pub struct LoaderInfo {
-    /// can be "vanilla" or "fabric" or "quilt"
+    /// can be "vanilla" or "fabric" or "quilt" or "forge"
     pub loader: Option<InstanceType>,
     /// depends on the loader, can be left empty for vanilla
     pub loader_version: Option<String>,

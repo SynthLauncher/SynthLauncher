@@ -16,7 +16,7 @@ use crate::{json::jre_manifest::download_jre_manifest_version, JAVAS_DIR, LAUNCH
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
 
-impl Config {    
+impl Config {
     fn global_config_path() -> PathBuf {
         LAUNCHER_DIR.join("config.json")
     }

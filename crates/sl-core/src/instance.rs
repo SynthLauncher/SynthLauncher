@@ -21,20 +21,25 @@ use sl_utils::utils::errors::{BackendError, HttpError, InstallationError};
 use tokio::process::Command;
 
 use crate::{
-    config::config::Config, json::{vanilla, version_manifest::download_version}, profiles::player::PlayerProfile, ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST
+    config::config::Config,
+    json::{vanilla, version_manifest::download_version},
+    profiles::player::PlayerProfile,
+    ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST,
 };
 
 #[derive(Debug, Deserialize)]
 pub enum Loaders {
     Fabric(FabricLoaderProfile),
     Quilt(QuiltLoaderProfile),
+    Forge,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub enum InstanceType {
     Vanilla,
     Fabric,
-    Quilt, // We will add more
+    Quilt,
+    Forge,
 }
 
 impl Default for InstanceType {
@@ -43,23 +48,30 @@ impl Default for InstanceType {
     }
 }
 
-impl fmt::Display for InstanceType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = match self {
+impl InstanceType {
+    pub const fn as_str(&self) -> &'static str {
+        match self {
             InstanceType::Vanilla => "vanilla",
             InstanceType::Fabric => "fabric",
             InstanceType::Quilt => "quilt",
-        };
-        write!(f, "{}", s)
+            InstanceType::Forge => "forge",
+        }
     }
 }
 
-impl From<String> for InstanceType {
-    fn from(value: String) -> Self {
-        match value.as_str() {
+impl fmt::Display for InstanceType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self.as_str(), f)
+    }
+}
+
+impl<'a> From<&'a str> for InstanceType {
+    fn from(value: &'a str) -> Self {
+        match value {
             "vanilla" => InstanceType::Vanilla,
             "fabric" => InstanceType::Fabric,
             "quilt" => InstanceType::Quilt,
+            "forge" => InstanceType::Forge,
             _ => {
                 panic!("Unknown instance type: {}", value)
             }
@@ -178,7 +190,7 @@ impl Instance {
         match self.instance_type {
             InstanceType::Fabric => Some(path),
             InstanceType::Quilt => Some(path),
-            InstanceType::Vanilla => None,
+            InstanceType::Vanilla | InstanceType::Forge => None,
         }
     }
 
@@ -197,6 +209,7 @@ impl Instance {
                 let profile: QuiltLoaderProfile = serde_json::from_reader(file).ok()?;
                 Some(Loaders::Quilt(profile))
             }
+            InstanceType::Forge => Some(Loaders::Forge),
             InstanceType::Vanilla => None,
         }
     }
@@ -206,6 +219,7 @@ impl Instance {
             InstanceType::Vanilla => {
                 return Ok(());
             }
+            // TODO: move to separatare functions
             InstanceType::Fabric => {
                 let path = self.dir_path().join("fabric.json");
                 let make_req = async |url: &str| -> Result<Vec<u8>, HttpError> {
@@ -243,6 +257,7 @@ impl Instance {
 
                 Ok(())
             }
+            InstanceType::Forge => crate::forge::install_for_instance(self).await,
         }
     }
 
@@ -253,19 +268,18 @@ impl Instance {
         Some(serde_json::from_str(&client).expect("Failed to deserialize client.json!"))
     }
 
-    async fn read_client(&self) -> Option<Client> {
+    pub async fn read_client(&self) -> Option<Client> {
         let mut client = self.read_client_raw().await?;
 
         if let Some(loader) = self.read_loader() {
             match loader {
                 Loaders::Fabric(fabric) => {
                     client = fabric.join_client(client);
-                    return Some(client);
                 }
                 Loaders::Quilt(quilt) => {
                     client = quilt.join_client(client);
-                    return Some(client);
                 }
+                Loaders::Forge => {}
             }
         }
 
@@ -424,6 +438,31 @@ impl Instance {
         jvm_args.push(client.main_class.clone());
 
         Ok([jvm_args, game_args].concat())
+    }
+
+    pub fn get_java(&self) -> PathBuf {
+        // FIXME: there should be a java to default to in the global config
+        // and we shouldn't assume that there is an existing local config
+        // instead we should have a function that always returns a config not an Option<Config>, returns the global one if there is no local, combines with the global if there is
+        // TODO: cache the Config or at least the java path in memory using Once?
+        let config = self.read_config().unwrap();
+        let results = PathBuf::from(config.get("java").unwrap());
+        debug_assert!(results.exists());
+        results
+    }
+
+    /// Returns the path to the javac executable which the current instance uses
+    /// gruannted to exist otherwise it panciks in debug mode
+    pub fn get_javac(&self) -> PathBuf {
+        // FIXME: there should be a better implementition
+        let java = self.get_java();
+        let ext = java.extension();
+        let mut results = java.with_file_name("javac");
+        if let Some(ext) = ext {
+            results.set_extension(ext);
+        }
+        debug_assert!(results.exists());
+        results
     }
 
     pub async fn execute(&self, profile: &PlayerProfile) -> Result<(), BackendError> {

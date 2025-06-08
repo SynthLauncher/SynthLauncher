@@ -26,8 +26,22 @@ pub enum InstallationError {
     VersionNotFound(String),
     #[error("Installation {0} was not found")]
     InstallationNotFound(String),
-    #[error("An unknown error occured: {0}")]
-    OtherInstallationError(String)
+    #[error("An unknown error occurred: {0}")]
+    OtherInstallationError(String),
+    #[error("{0}")]
+    Forge(#[from] ForgeInstallerErr),
+}
+
+#[derive(Debug, Error)]
+pub enum ForgeInstallerErr {
+    #[error("Error while downloading forge: `{0}`")]
+    Download(#[from] HttpError),
+    #[error("Error while compiling using javac\nstdout:\n{stdout}\nstderr:\n{stderr}")]
+    CompileErr { stdout: String, stderr: String },
+    #[error("Error while running installer using java\nstdout:\n{stdout}\nstderr:\n{stderr}")]
+    JavaRunErr { stdout: String, stderr: String },
+    #[error("Forge Installation failed, more details: {0}")]
+    IOErr(#[from] std::io::Error),
 }
 
 #[derive(Debug, Error)]
@@ -72,7 +86,7 @@ pub enum BackendError {
     #[error("Installation error: {0}")]
     InstallationError(#[from] InstallationError),
     #[error("Synrinth: {0}")]
-    SynrinthError(#[from] SynrinthError)
+    SynrinthError(#[from] SynrinthError),
 }
 
 impl From<reqwest::Error> for HttpError {

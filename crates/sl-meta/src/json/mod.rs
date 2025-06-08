@@ -2,11 +2,12 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-pub mod quilt;
 pub mod fabric;
+pub mod forge;
+pub mod jre_manifest;
+pub mod quilt;
 pub mod vanilla;
 pub mod version_manifest;
-pub mod jre_manifest;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Hash, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -45,7 +46,7 @@ pub struct JavaClassName {
     version: String,
 }
 
-/* 
+/*
     Example of what this does:
     Deserializing "ca.weblite:java-objc-bridge:1.1" -> "ca.weblite", "java-objc-bridge", "1.1"
 */
