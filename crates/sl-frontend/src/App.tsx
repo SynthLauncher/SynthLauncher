@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import { Navbar } from "./components/layout/Navbar";
 import ProfileSidebar from "./components/layout/ProfileSidebar";
 import InstancesPage from "./pages/InstancesPage";
+import { StorePage } from "./pages/StorePage";
 
 function App() {
   const [activeTab, setActiveTab] = useState("home");
@@ -14,6 +15,8 @@ function App() {
         return <HomePage />;
       case "instances":
         return <InstancesPage />;
+      case "store":
+        return <StorePage />;
       default:
         return (
           <div className="flex items-center justify-center h-full p-8">
@@ -27,6 +30,7 @@ function App() {
         );
     }
   };
+
   return (
     <div className="flex flex-col h-screen bg-gray-950 text-white overflow-hidden">
       <Navbar />
@@ -42,4 +46,5 @@ function App() {
     </div>
   );
 }
+
 export default App;

@@ -11,7 +11,7 @@ const ProfileSidebar: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-80 bg-gray-900 border-l border-gray-800 p-4 overflow-y-auto">
+    <div className="w-80 bg-gray-900 border-l-2 border-gray-800 p-4 overflow-y-auto">
       <div className="space-y-6">
         <div className="text-center">
           <div className="relative w-24 h-24 mx-auto mb-4">

@@ -14,3 +14,4 @@ sl-mod-manager = { path = "crates/sl-mod-manager" }
 
 tokio = "1.45.1"
 clap = { version = "4.5.39", features = ["derive"] } 
+synrinth = "0.1.8"

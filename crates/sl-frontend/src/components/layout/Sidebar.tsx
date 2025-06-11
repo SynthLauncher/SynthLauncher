@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const navItems1 = [
     { id: "home", label: "Home", icon: <Home size={24} /> },
     { id: "instances", label: "Instances", icon: <Blocks size={24} /> },
-    { id: "mods", label: "Mods", icon: <Package size={24} /> },
+    { id: "store", label: "Store", icon: <Package size={24} /> },
   ];
 
   const navItems2 = [
@@ -54,6 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
           />
         ))}
       </div>
+
       <div className="flex flex-col gap-1">
         {navItems2.map((item) => (
           <NavItem
