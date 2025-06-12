@@ -1,23 +1,28 @@
-import React from 'react';
-// import InstanceCard from '../components/InstanceCard';
-// import CreateInstanceDialog from '../components/CreateInstanceDialog';
-// import { createInstance, getInstances, loadInstances } from '@/lib/commands';
-// import { Instance } from '@/lib/types';
+import { InstanceCard } from "@/components/InstanceCard";
+import { getInstances } from "@/lib/commands/instances";
+import { Instance } from "@/lib/types/instances";
+import React, { useEffect, useState } from "react";
 
 const InstancesPage: React.FC = () => {
   // const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  // const [instances, setInstances] = useState([] as Instance[])
+  const [instances, setInstances] = useState<Instance[]>([]);
 
-  // getInstances(setInstances);
+  useEffect(() => {
+    const fetchData = async () => {
+      await getInstances(setInstances);
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="p-6 w-full overflow-auto pb-20">
-      {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {instances.map((instance) => (
           <InstanceCard key={instance.name} {...instance} />
         ))}
         
-        <button 
+        {/* <button 
           onClick={() => {
             setCreateDialogOpen(true) 
             loadInstances()
@@ -30,10 +35,10 @@ const InstancesPage: React.FC = () => {
             </div>
             <p className="text-gray-400 group-hover:text-emerald-400 text-center font-medium transition-colors">Create New Instance</p>
           </div>
-        </button>
+        </button> */}
       </div>
-
-      <CreateInstanceDialog onOpenChange={setCreateDialogOpen} open={createDialogOpen} onCreate={createInstance} /> */}
+{/* 
+      <CreateInstanceDialog onOpenChange={setCreateDialogOpen} open={createDialogOpen} onCreate={createInstance} />  */}
     </div>
   );
 };

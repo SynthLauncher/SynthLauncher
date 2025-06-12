@@ -32,13 +32,13 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 text-white overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#1B1D21] overflow-hidden">
       <Navbar />
 
       <div className="flex h-full overflow-hidden">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <div className="flex w-full overflow-auto">
+        <div className="flex w-full bg-[#141518] rounded-tl-2xl border-t-2 border-l-2 border-[#2D2F32]">
           <div className="w-full">{renderContent()}</div>
           <ProfileSidebar />
         </div>

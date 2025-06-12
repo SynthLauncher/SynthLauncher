@@ -12,8 +12,8 @@ enum InstanceType {
 };
 
 interface InstanceGameInfo {
-  version: string;
-  release_time: string;
+  id: string;
+  releaseTime: string;
   type: VersionType;
 };
 

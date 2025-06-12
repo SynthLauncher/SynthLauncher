@@ -9,31 +9,31 @@ import {
 export const Navbar = () => {
   return (
     <nav
-      className="bg-gray-900 w-full flex h-15 justify-end items-center p-1"
+      className="bg-[#1B1D21] w-full flex h-12 justify-end items-center p-1"
       data-tauri-drag-region
     >
       <div className="flex">
         <Button
           variant="ghost"
           onClick={handleWindowMinimize}
-          className="group hover:bg-slate-500/20 rounded-full p-0 flex items-center justify-center w-14 h-14 transition-all duration-200"
+          className="group hover:bg-[#89C733] rounded-full p-0 flex items-center justify-center w-11 h-11 transition-all duration-300"
         >
-          <Minus className="text-white transition-all duration-200 transform group-hover:scale-105" />
+          <Minus className="text-white group-hover:text-black transition-all duration-300 transform group-hover:scale-105" />
         </Button>
-
+{/*hover:bg-slate-500/20 */}
         <Button
           variant="ghost"
           onClick={handleWinndowMaximize}
-          className="group hover:bg-slate-500/20 rounded-full p-0 flex items-center justify-center w-14 h-14 transition-all duration-200"
+          className="group hover:bg-[#FCB335] rounded-full p-0 flex items-center justify-center w-11 h-11 transition-all duration-300"
         >
-          <Maximize className="text-white transition-all duration-200 transform group-hover:scale-105" />
+          <Maximize className="text-white group-hover:text-black transition-all duration-300 transform group-hover:scale-105" />
         </Button>
         <Button
           variant="ghost"
           onClick={handleWindowClose}
-          className="group hover:bg-red-400 rounded-full p-0 flex items-center justify-center w-14 h-14 transition-all duration-200"
+          className="group hover:bg-red-400 rounded-full p-0 flex items-center justify-center w-11 h-11 transition-all duration-300"
         >
-          <X className="text-white group-hover:text-black transition-all duration-200 transform group-hover:scale-105" />
+          <X className="text-white group-hover:text-black transition-all duration-300 transform group-hover:scale-105" />
         </Button>
       </div>
     </nav>
