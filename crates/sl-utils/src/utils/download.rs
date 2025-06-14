@@ -8,27 +8,27 @@ use tokio::{io::AsyncWriteExt, time::sleep};
 use super::errors::HttpError;
 
 pub async fn download_bytes(
-    url: &str, 
+    url: &str,
     client: &Client,
     max_retries: u32,
-    duration: Duration
+    duration: Duration,
 ) -> Result<Bytes, HttpError> {
-    let mut attemps = 0;
+    let mut attempts = 0;
 
-    while attemps < max_retries {
+    while attempts < max_retries {
         let res = client.get(url).send().await;
 
         match res {
             Ok(response) if response.status().is_success() => {
                 let bytes = response.bytes().await?;
                 return Ok(bytes);
-            },
+            }
             Ok(response) => {
                 return Err(HttpError::Status(response.status()));
-            },
+            }
             Err(_) => {
-                attemps += 1;
-                if attemps >= max_retries {
+                attempts += 1;
+                if attempts >= max_retries {
                     return Err(HttpError::MaxRetriesExceeded);
                 }
 
@@ -47,9 +47,9 @@ pub async fn download_file(
     max_retries: u32,
     duration: Duration,
 ) -> Result<(), super::errors::HttpError> {
-    let mut attemps = 0;
+    let mut attempts = 0;
 
-    while attemps < max_retries {
+    while attempts < max_retries {
         let res = client.get(url).send().await;
 
         match res {
@@ -63,13 +63,13 @@ pub async fn download_file(
                 }
 
                 return Ok(());
-            },
+            }
             Ok(response) => {
                 return Err(HttpError::Status(response.status()));
-            },
+            }
             Err(_) => {
-                attemps += 1;
-                if attemps >= max_retries {
+                attempts += 1;
+                if attempts >= max_retries {
                     return Err(HttpError::MaxRetriesExceeded);
                 }
 
