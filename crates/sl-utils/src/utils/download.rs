@@ -1,36 +1,82 @@
-use std::path::Path;
+use std::{path::Path, time::Duration};
 
 use bytes::Bytes;
 use futures_util::StreamExt;
 use reqwest::Client;
-use tokio::io::AsyncWriteExt;
+use tokio::{io::AsyncWriteExt, time::sleep};
 
 use super::errors::HttpError;
 
-pub async fn get_as_bytes(url: &str, client: &Client) -> Result<Bytes, HttpError> {
-    let res = client.get(url).send().await?;
-    if !res.status().is_success() {
-        return Err(HttpError::Status(res.status()));
+pub async fn download_bytes(
+    url: &str, 
+    client: &Client,
+    max_retries: u32,
+    duration: Duration
+) -> Result<Bytes, HttpError> {
+    let mut attemps = 0;
+
+    while attemps < max_retries {
+        let res = client.get(url).send().await;
+
+        match res {
+            Ok(response) if response.status().is_success() => {
+                let bytes = response.bytes().await?;
+                return Ok(bytes);
+            },
+            Ok(response) => {
+                return Err(HttpError::Status(response.status()));
+            },
+            Err(_) => {
+                attemps += 1;
+                if attemps >= max_retries {
+                    return Err(HttpError::MaxRetriesExceeded);
+                }
+
+                sleep(duration).await;
+            }
+        }
     }
 
-    let bytes = res.bytes().await?;
-    Ok(bytes)
+    Err(HttpError::RetryFailed)
 }
 
 pub async fn download_file(
     client: &Client,
     url: &str,
-    path: &Path,
+    dest: &Path,
+    max_retries: u32,
+    duration: Duration,
 ) -> Result<(), super::errors::HttpError> {
-    let response = client.get(url).send().await?;
+    let mut attemps = 0;
 
-    let mut file = tokio::fs::File::create(path).await?;
-    let mut stream = response.bytes_stream();
+    while attemps < max_retries {
+        let res = client.get(url).send().await;
 
-    while let Some(item) = stream.next().await {
-        let chunk = item?;
-        file.write_all(&chunk).await?;
+        match res {
+            Ok(response) if response.status().is_success() => {
+                let mut file = tokio::fs::File::create(dest).await?;
+                let mut stream = response.bytes_stream();
+
+                while let Some(item) = stream.next().await {
+                    let chunk = item?;
+                    file.write_all(&chunk).await?;
+                }
+
+                return Ok(());
+            },
+            Ok(response) => {
+                return Err(HttpError::Status(response.status()));
+            },
+            Err(_) => {
+                attemps += 1;
+                if attemps >= max_retries {
+                    return Err(HttpError::MaxRetriesExceeded);
+                }
+
+                sleep(duration).await;
+            }
+        }
     }
 
-    Ok(())
+    Err(HttpError::RetryFailed)
 }

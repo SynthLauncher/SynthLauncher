@@ -6,9 +6,11 @@ use sl_utils::utils::{self, download::download_file, errors::BackendError};
 use crate::{HTTP_CLIENT, JAVAS_DIR, JRE_MANIFEST, JRE_MANIFEST_PATH};
 
 pub async fn fetch_jre_manifest() {
-    let res = utils::download::get_as_bytes(
+    let res = utils::download::download_bytes(
         "https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json",
         &HTTP_CLIENT,
+        3,
+        std::time::Duration::from_secs(5),
     )
     .await;
 
@@ -48,7 +50,7 @@ pub async fn download_jre_manifest_version(
 
             if let Some(downloads) = java_file.downloads.as_ref() {
                 if let Some(raw_file) = &downloads.raw {
-                    download_file(&client, &raw_file.url, &path).await?;
+                    download_file(&client, &raw_file.url, &path, 3, std::time::Duration::from_secs(5)).await?;
                 }
             }
         }

@@ -10,9 +10,11 @@ use sl_utils::utils::{
 use crate::{HTTP_CLIENT, VERSION_MANIFEST, VERSION_MANIFEST_PATH};
 
 pub async fn fetch_version_manifest() {
-    let res = utils::download::get_as_bytes(
+    let res = utils::download::download_bytes(
         "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json",
         &HTTP_CLIENT,
+        3,
+        std::time::Duration::from_secs(5),
     )
     .await;
 
@@ -37,6 +39,6 @@ pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
         ));
     };
 
-    let res = utils::download::get_as_bytes(&version.url, &HTTP_CLIENT).await?;
+    let res = utils::download::download_bytes(&version.url, &HTTP_CLIENT, 3, std::time::Duration::from_secs(5)).await?;
     Ok(res)
 }

@@ -32,7 +32,7 @@ impl<'a> ForgeInstaller<'a> {
             .expect("failed to read client.json");
         let mc_version = mc_client.id;
         let forge_versions = ForgeVersions::download::<HttpError>(async |url: &str| {
-            utils::download::get_as_bytes(url, &HTTP_CLIENT)
+            utils::download::download_bytes(url, &HTTP_CLIENT, 2, std::time::Duration::from_secs(5))
                 .await
                 .map(|bytes| bytes.to_vec())
         })
@@ -115,7 +115,7 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn try_downloading_from_urls(&self, urls: &[&str], path: &Path) -> Result<(), HttpError> {
         for url in urls {
-            let downloaded = utils::download::download_file(&HTTP_CLIENT, url, path).await;
+            let downloaded = utils::download::download_file(&HTTP_CLIENT, url, path, 3, std::time::Duration::from_secs(5)).await;
             match downloaded {
                 Ok(_) => return Ok(()),
                 Err(HttpError::Status(s)) if s == reqwest::StatusCode::NOT_FOUND => continue,

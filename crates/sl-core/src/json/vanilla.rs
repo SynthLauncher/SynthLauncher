@@ -42,7 +42,7 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Htt
         }
     }
 
-    let data = utils::download::get_as_bytes(&download.url, &HTTP_CLIENT).await?;
+    let data = utils::download::download_bytes(&download.url, &HTTP_CLIENT, 3, std::time::Duration::from_secs(5),).await?;
 
     if let Some(parent) = path.parent() {
         tokio::fs::create_dir_all(parent).await?;
@@ -128,12 +128,14 @@ async fn install_assets(client: &Client) -> Result<(), HttpError> {
         }
 
         tokio::fs::create_dir_all(&dir).await?;
-        let data = utils::download::get_as_bytes(
+        let data = utils::download::download_bytes(
             &format!(
                 "https://resources.download.minecraft.net/{dir_name}/{}",
                 object.hash
             ),
             &HTTP_CLIENT,
+            3,
+            std::time::Duration::from_secs(5),
         )
         .await?;
 

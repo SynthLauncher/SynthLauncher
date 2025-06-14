@@ -25,7 +25,7 @@ pub enum Commands {
         #[arg(required = true)]
         version: String,
         #[command(flatten)]
-        loader_info: LoaderInfo,
+        loader_info: LoaderInfo
     },
     /// Launch a Minecraft instance
     Launch {
