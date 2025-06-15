@@ -5,6 +5,8 @@ use futures_util::StreamExt;
 use reqwest::Client;
 use tokio::{io::AsyncWriteExt, time::sleep};
 
+use crate::elog;
+
 use super::errors::HttpError;
 
 pub async fn download_bytes(
@@ -24,7 +26,8 @@ pub async fn download_bytes(
                 return Ok(bytes);
             }
             Ok(response) => return Err(HttpError::Status(response.status())),
-            // retry only if Error is related to the response otherwise the error is likely from our side
+
+            // Retries only if the Error is related to the response, otherwise the error is from our side
             Err(e)
                 if e.is_body()
                     || e.is_decode()
@@ -36,7 +39,7 @@ pub async fn download_bytes(
                 attempts += 1;
                 if attempts >= max_retries {
                     // TODO: add a logging function
-                    eprintln!(
+                    elog!(
                         "error while downloading '{url}' with max retries: {max_retries} (reached), reqwest error: {e}"
                     );
                     return Err(e.into());
@@ -46,7 +49,7 @@ pub async fn download_bytes(
             }
             Err(e) => {
                 // TODO: add a logging function
-                eprintln!("error while downloading '{url}', reqwest error: {e}");
+                elog!("error while downloading '{url}', reqwest error: {e}");
                 return Err(e.into());
             }
         }
@@ -90,7 +93,7 @@ pub async fn download_file(
                 attempts += 1;
                 if attempts >= max_retries {
                     // TODO: add a logging function
-                    eprintln!(
+                    elog!(
                            "error while downloading '{url}' to `{}` with max retries: {max_retries} (reached), reqwest error: {e}",
                            dest.display()
                        );
@@ -101,7 +104,7 @@ pub async fn download_file(
             }
             Err(e) => {
                 // TODO: add a logging function
-                eprintln!(
+                elog!(
                     "error while downloading '{url}' to `{}`, reqwest error: {e}",
                     dest.display()
                 );

@@ -1,11 +1,8 @@
 import React from "react";
-import {
-  Plus,
-  ArrowRight,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 // import InstanceCard from "../components/InstanceCard";
 
-const HomePage: React.FC = () => {
+export const HomePage: React.FC = () => {
   return (
     <div className="p-6 w-full overflow-auto pb-12">
       <div className="mb-8">
@@ -34,5 +31,3 @@ const HomePage: React.FC = () => {
     </div>
   );
 };
-
-export default HomePage;

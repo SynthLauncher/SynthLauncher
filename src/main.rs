@@ -9,12 +9,14 @@ use sl_core::{
         player::{PlayerProfile, PlayerProfiles},
     },
 };
-use sl_utils::utils::errors::BackendError;
+use sl_utils::{dlog, elog, utils::errors::BackendError};
 
 mod cli;
 
 async fn run_cli() -> Result<(), BackendError> {
     init_launcher_dir().await?;
+
+    dlog!("Launcher initialized!");
 
     let cli = Cli::parse();
 
@@ -80,7 +82,7 @@ async fn run_cli() -> Result<(), BackendError> {
 #[tokio::main]
 async fn main() -> Result<(), ()> {
     if let Err(err) = run_cli().await {
-        eprintln!("{err}");
+        elog!("{err}");
         return Err(());
     }
     Ok(())

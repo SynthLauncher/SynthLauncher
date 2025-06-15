@@ -9,10 +9,10 @@ import {
 export const Navbar = () => {
   return (
     <nav
-      className="bg-[#1B1D21] w-full flex h-12 justify-end items-center p-1"
+      className="bg-[#1B1D21] w-full flex h-[3.3rem] justify-end items-center p-1"
       data-tauri-drag-region
     >
-      <div className="flex">
+      <div className="flex gap-[0.1rem]">
         <Button
           variant="ghost"
           onClick={handleWindowMinimize}

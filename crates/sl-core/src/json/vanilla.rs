@@ -4,11 +4,9 @@ use bytes::Bytes;
 use futures::{stream::FuturesUnordered, StreamExt};
 use sha1::{Digest, Sha1};
 use sl_meta::json::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
-use sl_utils::utils::{
-    self,
-    errors::{BackendError, HttpError},
-    zip::ZipExtractor,
-};
+use sl_utils::{elog, log, utils::{
+    self, errors::{BackendError, HttpError}, zip::ZipExtractor
+}};
 use tokio::{fs::File, io::AsyncReadExt};
 
 use crate::{ASSETS_DIR, HTTP_CLIENT, LIBS_DIR};
@@ -158,17 +156,17 @@ async fn install_assets(client: &Client) -> Result<(), HttpError> {
     let outputs = download_futures(iter, 5, download_object).await;
     for (i, output) in outputs.into_iter().enumerate() {
         if let Err(err) = output {
-            println!("Failed to download object indexed {i}: {err:?}");
+            elog!("Failed to download object indexed {i}: {err:?}");
             return Err(err);
         }
     }
 
-    println!("Downloaded assets for {}", assets);
+    log!("Downloaded assets for {}", assets);
     Ok(())
 }
 
 async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> {
-    println!("Downloading libraries...");
+    log!("Downloading libraries...");
     let path = path.to_path_buf();
 
     let download_lib = async move |lib: &Library| -> Result<(), BackendError> {
@@ -195,12 +193,12 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
     let outputs = download_futures(client.libraries(), 10, download_lib).await;
     for (i, output) in outputs.into_iter().enumerate() {
         if let Err(err) = output {
-            println!("Failed to download library indexed {i}: {err:?}");
+            elog!("Failed to download library indexed {i}: {err:?}");
             return Err(err);
         }
     }
 
-    println!("Done downloading libraries");
+    log!("Done downloading libraries");
     Ok(())
 }
 

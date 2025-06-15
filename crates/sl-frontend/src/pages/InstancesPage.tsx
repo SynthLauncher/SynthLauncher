@@ -3,7 +3,7 @@ import { getInstances } from "@/lib/commands/instances";
 import { Instance } from "@/lib/types/instances";
 import React, { useEffect, useState } from "react";
 
-const InstancesPage: React.FC = () => {
+export const InstancesPage: React.FC = () => {
   // const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [instances, setInstances] = useState<Instance[]>([]);
 
@@ -42,5 +42,3 @@ const InstancesPage: React.FC = () => {
     </div>
   );
 };
-
-export default InstancesPage;

@@ -117,6 +117,8 @@ impl Instance {
                 InstallationError::VersionNotFound(version.to_string()),
             ))?;
 
+        fs::create_dir_all(INSTANCES_DIR.join(name))?;
+
         Ok(Self {
             name: name.to_string(),
             game_info: InstanceGameInfo {
