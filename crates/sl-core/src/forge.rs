@@ -1,16 +1,19 @@
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
-
 use sl_meta::json::forge::ForgeVersions;
 use sl_utils::utils::{
     self,
     errors::{BackendError, ForgeInstallerErr, HttpError, InstallationError},
 };
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
 use tempfile::TempDir;
+use tokio::fs;
 
-use crate::{instance::Instance, HTTP_CLIENT, MULTI_PATH_SEPARATOR};
+use crate::{
+    instance::{Instance, InstanceType},
+    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
+};
 
 const FORGE_JAVA_INSTALLER_SRC: &str = include_str!("../../../assets/scripts/ForgeInstaller.java");
 
@@ -26,11 +29,7 @@ struct ForgeInstaller<'a> {
 
 impl<'a> ForgeInstaller<'a> {
     async fn new(instance: &'a Instance) -> Result<Self, HttpError> {
-        let mc_client = instance
-            .read_client()
-            .await
-            .expect("failed to read client.json");
-        let mc_version = mc_client.id;
+        let mc_version = &instance.game_info.version;
         let forge_versions = ForgeVersions::download::<HttpError>(async |url: &str| {
             utils::download::download_bytes(url, &HTTP_CLIENT, 2, std::time::Duration::from_secs(5))
                 .await
@@ -38,6 +37,7 @@ impl<'a> ForgeInstaller<'a> {
         })
         .await?;
 
+        println!("{forge_versions:#?} => {mc_version}");
         let forge_version = forge_versions
             .get_forge_version(&mc_version)
             .expect("no forge version found for version");
@@ -54,7 +54,7 @@ impl<'a> ForgeInstaller<'a> {
             )
                 .count();
             if dots_num == 1 {
-                format!("{mc_version}.0")
+                &format!("{mc_version}.0")
             } else {
                 mc_version
             }
@@ -93,13 +93,17 @@ impl<'a> ForgeInstaller<'a> {
         }
     }
 
+    fn forge_version_name(&self) -> String {
+        format!("forge-{}", self.short_version)
+    }
+
     /// Downloads the forge installer's library and returns it's path
     async fn download(&self) -> Result<PathBuf, HttpError> {
         let (file_type, file_type_flipped) = (self.file_type(), self.file_type_flipped());
         let installer_path = self
             .cache_dir
             .path()
-            .join(format!("forge-{}-{file_type}.jar", self.short_version));
+            .join(format!("{}-{file_type}.jar", self.forge_version_name()));
         let file = tokio::fs::File::create_new(&installer_path).await?;
 
         self.try_downloading_from_urls(&[
@@ -115,7 +119,14 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn try_downloading_from_urls(&self, urls: &[&str], path: &Path) -> Result<(), HttpError> {
         for url in urls {
-            let downloaded = utils::download::download_file(&HTTP_CLIENT, url, path, 3, std::time::Duration::from_secs(5)).await;
+            let downloaded = utils::download::download_file(
+                &HTTP_CLIENT,
+                url,
+                path,
+                3,
+                std::time::Duration::from_secs(5),
+            )
+            .await;
             match downloaded {
                 Ok(_) => return Ok(()),
                 Err(HttpError::Status(s)) if s == reqwest::StatusCode::NOT_FOUND => continue,
@@ -158,7 +169,7 @@ impl<'a> ForgeInstaller<'a> {
         Ok((classpath, compiled_file))
     }
 
-    async fn install(mut self) -> Result<(), ForgeInstallerErr> {
+    async fn install_to_cache(&mut self) -> Result<(), ForgeInstallerErr> {
         let (classpath, compiled_path) = self.compile_installer().await?;
         println!("{classpath} => {}", compiled_path.display());
         // Create files to trick forge into thinking the cache dir is the launcher root
@@ -186,11 +197,62 @@ impl<'a> ForgeInstaller<'a> {
 
             return Err(ForgeInstallerErr::JavaRunErr { stdout, stderr });
         }
+        println!("DONE");
+        Ok(())
+    }
+
+    async fn install(mut self) -> Result<(), ForgeInstallerErr> {
+        /// Some helper function to recursively copy a directory
+        fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result<()> {
+            std::fs::create_dir_all(&dst)?;
+            for entry in std::fs::read_dir(src)? {
+                let entry = entry?;
+                let ty = entry.file_type()?;
+
+                let src_path = entry.path();
+                let dest_path = dst.as_ref().join(entry.file_name());
+
+                if ty.is_dir() {
+                    copy_dir_all(src_path, dest_path)?
+                } else {
+                    std::fs::copy(src_path, dest_path)?;
+                }
+            }
+            Ok(())
+        }
+
+        self.install_to_cache().await?;
+
+        let forge_libraries_path = self.cache_dir.path().join("libraries");
+        let forge_versions_path = self.cache_dir.path().join("versions");
+
+        // copy all the libraries forge installed to avoid re-installation,
+        // forge also does some shenaganis to get some of them such as `net/minecraftforge/forge/1.21.1-52.1.1/forge-1.21.1-52.1.1-client.jar`, it doesn't have a download url...
+        let mut forge_libraries = fs::read_dir(&forge_libraries_path).await?;
+
+        while let Some(entry) = forge_libraries.next_entry().await.unwrap() {
+            let src_path = entry.path();
+            let dest_path = LIBS_DIR.join(entry.file_name());
+
+            copy_dir_all(src_path, dest_path)?;
+        }
+
+        // copy the forge json to the instance directory...
+        let forge_version = self.forge_version_name();
+        let forge_version_json_file_name = format!("{}.json", forge_version);
+
+        let forge_version_path = forge_versions_path.join(forge_version);
+        let forge_json_path = forge_version_path.join(forge_version_json_file_name);
+
+        fs::copy(&forge_json_path, self.instance.loader_json_path().unwrap()).await?;
+
         Ok(())
     }
 }
 
 pub async fn install_for_instance(instance: &Instance) -> Result<(), BackendError> {
+    // it isn't the job of the installer to forge a working instance...
+    assert_eq!(instance.instance_type, InstanceType::Forge);
     ForgeInstaller::new(instance)
         .await?
         .install()

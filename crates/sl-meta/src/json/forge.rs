@@ -2,7 +2,9 @@ use std::{collections::HashMap, io};
 
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+use crate::json::vanilla;
+
+#[derive(Deserialize, Debug)]
 pub struct ForgeVersions {
     promos: HashMap<String, String>,
 }
@@ -29,5 +31,36 @@ impl ForgeVersions {
             .iter()
             .find(|(version_mc, _)| *version_mc == &format!("{minecraft_version}-latest"))
             .map(|n| n.1.as_str())
+    }
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ForgeLoaderProfile {
+    arguments: vanilla::Arguments,
+    id: String,
+    /// The .id of the client this extends
+    inherits_from: String,
+    main_class: String,
+
+    libraries: Vec<vanilla::Library>,
+}
+
+impl ForgeLoaderProfile {
+    // TODO: really slow?
+    pub fn join_client(self, mut client: vanilla::Client) -> vanilla::Client {
+        assert_eq!(self.inherits_from, client.id);
+        client.id = self.id;
+        client.main_class = self.main_class;
+        client.arguments = client.arguments.concat(self.arguments);
+
+        let libraries = client.libraries.into_iter();
+        let libraries =
+            libraries.filter(|c| !self.libraries.iter().any(|l| l.name.is_same_type(&c.name)));
+
+        let mut libraries = libraries.collect::<Vec<_>>();
+        libraries.extend(self.libraries.into_iter());
+        client.libraries = libraries;
+        client
     }
 }

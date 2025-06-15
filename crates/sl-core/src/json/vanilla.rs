@@ -42,7 +42,13 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Htt
         }
     }
 
-    let data = utils::download::download_bytes(&download.url, &HTTP_CLIENT, 3, std::time::Duration::from_secs(5),).await?;
+    let data = utils::download::download_bytes(
+        &download.url,
+        &HTTP_CLIENT,
+        3,
+        std::time::Duration::from_secs(5),
+    )
+    .await?;
 
     if let Some(parent) = path.parent() {
         tokio::fs::create_dir_all(parent).await?;
@@ -68,6 +74,10 @@ async fn download_and_read_file(download: &Download, path: &Path) -> Result<Byte
 }
 
 async fn download_to(download: &Download, path: &Path) -> Result<(), HttpError> {
+    if download.url.is_empty() {
+        return Ok(());
+    }
+
     let full_path = if let Some(ref child) = download.path {
         &path.join(child)
     } else {

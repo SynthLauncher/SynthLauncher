@@ -13,6 +13,7 @@ use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 use sl_meta::json::{
     fabric::{self, profile::FabricLoaderProfile},
+    forge::ForgeLoaderProfile,
     quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile},
     vanilla::Client,
     version_manifest::VersionType,
@@ -31,10 +32,10 @@ use crate::{
 pub enum Loaders {
     Fabric(FabricLoaderProfile),
     Quilt(QuiltLoaderProfile),
-    Forge,
+    Forge(ForgeLoaderProfile),
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub enum InstanceType {
     Vanilla,
     Fabric,
@@ -184,32 +185,30 @@ impl Instance {
         self.dir_path().join("client.jar")
     }
 
-    fn loader_json_path(&self) -> Option<PathBuf> {
+    pub fn loader_json_path(&self) -> Option<PathBuf> {
         let path = format!("{}.json", self.instance_type);
         let path = self.dir_path().join(path);
         match self.instance_type {
-            InstanceType::Fabric => Some(path),
-            InstanceType::Quilt => Some(path),
-            InstanceType::Vanilla | InstanceType::Forge => None,
+            InstanceType::Fabric | InstanceType::Forge | InstanceType::Quilt => Some(path),
+            InstanceType::Vanilla => None,
         }
     }
 
     fn read_loader(&self) -> Option<Loaders> {
-        match self.instance_type {
-            InstanceType::Fabric => {
+        macro_rules! generic_concat_loader {
+            ($variant: ident, $profile_type: ty) => {{
                 let path = self.loader_json_path()?;
+                let file = fs::File::open(&path).unwrap();
+                let profile: $profile_type = serde_json::from_reader(file).unwrap();
+                println!("returning variant {}", stringify!($variant));
+                Some(Loaders::$variant(profile))
+            }};
+        }
 
-                let file = fs::File::open(&path).ok()?;
-                let profile: FabricLoaderProfile = serde_json::from_reader(file).ok()?;
-                Some(Loaders::Fabric(profile))
-            }
-            InstanceType::Quilt => {
-                let path = self.loader_json_path()?;
-                let file = fs::File::open(&path).ok()?;
-                let profile: QuiltLoaderProfile = serde_json::from_reader(file).ok()?;
-                Some(Loaders::Quilt(profile))
-            }
-            InstanceType::Forge => Some(Loaders::Forge),
+        match self.instance_type {
+            InstanceType::Fabric => generic_concat_loader!(Fabric, FabricLoaderProfile),
+            InstanceType::Quilt => generic_concat_loader!(Quilt, QuiltLoaderProfile),
+            InstanceType::Forge => generic_concat_loader!(Forge, ForgeLoaderProfile),
             InstanceType::Vanilla => None,
         }
     }
@@ -279,7 +278,10 @@ impl Instance {
                 Loaders::Quilt(quilt) => {
                     client = quilt.join_client(client);
                 }
-                Loaders::Forge => {}
+                Loaders::Forge(forge) => {
+                    println!("FORGE");
+                    client = forge.join_client(client);
+                }
             }
         }
 
@@ -466,6 +468,11 @@ impl Instance {
     }
 
     pub async fn execute(&self, profile: &PlayerProfile) -> Result<(), BackendError> {
+        println!(
+            "Executing instance '{}' with type '{:?}', using profile '{}'",
+            self.name, self.instance_type, profile.data.username
+        );
+
         let config = self.read_config().unwrap();
         let current_java_path = config.get("java").unwrap();
 
@@ -475,7 +482,7 @@ impl Instance {
         let args = self.generate_arguments(&config, profile).await?;
 
         // !!! Warning if you're recording your auth_token may get leaked XD
-        // println!("Launching with args: {:?}", &args);
+        println!("Launching with args: {:?}", &args);
 
         let output = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))
@@ -488,6 +495,9 @@ impl Instance {
             .await?;
 
         if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            println!("stderr:\n{}\nstdout:\n{}", stderr, stdout);
             return Err(BackendError::InstallationError(
                 InstallationError::FailedToExecute(self.name.clone()),
             ));
