@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::json::vanilla;
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct ForgeVersions {
     promos: HashMap<String, String>,
 }

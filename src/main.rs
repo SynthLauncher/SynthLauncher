@@ -9,7 +9,7 @@ use sl_core::{
         player::{PlayerProfile, PlayerProfiles},
     },
 };
-use sl_utils::{dlog, elog, utils::errors::BackendError};
+use sl_utils::{dlog, elog, log, utils::errors::BackendError};
 
 mod cli;
 
@@ -56,7 +56,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let mut auth = AuthFlow::new("74909cec-49b6-4fee-aa60-1b2a57ef72e1");
             let code_res = auth.request_code().await.unwrap();
 
-            println!("Open this link in your browser {} and enter the following code: {}\nWaiting authentication...", code_res.verification_uri, code_res.user_code);
+            log!("Open this link in your browser {} and enter the following code: {}\nWaiting authentication...", code_res.verification_uri, code_res.user_code);
 
             auth.wait_for_login().await.unwrap();
             auth.login_in_xbox_live().await.unwrap();

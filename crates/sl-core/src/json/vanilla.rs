@@ -207,9 +207,9 @@ pub async fn install_client(client: &Client, path: &Path) -> Result<(), BackendE
     install_assets(client).await?;
     install_libs(client, path).await?;
 
-    println!("Downloading client.jar");
+    log!("Downloading client.jar");
     download_to(&client.downloads.client, &client_path).await?;
-    println!("Done downloading client.jar");
+    log!("Done downloading client.jar");
 
     Ok(())
 }

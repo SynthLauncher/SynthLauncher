@@ -3,6 +3,7 @@ use reqwest::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use sl_utils::dlog;
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -102,7 +103,7 @@ impl AuthFlow {
 
         let bytes = response.bytes().await?;
         let body_str = std::str::from_utf8(&bytes).unwrap();
-        println!("Device code response: {}", body_str);
+        dlog!("Device code response: {}", body_str);
 
         let data: AuthCodeResponse = serde_json::from_slice(&bytes)?;
         self.auth_code_res = Some(data);

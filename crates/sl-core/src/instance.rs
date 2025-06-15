@@ -18,7 +18,7 @@ use sl_meta::json::{
     vanilla::Client,
     version_manifest::VersionType,
 };
-use sl_utils::utils::errors::{BackendError, HttpError, InstallationError};
+use sl_utils::{dlog, elog, log, utils::errors::{BackendError, HttpError, InstallationError}};
 use tokio::process::Command;
 
 use crate::{
@@ -202,7 +202,7 @@ impl Instance {
                 let path = self.loader_json_path()?;
                 let file = fs::File::open(&path).unwrap();
                 let profile: $profile_type = serde_json::from_reader(file).unwrap();
-                println!("returning variant {}", stringify!($variant));
+                println!("Returning variant {}", stringify!($variant));
                 Some(Loaders::$variant(profile))
             }};
         }
@@ -281,7 +281,7 @@ impl Instance {
                     client = quilt.join_client(client);
                 }
                 Loaders::Forge(forge) => {
-                    println!("FORGE");
+                    dlog!("FORGE");
                     client = forge.join_client(client);
                 }
             }
@@ -470,7 +470,7 @@ impl Instance {
     }
 
     pub async fn execute(&self, profile: &PlayerProfile) -> Result<(), BackendError> {
-        println!(
+        log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
             self.name, self.instance_type, profile.data.username
         );
@@ -484,7 +484,7 @@ impl Instance {
         let args = self.generate_arguments(&config, profile).await?;
 
         // !!! Warning if you're recording your auth_token may get leaked XD
-        println!("Launching with args: {:?}", &args);
+        dlog!("Launching with args: {:?}", &args);
 
         let output = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))
@@ -499,7 +499,7 @@ impl Instance {
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
-            println!("stderr:\n{}\nstdout:\n{}", stderr, stdout);
+            elog!("stderr:\n{}\nstdout:\n{}", stderr, stdout);
             return Err(BackendError::InstallationError(
                 InstallationError::FailedToExecute(self.name.clone()),
             ));
