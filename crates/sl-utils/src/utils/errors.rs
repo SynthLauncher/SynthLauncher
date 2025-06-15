@@ -58,8 +58,6 @@ pub enum JavaError {
     VersionNotFound(u16),
 }
 
-#[derive(Debug, Error)]
-pub enum ConfigError {}
 
 #[derive(Debug, Error)]
 pub enum ZipExtractionError {
@@ -71,6 +69,8 @@ pub enum ZipExtractionError {
 pub enum BackendError {
     #[error("Zip error: {0}")]
     ZipError(#[from] ZipError),
+    #[error("Zip extraction error: {0}")]
+    ZipExtractionError(#[from] ZipExtractionError),
     #[error("Download error: {0}")]
     HttpError(#[from] HttpError),
     #[error("I/O error: {0}")]
@@ -79,10 +79,6 @@ pub enum BackendError {
     RegexError(#[from] regex::Error),
     #[error("Environmental variable error: {0}")]
     EnvVarError(#[from] std::env::VarError),
-    #[error("Zip extraction error: {0}")]
-    ZipExtractionError(#[from] ZipExtractionError),
-    #[error("Configuration error: {0}")]
-    ConfigError(#[from] ConfigError),
     #[error("JSON serialization error: {0}")]
     SerdeError(#[from] serde_json::Error),
     #[error("Java error: {0}")]
