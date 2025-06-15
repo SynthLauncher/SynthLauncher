@@ -63,8 +63,11 @@ impl<'a> ForgeInstaller<'a> {
         };
 
         let norm_version = format!("{short_version}-{norm_mc_version}");
-        let cache_dir = TempDir::new()
+        let mut cache_dir = TempDir::new()
             .expect("failed to create a new temporary directory for installing forge");
+
+        #[cfg(debug_assertions)]
+        cache_dir.disable_cleanup(true);
 
         let java_forge_installer = cache_dir.path().join("ForgeInstaller.java");
         tokio::fs::write(&java_forge_installer, FORGE_JAVA_INSTALLER_SRC).await?;
@@ -173,7 +176,7 @@ impl<'a> ForgeInstaller<'a> {
         Ok((classpath, compiled_file))
     }
 
-    async fn install_to_cache(&mut self) -> Result<(), ForgeInstallerErr> {
+    async fn install_to_cache(&self) -> Result<(), ForgeInstallerErr> {
         let (classpath, compiled_path) = self.compile_installer().await?;
         println!("{classpath} => {}", compiled_path.display());
         // Create files to trick forge into thinking the cache dir is the launcher root
@@ -198,7 +201,6 @@ impl<'a> ForgeInstaller<'a> {
             .current_dir(self.cache_dir.path())
             .output()?;
 
-        self.cache_dir.disable_cleanup(true);
         if !output.status.success() {
             let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
             let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -209,7 +211,7 @@ impl<'a> ForgeInstaller<'a> {
         Ok(())
     }
 
-    async fn install(mut self) -> Result<(), ForgeInstallerErr> {
+    async fn install(self) -> Result<(), ForgeInstallerErr> {
         /// Some helper function to recursively copy a directory
         fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result<()> {
             std::fs::create_dir_all(&dst)?;
