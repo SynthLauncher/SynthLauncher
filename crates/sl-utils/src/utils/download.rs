@@ -15,7 +15,7 @@ pub async fn download_bytes(
 ) -> Result<Bytes, HttpError> {
     let mut attempts = 0;
 
-    while attempts < max_retries {
+    loop {
         let res = client.get(url).send().await;
 
         match res {
@@ -23,21 +23,34 @@ pub async fn download_bytes(
                 let bytes = response.bytes().await?;
                 return Ok(bytes);
             }
-            Ok(response) => {
-                return Err(HttpError::Status(response.status()));
-            }
-            Err(_) => {
+            Ok(response) => return Err(HttpError::Status(response.status())),
+            // retry only if Error is related to the response otherwise the error is likely from our side
+            Err(e)
+                if e.is_body()
+                    || e.is_decode()
+                    || e.is_redirect()
+                    || e.is_timeout()
+                    || e.is_connect()
+                    || e.is_status() =>
+            {
                 attempts += 1;
                 if attempts >= max_retries {
-                    return Err(HttpError::MaxRetriesExceeded);
+                    // TODO: add a logging function
+                    eprintln!(
+                        "error while downloading '{url}' with max retries: {max_retries} (reached), reqwest error: {e}"
+                    );
+                    return Err(e.into());
                 }
 
                 sleep(duration).await;
             }
+            Err(e) => {
+                // TODO: add a logging function
+                eprintln!("error while downloading '{url}', reqwest error: {e}");
+                return Err(e.into());
+            }
         }
     }
-
-    Err(HttpError::RetryFailed)
 }
 
 pub async fn download_file(
@@ -49,7 +62,7 @@ pub async fn download_file(
 ) -> Result<(), super::errors::HttpError> {
     let mut attempts = 0;
 
-    while attempts < max_retries {
+    loop {
         let res = client.get(url).send().await;
 
         match res {
@@ -64,19 +77,36 @@ pub async fn download_file(
 
                 return Ok(());
             }
-            Ok(response) => {
-                return Err(HttpError::Status(response.status()));
-            }
-            Err(_) => {
+            Ok(response) => return Err(HttpError::Status(response.status())),
+            // retry only if Error is related to the response otherwise the error is likely from our side
+            Err(e)
+                if e.is_body()
+                    || e.is_decode()
+                    || e.is_redirect()
+                    || e.is_timeout()
+                    || e.is_connect()
+                    || e.is_status() =>
+            {
                 attempts += 1;
                 if attempts >= max_retries {
-                    return Err(HttpError::MaxRetriesExceeded);
+                    // TODO: add a logging function
+                    eprintln!(
+                           "error while downloading '{url}' to `{}` with max retries: {max_retries} (reached), reqwest error: {e}",
+                           dest.display()
+                       );
+                    return Err(e.into());
                 }
 
                 sleep(duration).await;
             }
+            Err(e) => {
+                // TODO: add a logging function
+                eprintln!(
+                    "error while downloading '{url}' to `{}`, reqwest error: {e}",
+                    dest.display()
+                );
+                return Err(e.into());
+            }
         }
     }
-
-    Err(HttpError::RetryFailed)
 }

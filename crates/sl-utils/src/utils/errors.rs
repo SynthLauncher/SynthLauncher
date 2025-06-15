@@ -16,10 +16,6 @@ pub enum HttpError {
     InvalidHeaderValue(#[from] reqwest::header::InvalidHeaderValue),
     #[error("Some other request error: {0}")]
     Other(reqwest::Error),
-    #[error("Max retries exceeded")]
-    MaxRetriesExceeded,
-    #[error("Failed retrying the request")]
-    RetryFailed,
 }
 
 #[derive(Debug, Error)]
