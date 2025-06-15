@@ -1,7 +1,10 @@
 use sl_meta::json::forge::ForgeVersions;
-use sl_utils::utils::{
-    self,
-    errors::{BackendError, ForgeInstallerErr, HttpError, InstallationError},
+use sl_utils::{
+    dlog, elog, log,
+    utils::{
+        self,
+        errors::{BackendError, ForgeInstallerErr, HttpError, InstallationError},
+    },
 };
 use std::{
     path::{Path, PathBuf},
@@ -39,10 +42,11 @@ impl<'a> ForgeInstaller<'a> {
         })
         .await?;
 
-        println!("{forge_versions:#?} => {mc_version}");
         let forge_version = forge_versions
             .get_forge_version(&mc_version)
             .expect("no forge version found for version");
+
+        dlog!("Forge: choose forge version {forge_version} for minecraft version: {mc_version}");
 
         let short_version = format!("{mc_version}-{forge_version}");
         let mut major_mc_version = None;
@@ -66,6 +70,10 @@ impl<'a> ForgeInstaller<'a> {
         let mut cache_dir = TempDir::new()
             .expect("failed to create a new temporary directory for installing forge");
 
+        dlog!(
+            "Forge: installing to temporary directory at '{}'",
+            cache_dir.path().display()
+        );
         #[cfg(debug_assertions)]
         cache_dir.disable_cleanup(true);
 
@@ -107,6 +115,8 @@ impl<'a> ForgeInstaller<'a> {
     /// Downloads the forge installer's library and returns it's path
     async fn download(&self) -> Result<PathBuf, HttpError> {
         let (file_type, file_type_flipped) = (self.file_type(), self.file_type_flipped());
+        dlog!("Forge: downloading the installer, file_type: {file_type}, file_type_flipped: {file_type_flipped}...");
+
         let installer_path = self
             .cache_dir
             .path()
@@ -134,12 +144,24 @@ impl<'a> ForgeInstaller<'a> {
                 std::time::Duration::from_secs(5),
             )
             .await;
+
             match downloaded {
-                Ok(_) => return Ok(()),
+                Ok(_) => {
+                    dlog!("Forge: successfully downloaded forge installer from url: '{url}'");
+                    return Ok(());
+                }
                 Err(HttpError::Status(s)) if s == reqwest::StatusCode::NOT_FOUND => continue,
-                Err(e) => return Err(e),
+                Err(e) => {
+                    elog!("Forge: failed to download from url: '{url}', with error: '{e}', not recoverable cannot try another url...");
+                    return Err(e);
+                }
             }
         }
+
+        elog!(
+            "Forge: tried to download from {} url(s), none successeded",
+            urls.len()
+        );
         Err(HttpError::Status(reqwest::StatusCode::NOT_FOUND))
     }
 
@@ -151,6 +173,13 @@ impl<'a> ForgeInstaller<'a> {
 
         // we link using javac
         let javac = self.instance.get_javac();
+
+        dlog!(
+            "Forge: compiling the forge installer at {}, relinking with {}, using javac at: '{}'",
+            forge_installer_lib_path.display(),
+            self.java_forge_installer.display(),
+            javac.display(),
+        );
 
         let output = Command::new(javac)
             .arg("-cp")
@@ -178,7 +207,6 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn install_to_cache(&self) -> Result<(), ForgeInstallerErr> {
         let (classpath, compiled_path) = self.compile_installer().await?;
-        println!("{classpath} => {}", compiled_path.display());
         // Create files to trick forge into thinking the cache dir is the launcher root
         let mut launcher_profiles =
             tokio::fs::File::create_new(self.cache_dir.path().join("launcher_profiles.json"))
@@ -189,10 +217,17 @@ impl<'a> ForgeInstaller<'a> {
                 .join("launcher_profiles_microsoft_store.json"),
         )
         .await?;
+
+        // writing '{}' so forge doesn't complain about invalid json
         launcher_profiles.write(b"{}").await?;
         launcher_profiles_microsoft.write(b"{}").await?;
 
         let java = self.instance.get_java();
+        dlog!(
+            "Forge: executing compiled forge class at: '{}', with java at: '{}'",
+            compiled_path.display(),
+            java.display()
+        );
 
         let output = Command::new(java)
             .arg("-cp")
@@ -207,11 +242,16 @@ impl<'a> ForgeInstaller<'a> {
 
             return Err(ForgeInstallerErr::JavaRunErr { stdout, stderr });
         }
-        println!("DONE");
         Ok(())
     }
 
     async fn install(self) -> Result<(), ForgeInstallerErr> {
+        log!(
+            "Forge: installing forge for instance: '{}' ({})",
+            self.instance.name,
+            self.instance.game_info.version
+        );
+
         /// Some helper function to recursively copy a directory
         fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result<()> {
             std::fs::create_dir_all(&dst)?;
@@ -255,8 +295,15 @@ impl<'a> ForgeInstaller<'a> {
         let forge_version_path = forge_versions_path.join(forge_version);
         let forge_json_path = forge_version_path.join(forge_version_json_file_name);
 
-        fs::copy(&forge_json_path, self.instance.loader_json_path().unwrap()).await?;
+        let loader_json_path = self.instance.loader_json_path().unwrap();
 
+        dlog!(
+            "Forge: copying '{}' to '{}'",
+            forge_json_path.display(),
+            loader_json_path.display()
+        );
+        fs::copy(&forge_json_path, loader_json_path).await?;
+        log!("Forge: Installed successfully!");
         Ok(())
     }
 }
