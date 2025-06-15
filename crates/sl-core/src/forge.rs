@@ -21,6 +21,8 @@ struct ForgeInstaller<'a> {
     instance: &'a Instance,
     short_version: String,
     norm_version: String,
+    mc_version: &'a str,
+    forge_version: String,
     major_version: u32,
     cache_dir: TempDir,
     // ForgeInstaller.java
@@ -73,6 +75,8 @@ impl<'a> ForgeInstaller<'a> {
             norm_version,
             cache_dir,
             java_forge_installer,
+            forge_version: forge_version.to_string(),
+            mc_version,
             major_version: major_mc_version.unwrap(),
         })
     }
@@ -94,7 +98,7 @@ impl<'a> ForgeInstaller<'a> {
     }
 
     fn forge_version_name(&self) -> String {
-        format!("forge-{}", self.short_version)
+        format!("{}-forge-{}", self.mc_version, self.forge_version)
     }
 
     /// Downloads the forge installer's library and returns it's path
@@ -103,7 +107,7 @@ impl<'a> ForgeInstaller<'a> {
         let installer_path = self
             .cache_dir
             .path()
-            .join(format!("{}-{file_type}.jar", self.forge_version_name()));
+            .join(format!("forge-{}-{file_type}.jar", self.short_version));
         let file = tokio::fs::File::create_new(&installer_path).await?;
 
         self.try_downloading_from_urls(&[
@@ -227,8 +231,9 @@ impl<'a> ForgeInstaller<'a> {
 
         self.install_to_cache().await?;
 
-        let forge_libraries_path = self.cache_dir.path().join("libraries");
-        let forge_versions_path = self.cache_dir.path().join("versions");
+        let cache_dir = self.cache_dir.path();
+        let forge_libraries_path = cache_dir.join("libraries");
+        let forge_versions_path = cache_dir.join("versions");
 
         // copy all the libraries forge installed to avoid re-installation,
         // forge also does some shenaganis to get some of them such as `net/minecraftforge/forge/1.21.1-52.1.1/forge-1.21.1-52.1.1-client.jar`, it doesn't have a download url...
