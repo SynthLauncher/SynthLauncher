@@ -8,7 +8,7 @@ use std::{
     process::Command,
 };
 use tempfile::TempDir;
-use tokio::fs;
+use tokio::{fs, io::AsyncWriteExt};
 
 use crate::{
     instance::{Instance, InstanceType},
@@ -173,13 +173,17 @@ impl<'a> ForgeInstaller<'a> {
         let (classpath, compiled_path) = self.compile_installer().await?;
         println!("{classpath} => {}", compiled_path.display());
         // Create files to trick forge into thinking the cache dir is the launcher root
-        tokio::fs::File::create_new(self.cache_dir.path().join("launcher_profiles.json")).await?;
-        tokio::fs::File::create_new(
+        let mut launcher_profiles =
+            tokio::fs::File::create_new(self.cache_dir.path().join("launcher_profiles.json"))
+                .await?;
+        let mut launcher_profiles_microsoft = tokio::fs::File::create_new(
             self.cache_dir
                 .path()
                 .join("launcher_profiles_microsoft_store.json"),
         )
         .await?;
+        launcher_profiles.write(b"{}").await?;
+        launcher_profiles_microsoft.write(b"{}").await?;
 
         let java = self.instance.get_java();
 
