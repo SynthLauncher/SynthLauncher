@@ -1,6 +1,3 @@
-
-use std::env;
-use std::path::PathBuf;
 use std::process::Command;
 
 use sl_core::LAUNCHER_DIR;

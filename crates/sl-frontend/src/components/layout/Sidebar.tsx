@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
                 onClick={() => setActiveTab(item.id)}
               />
             </TooltipTrigger>
-            <TooltipContent side="right">
+            <TooltipContent arrowClassName="bg-[#2e3137] fill-[#2e3137]" className="text-md text-white bg-[#2e3137]" side="right">
               {item.label}
             </TooltipContent>
           </Tooltip>
