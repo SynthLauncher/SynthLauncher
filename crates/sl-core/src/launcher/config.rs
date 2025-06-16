@@ -3,12 +3,13 @@ use std::{
     fs::{self, File, OpenOptions},
     io::BufReader,
     path::PathBuf,
+    env
 };
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sl_meta::java::jre_manifest::JreManifestDownloadType;
-use sl_utils::utils::errors::BackendError;
+use sl_utils::{dlog, utils::errors::BackendError};
 use velcro::hash_map_from;
 
 use crate::{java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest}, minecraft::version_manifest::fetch_version_manifest, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH};
@@ -35,8 +36,6 @@ pub fn get_launcher_dir() -> PathBuf {
 
     #[cfg(target_os = "linux")]
     {
-        use std::env;
-
         return env::var("HOME")
             .map(|home| PathBuf::from(home).join(".synthlauncher"))
             .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
@@ -44,22 +43,19 @@ pub fn get_launcher_dir() -> PathBuf {
 }
 
 pub async fn init_launcher_dir() -> Result<(), BackendError> {
-    tokio::fs::create_dir_all(&(*LAUNCHER_DIR)).await?;
-    tokio::fs::create_dir_all(&(*LIBS_DIR)).await?;
-    tokio::fs::create_dir_all(&(*ASSETS_DIR)).await?;
-    tokio::fs::create_dir_all(&(*INSTANCES_DIR)).await?;
-    tokio::fs::create_dir_all(&(*JAVAS_DIR)).await?;
+    for dir in [&(*LAUNCHER_DIR), &(*LIBS_DIR), &(*ASSETS_DIR), &(*INSTANCES_DIR), &(*JAVAS_DIR)] {
+        dlog!("{} dir initialized!", &dir.display());
+        tokio::fs::create_dir_all(dir).await?;
+    }
 
-    OpenOptions::new()
-        .write(true)
-        .create(true)
-        .append(true)
-        .open(&*INSTANCES_PATH)?;
-    OpenOptions::new()
-        .write(true)
-        .create(true)
-        .append(true)
-        .open(&*PROFILES_PATH)?;
+    for path in [&(*INSTANCES_PATH), &(*PROFILES_PATH)] {
+        dlog!("{} path initialized!", path.display());
+        OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(true)
+            .open(path)?;
+    }
 
     fetch_version_manifest().await;
     fetch_jre_manifest().await;

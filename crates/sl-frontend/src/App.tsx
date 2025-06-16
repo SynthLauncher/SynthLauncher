@@ -1,10 +1,11 @@
 import { useState } from "react";
 import Sidebar from "./components/layout/Sidebar";
-import HomePage from "./pages/HomePage";
 import { Navbar } from "./components/layout/Navbar";
 import ProfileSidebar from "./components/layout/ProfileSidebar";
-import InstancesPage from "./pages/InstancesPage";
+import { HomePage } from "./pages/HomePage";
+import { InstancesPage } from "./pages/InstancesPage";
 import { StorePage } from "./pages/StorePage";
+import { SettingsPage } from "./pages/SettingsPage";
 
 function App() {
   const [activeTab, setActiveTab] = useState("home");
@@ -17,6 +18,8 @@ function App() {
         return <InstancesPage />;
       case "store":
         return <StorePage />;
+      case "settings":
+        return <SettingsPage />;
       default:
         return (
           <div className="flex items-center justify-center h-full p-8">

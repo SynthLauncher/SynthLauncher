@@ -5,7 +5,7 @@ use futures_util::StreamExt;
 use reqwest::Client;
 use tokio::{io::AsyncWriteExt, time::sleep};
 
-use crate::elog;
+use crate::{elog, log};
 
 use super::errors::HttpError;
 
@@ -19,7 +19,7 @@ pub async fn download_bytes(
 
     loop {
         let res = client.get(url).send().await;
-        
+
         match res {
             Ok(response) if response.status().is_success() => {
                 let bytes = response.bytes().await?;
@@ -37,8 +37,9 @@ pub async fn download_bytes(
                     || e.is_status() =>
             {
                 attempts += 1;
+                log!("Retrying: download attempt {}", attempts);
+                
                 if attempts >= max_retries {
-                    // TODO: add a logging function
                     elog!(
                         "error while downloading '{url}' with max retries: {max_retries} (reached), reqwest error: {e}"
                     );
@@ -48,7 +49,6 @@ pub async fn download_bytes(
                 sleep(duration).await;
             }
             Err(e) => {
-                // TODO: add a logging function
                 elog!("error while downloading '{url}', reqwest error: {e}");
                 return Err(e.into());
             }
@@ -81,7 +81,7 @@ pub async fn download_file(
                 return Ok(());
             }
             Ok(response) => return Err(HttpError::Status(response.status())),
-            // retry only if Error is related to the response otherwise the error is likely from our side
+            // Retries only if the Error is related to the response, otherwise the error is from our side
             Err(e)
                 if e.is_body()
                     || e.is_decode()
@@ -91,8 +91,9 @@ pub async fn download_file(
                     || e.is_status() =>
             {
                 attempts += 1;
+                log!("Retrying: download attempt {}", attempts);
+
                 if attempts >= max_retries {
-                    // TODO: add a logging function
                     elog!(
                            "error while downloading '{url}' to `{}` with max retries: {max_retries} (reached), reqwest error: {e}",
                            dest.display()
@@ -103,7 +104,6 @@ pub async fn download_file(
                 sleep(duration).await;
             }
             Err(e) => {
-                // TODO: add a logging function
                 elog!(
                     "error while downloading '{url}' to `{}`, reqwest error: {e}",
                     dest.display()

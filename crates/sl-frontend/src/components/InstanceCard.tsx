@@ -14,7 +14,7 @@ export const InstanceCard = ({ game_info, instance_type, name }: Instance) => {
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl overflow-hidden p-4 flex items-center">
+    <div className="bg-[#1D2026] rounded-xl overflow-hidden p-5 flex items-center">
       <div className="flex gap-2 items-center">
         <div className="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center">
           {getIconByTitle(name)}
