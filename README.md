@@ -1,6 +1,6 @@
 # SynthLauncher
 
-![SynthLauncher Logo](assets/logo.png)
+![SynthLauncher Logo](assets/images/repo/logo.png)
 
 **SynthLauncher** is an open-source Minecraft launcher. Our goal is to provide a seamless, optimized experience that enhances performance across all types of systems. Currently, the launcher is in active development, and we welcome contributions from the community.
 
@@ -15,14 +15,14 @@
 ## Current Status
 
 1. **Added Fabric Loader:**
-![ss1](assets/fabric-1.png)
-![ss2](assets/fabric-2.png)
+![ss1](assets/images/v0.0.1-dev/fabric-1.png)
+![ss2](assets/images/v0.0.1-dev/fabric-2.png)
 
 2. **Added Microsoft Auth:**
-![ss3](assets/hypixel.png)
+![ss3](assets/images/v0.0.1-dev/hypixel.png)
 
 3. **Added Discord RPC:**
-![ss4](assets/discord-rpc.png)
+![ss4](assets/images/v0.0.1-dev/discord-rpc.png)
 
 4. **Sound fixes for older versions**
 

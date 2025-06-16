@@ -1,9 +1,7 @@
 use std::{
     borrow::Cow,
     ffi::OsStr,
-    fmt,
     fs::{self},
-    future::Future,
     io::BufReader,
     path::{Path, PathBuf},
     process::Stdio,
@@ -11,73 +9,21 @@ use std::{
 
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
-use sl_meta::json::{
-    fabric::{self, profile::FabricLoaderProfile},
-    forge::ForgeLoaderProfile,
-    quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile},
-    vanilla::Client,
-    version_manifest::VersionType,
-};
-use sl_utils::{dlog, elog, log, utils::errors::{BackendError, HttpError, InstallationError}};
+use sl_meta::minecraft::{loaders::{fabric::profile::FabricLoaderProfile, forge::ForgeLoaderProfile, quilt::profiles::QuiltLoaderProfile, vanilla::Client}, version_manifest::VersionType};
+use sl_utils::{dlog, elog, log, utils::errors::{BackendError, InstallationError}};
+use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
-use crate::{
-    config::config::Config,
-    json::{vanilla, version_manifest::download_version},
-    profiles::player::PlayerProfile,
-    ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST,
-};
+use crate::{launcher::{config::Config, profiles::player::PlayerProfile}, loaders::{fabric::install_fabric_loader, forge::install_forge_loader, quilt::install_quilt_loader, Loaders}, minecraft::{install_client, version_manifest::download_version}, ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST};
 
-#[derive(Debug, Deserialize)]
-pub enum Loaders {
-    Fabric(FabricLoaderProfile),
-    Quilt(QuiltLoaderProfile),
-    Forge(ForgeLoaderProfile),
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq, Default, EnumString, Display, AsRefStr)]
+#[strum(serialize_all = "snake_case")]
 pub enum InstanceType {
+    #[default]
     Vanilla,
     Fabric,
     Quilt,
     Forge,
-}
-
-impl Default for InstanceType {
-    fn default() -> Self {
-        Self::Vanilla
-    }
-}
-
-impl InstanceType {
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            InstanceType::Vanilla => "vanilla",
-            InstanceType::Fabric => "fabric",
-            InstanceType::Quilt => "quilt",
-            InstanceType::Forge => "forge",
-        }
-    }
-}
-
-impl fmt::Display for InstanceType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(self.as_str(), f)
-    }
-}
-
-impl<'a> From<&'a str> for InstanceType {
-    fn from(value: &'a str) -> Self {
-        match value {
-            "vanilla" => InstanceType::Vanilla,
-            "fabric" => InstanceType::Fabric,
-            "quilt" => InstanceType::Quilt,
-            "forge" => InstanceType::Forge,
-            _ => {
-                panic!("Unknown instance type: {}", value)
-            }
-        }
-    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -118,7 +64,7 @@ impl Instance {
             ))?;
 
         fs::create_dir_all(INSTANCES_DIR.join(name))?;
-
+        
         Ok(Self {
             name: name.to_string(),
             game_info: InstanceGameInfo {
@@ -131,6 +77,7 @@ impl Instance {
         })
     }
 
+    // TODO: Change how this works
     fn get_loader_from_dir(dir: &Path) -> Result<InstanceType, BackendError> {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
@@ -148,6 +95,7 @@ impl Instance {
         Ok(InstanceType::Vanilla)
     }
 
+    // TODO: Change how this works
     pub fn get_instance_from_dir(name: &str) -> Result<Self, BackendError> {
         let dir = Path::new(&INSTANCES_DIR.as_path()).join(&name);
         let path = dir.join("client.json");
@@ -220,45 +168,9 @@ impl Instance {
             InstanceType::Vanilla => {
                 return Ok(());
             }
-            // TODO: move to separatare functions
-            InstanceType::Fabric => {
-                let path = self.dir_path().join("fabric.json");
-                let make_req = async |url: &str| -> Result<Vec<u8>, HttpError> {
-                    let res = reqwest::get(url).await?;
-                    let bytes = res.bytes().await?;
-                    Ok(bytes.to_vec())
-                };
-
-                let profile = fabric::profile::get_loader_profile::<
-                    fn(&str) -> dyn Future<Output = Result<Vec<u8>, HttpError>>,
-                    HttpError,
-                >(&self.game_info.version, loader_version, make_req)
-                .await?;
-
-                let file = fs::File::create(&path)?;
-                serde_json::to_writer_pretty(file, &profile)?;
-
-                Ok(())
-            }
-            InstanceType::Quilt => {
-                let path = self.dir_path().join("quilt.json");
-                let make_req = async |url: &str| -> Result<Vec<u8>, HttpError> {
-                    let res = reqwest::get(url).await?;
-                    let bytes = res.bytes().await?;
-                    Ok(bytes.to_vec())
-                };
-
-                let profile = get_quilt_loader_profile::<
-                    fn(&str) -> dyn Future<Output = Result<Vec<u8>, HttpError>>,
-                    HttpError,
-                >(&self.game_info.version, loader_version, make_req)
-                .await?;
-                let file = fs::File::create(&path)?;
-                serde_json::to_writer_pretty(file, &profile)?;
-
-                Ok(())
-            }
-            InstanceType::Forge => crate::forge::install_for_instance(self).await,
+            InstanceType::Fabric => install_fabric_loader(&self, loader_version).await,
+            InstanceType::Quilt => install_quilt_loader(&self, loader_version).await,
+            InstanceType::Forge => install_forge_loader(self).await,
         }
     }
 
@@ -328,7 +240,7 @@ impl Instance {
     pub async fn install(&mut self) -> Result<(), BackendError> {
         let client = self.init().await?;
 
-        vanilla::install_client(&client, &self.dir_path()).await
+        install_client(&client, &self.dir_path()).await
     }
 
     fn classpath(&self, client: &Client) -> String {

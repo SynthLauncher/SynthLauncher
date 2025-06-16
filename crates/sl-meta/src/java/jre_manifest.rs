@@ -1,36 +1,11 @@
-use std::{collections::HashMap, fmt};
+use std::collections::HashMap;
 
 use serde::Deserialize;
+use strum_macros::{Display, EnumString};
 
-#[derive(Debug)]
-pub enum Platform {
-    Linux,
-    LinuxI386,
-    MacOs,
-    MacOsArm64,
-    WindowsArm64,
-    WindowsX86,
-    WindowsX64,
-}
-
-impl Platform {
-    pub fn detect() -> Self {
-        use Platform::*;
-
-        match (std::env::consts::OS, std::env::consts::ARCH) {
-            ("linux", "x86_64") => Linux,
-            ("linux", "x86") | ("linux", "i386") => LinuxI386,
-            ("macos", "x86_64") => MacOs,
-            ("macos", "aarch64") => MacOsArm64,
-            ("windows", "aarch64") => WindowsArm64,
-            ("windows", "x86") | ("windows", "i386") => WindowsX86,
-            ("windows", "x86_64") => WindowsX64,
-            _ => panic!("Unsupported platform!"),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Display, EnumString, Clone)]
+#[strum(serialize_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub enum JreManifestDownloadType {
     JavaRuntimeAlpha,
     JavaRuntimeBeta,
@@ -41,42 +16,6 @@ pub enum JreManifestDownloadType {
     MinecraftJavaExe,
 }
 
-impl fmt::Display for JreManifestDownloadType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = match self {
-            JreManifestDownloadType::JavaRuntimeAlpha => "java-runtime-alpha",
-            JreManifestDownloadType::JavaRuntimeBeta => "java-runtime-beta",
-            JreManifestDownloadType::JavaRuntimeDelta => "java-runtime-delta",
-            JreManifestDownloadType::JavaRuntimeGamma => "java-runtime-gamma",
-            JreManifestDownloadType::JavaRuntimeGammaSnapshot => "java-runtime-gamma-snapshot",
-            JreManifestDownloadType::JreLegacy => "jre-legacy",
-            JreManifestDownloadType::MinecraftJavaExe => "minecraft-java-exe"
-        };
-        write!(f, "{}", s)
-    }
-}
-
-impl From<&str> for JreManifestDownloadType {
-    fn from(value: &str) -> Self {
-        match value {
-            "java-runtime-alpha" => JreManifestDownloadType::JavaRuntimeAlpha,
-            "java-runtime-beta" => JreManifestDownloadType::JavaRuntimeBeta,
-            "java-runtime-delta" => JreManifestDownloadType::JavaRuntimeDelta,
-            "java-runtime-gamma" => JreManifestDownloadType::JavaRuntimeGamma,
-            "java-runtime-gamma-snapshot" => JreManifestDownloadType::JavaRuntimeGammaSnapshot,
-            "jre-legacy" => JreManifestDownloadType::JreLegacy,
-            "minecraft-java-exe" => JreManifestDownloadType::MinecraftJavaExe,
-            _ => panic!("Unknown JRE Manifest Download Type")
-        }
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Avaliability {
-    pub group: i32,
-    pub progress: i32,
-}
-
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
     pub sha1: String,
@@ -85,16 +24,15 @@ pub struct Manifest {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Version {
+pub struct JreVersion {
     pub name: String,
     pub released: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct JreManifestDownload {
-    pub avaliability: Option<Avaliability>,
     pub manifest: Manifest,
-    pub version: Version,
+    pub version: JreVersion,
 }
 
 #[derive(Debug, Deserialize)]
@@ -124,9 +62,9 @@ pub struct JreManifest {
 
 impl JreManifest {
     pub fn get_current_platform_download(&self) -> &OsDownload {
-        use Platform::*;
+        use super::Platform::*;
 
-        match Platform::detect() {
+        match super::Platform::detect() {
             Linux => &self.linux,
             LinuxI386 => &self.linux_i386,
             MacOs => &self.mac_os,
@@ -148,9 +86,7 @@ impl JreManifest {
             JreManifestDownloadType::JavaRuntimeBeta => &platform_download.java_runtime_beta,
             JreManifestDownloadType::JavaRuntimeDelta => &platform_download.java_runtime_delta,
             JreManifestDownloadType::JavaRuntimeGamma => &platform_download.java_runtime_gamma,
-            JreManifestDownloadType::JavaRuntimeGammaSnapshot => {
-                &platform_download.java_runtime_gamma_snapshot
-            }
+            JreManifestDownloadType::JavaRuntimeGammaSnapshot => &platform_download.java_runtime_gamma_snapshot,
             JreManifestDownloadType::JreLegacy => &platform_download.jre_legacy,
             JreManifestDownloadType::MinecraftJavaExe => &platform_download.minecraft_java_exe,
         }
@@ -160,7 +96,6 @@ impl JreManifest {
 #[derive(Debug, Deserialize)]
 pub struct JavaFile {
     pub r#type: String,
-    pub executable: Option<bool>,
     pub target: Option<String>,
     pub downloads: Option<JavaFileDownloads>,
 }

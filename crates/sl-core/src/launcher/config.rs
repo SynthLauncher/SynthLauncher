@@ -1,17 +1,73 @@
 use std::{
     collections::HashMap,
-    fs::{self, File},
+    fs::{self, File, OpenOptions},
     io::BufReader,
     path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sl_meta::json::jre_manifest::JreManifestDownloadType;
+use sl_meta::java::jre_manifest::JreManifestDownloadType;
 use sl_utils::utils::errors::BackendError;
 use velcro::hash_map_from;
 
-use crate::{json::jre_manifest::download_jre_manifest_version, JAVAS_DIR, LAUNCHER_DIR};
+use crate::{java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest}, minecraft::version_manifest::fetch_version_manifest, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH};
+
+pub fn get_launcher_dir() -> PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        return env::var("APPDATA")
+            .map(|appdata| PathBuf::from(appdata).join("SynthLauncher"))
+            .unwrap_or_else(|_| PathBuf::from("C:\\SynthLauncher"));
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        return env::var("HOME")
+            .map(|home| {
+                PathBuf::from(home)
+                    .join("Library")
+                    .join("Application Support")
+                    .join("SynthLauncher")
+            })
+            .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::env;
+
+        return env::var("HOME")
+            .map(|home| PathBuf::from(home).join(".synthlauncher"))
+            .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
+    }
+}
+
+pub async fn init_launcher_dir() -> Result<(), BackendError> {
+    tokio::fs::create_dir_all(&(*LAUNCHER_DIR)).await?;
+    tokio::fs::create_dir_all(&(*LIBS_DIR)).await?;
+    tokio::fs::create_dir_all(&(*ASSETS_DIR)).await?;
+    tokio::fs::create_dir_all(&(*INSTANCES_DIR)).await?;
+    tokio::fs::create_dir_all(&(*JAVAS_DIR)).await?;
+
+    OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(true)
+        .open(&*INSTANCES_PATH)?;
+    OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(true)
+        .open(&*PROFILES_PATH)?;
+
+    fetch_version_manifest().await;
+    fetch_jre_manifest().await;
+
+    std::env::set_current_dir(&*LAUNCHER_DIR)?;
+
+    Ok(())
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
@@ -51,8 +107,8 @@ impl Config {
         Self(map)
     }
 
-    pub async fn create_local_config(component: &str) -> Result<Self, BackendError> {
-        let java_path = JAVAS_DIR.join(component);
+    pub async fn create_local_config(component: &JreManifestDownloadType) -> Result<Self, BackendError> {
+        let java_path = JAVAS_DIR.join(component.to_string());
 
         let java_binary = if cfg!(target_os = "windows") {
             "java.exe"
@@ -66,7 +122,7 @@ impl Config {
             }));
         }
 
-        download_jre_manifest_version(JreManifestDownloadType::from(component)).await?;
+        download_jre_manifest_version(component).await?;
 
         Ok(Self(hash_map_from! {
             "java": java_path.join("bin").join(java_binary).to_string_lossy().to_string()

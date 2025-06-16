@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-pub mod fabric;
-pub mod forge;
-pub mod jre_manifest;
-pub mod quilt;
-pub mod vanilla;
+pub mod loaders;
 pub mod version_manifest;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Hash, Clone)]

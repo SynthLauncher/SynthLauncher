@@ -1,4 +1,6 @@
-use sl_core::profiles::player::{PlayerProfile, PlayerProfiles};
+use sl_core::launcher::profiles::player::{PlayerProfile, PlayerProfiles};
+
+
 
 #[tauri::command]
 pub fn get_profiles() -> Result<PlayerProfiles, String> {

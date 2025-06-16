@@ -1,14 +1,6 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::{
-    config::init_launcher_dir,
-    instance::{Instance, InstanceType},
-    instances::Instances,
-    profiles::{
-        auth::AuthFlow,
-        player::{PlayerProfile, PlayerProfiles},
-    },
-};
+use sl_core::launcher::{config::init_launcher_dir, instance::{Instance, InstanceType}, instances::Instances, profiles::{auth::AuthFlow, player::{PlayerProfile, PlayerProfiles}}};
 use sl_utils::{dlog, elog, log, utils::errors::BackendError};
 
 mod cli;
@@ -44,6 +36,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let current_profile = profiles.current_profile().unwrap();
 
             let instance = Instances::find(&instance_name)?;
+            dlog!("Instance found!");
             instance.execute(current_profile).await?;
         }
         Commands::AddOfflineProfile { name } => {
@@ -79,6 +72,7 @@ async fn run_cli() -> Result<(), BackendError> {
 
     Ok(())
 }
+
 #[tokio::main]
 async fn main() -> Result<(), ()> {
     if let Err(err) = run_cli().await {

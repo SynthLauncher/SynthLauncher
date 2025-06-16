@@ -1,5 +1,5 @@
 use clap::{ArgAction, Args, Parser, Subcommand};
-use sl_core::instance::InstanceType;
+use sl_core::launcher::instance::InstanceType;
 
 #[derive(Parser)]
 #[command(about, long_about = None)]
@@ -10,15 +10,15 @@ pub struct Cli {
 
 #[derive(Args, Default)]
 pub struct LoaderInfo {
-    /// can be "vanilla" or "fabric" or "quilt" or "forge"
+    /// Can be "vanilla" or "fabric" or "quilt" or "forge"
     pub loader: Option<InstanceType>,
-    /// depends on the loader, can be left empty for vanilla
+    /// Depends on the loader, can be left empty for vanilla
     pub loader_version: Option<String>,
 }
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Install a Minecraft instance
+    /// Installs a Minecraft instance
     Install {
         #[arg(required = true)]
         instance_name: String,

@@ -1,7 +1,7 @@
 use std::fs;
 
 use bytes::Bytes;
-use sl_meta::json::version_manifest::VersionManifest;
+use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::utils::{
     self,
     errors::{BackendError, InstallationError},
@@ -25,7 +25,7 @@ pub async fn fetch_version_manifest() {
     }
 }
 
-pub fn version_manifest_read() -> VersionManifest {
+pub fn read_version_manifest() -> VersionManifest {
     let buffer = fs::read_to_string(VERSION_MANIFEST_PATH.as_path())
         .expect("Failed reading the file: version_manifest.json");
     serde_json::from_str(buffer.as_str()).expect("Failed to parse file: version_manifest.json")
@@ -39,6 +39,12 @@ pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
         ));
     };
 
-    let res = utils::download::download_bytes(&version.url, &HTTP_CLIENT, 3, std::time::Duration::from_secs(5)).await?;
+    let res = utils::download::download_bytes(
+        &version.url,
+        &HTTP_CLIENT,
+        3,
+        std::time::Duration::from_secs(5),
+    )
+    .await?;
     Ok(res)
 }

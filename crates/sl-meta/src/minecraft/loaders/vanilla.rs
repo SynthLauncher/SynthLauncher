@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use super::{version_manifest::VersionType, JavaClassName, Os, OsName};
+use crate::{java::jre_manifest::JreManifestDownloadType, minecraft::{version_manifest::VersionType, JavaClassName, Os, OsName}};
 
 #[derive(Debug, Deserialize)]
 pub struct AssetObject {
@@ -154,7 +154,7 @@ impl Arguments {
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct JavaVersion {
-    pub component: String,
+    pub component: JreManifestDownloadType,
     pub major_version: u16,
 }
 

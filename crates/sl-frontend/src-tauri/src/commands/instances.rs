@@ -1,5 +1,5 @@
-use sl_core::instance::{Instance, InstanceType};
-use sl_core::instances::Instances;
+
+use sl_core::launcher::{instance::{Instance, InstanceType}, instances::Instances};
 use sl_utils::utils::errors::BackendError;
 
 #[tauri::command]

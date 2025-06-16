@@ -1,4 +1,4 @@
-use sl_meta::json::forge::ForgeVersions;
+use sl_meta::minecraft::loaders::forge::ForgeVersions;
 use sl_utils::utils::{
     self,
     errors::{BackendError, ForgeInstallerErr, HttpError, InstallationError},
@@ -11,11 +11,10 @@ use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::{
-    instance::{Instance, InstanceType},
-    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
+    launcher::instance::{Instance, InstanceType}, HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR
 };
 
-const FORGE_JAVA_INSTALLER_SRC: &str = include_str!("../../../assets/scripts/ForgeInstaller.java");
+const FORGE_JAVA_INSTALLER_SRC: &str = include_str!("../../../../assets/scripts/ForgeInstaller.java");
 
 struct ForgeInstaller<'a> {
     instance: &'a Instance,
@@ -261,7 +260,7 @@ impl<'a> ForgeInstaller<'a> {
     }
 }
 
-pub async fn install_for_instance(instance: &Instance) -> Result<(), BackendError> {
+pub async fn install_forge_loader(instance: &Instance) -> Result<(), BackendError> {
     // it isn't the job of the installer to forge a working instance...
     assert_eq!(instance.instance_type, InstanceType::Forge);
     ForgeInstaller::new(instance)

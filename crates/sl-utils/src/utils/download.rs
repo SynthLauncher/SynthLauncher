@@ -19,7 +19,7 @@ pub async fn download_bytes(
 
     loop {
         let res = client.get(url).send().await;
-
+        
         match res {
             Ok(response) if response.status().is_success() => {
                 let bytes = response.bytes().await?;

@@ -1,20 +1,15 @@
 use std::path::PathBuf;
 
-use config::config_launcher_dir;
-use json::jre_manifest::jre_manifest_read;
-use json::version_manifest::version_manifest_read;
 use lazy_static::lazy_static;
-use profiles::player::PlayerProfile;
-use sl_meta::json::jre_manifest::JreManifest;
-use sl_meta::json::version_manifest::VersionManifest;
-use sl_meta::json::{Arch, OsName};
+use sl_meta::{java::jre_manifest::{JreManifest}, minecraft::{version_manifest::VersionManifest, Arch, OsName}};
+use minecraft::version_manifest::read_version_manifest;
+use java::jre_manifest::read_jre_manifest;
+use crate::launcher::{config::get_launcher_dir};
 
-pub mod config;
-mod forge;
-pub mod instance;
-pub mod instances;
-pub mod json;
-pub mod profiles;
+pub mod loaders;
+pub mod launcher;
+pub mod minecraft;
+pub mod java;
 
 pub const MULTI_PATH_SEPARATOR: &'static str = if cfg!(target_os = "windows") {
     ";"
@@ -44,7 +39,7 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
 
 lazy_static! {
     #[derive(Debug)]
-    pub static ref LAUNCHER_DIR: PathBuf = config_launcher_dir();
+    pub static ref LAUNCHER_DIR: PathBuf = get_launcher_dir();
     pub static ref ASSETS_DIR: PathBuf = LAUNCHER_DIR.join("assets");
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
     pub static ref INSTANCES_DIR: PathBuf = LAUNCHER_DIR.join("instances");
@@ -54,9 +49,8 @@ lazy_static! {
     pub static ref VERSION_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
     pub static ref JRE_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("jre_manifest.json");
     pub static ref PROFILES_PATH: PathBuf = LAUNCHER_DIR.join("profiles.json");
-
-    pub static ref JRE_MANIFEST: JreManifest = jre_manifest_read();
-    pub static ref VERSION_MANIFEST: VersionManifest = version_manifest_read();
+    
+    pub static ref JRE_MANIFEST: JreManifest = read_jre_manifest();
+    pub static ref VERSION_MANIFEST: VersionManifest = read_version_manifest();
     pub static ref HTTP_CLIENT: reqwest::Client = reqwest::Client::new();
-    pub static ref CURRENT_PROFILE: Option<PlayerProfile> = None;
 }

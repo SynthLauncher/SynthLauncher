@@ -2,7 +2,7 @@ use std::{collections::HashMap, io};
 
 use serde::Deserialize;
 
-use crate::json::vanilla;
+use crate::minecraft::loaders::vanilla::{Arguments, Client, Library};
 
 #[derive(Debug, Deserialize)]
 pub struct ForgeVersions {
@@ -37,18 +37,18 @@ impl ForgeVersions {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ForgeLoaderProfile {
-    arguments: vanilla::Arguments,
+    arguments: Arguments,
     id: String,
     /// The .id of the client this extends
     inherits_from: String,
     main_class: String,
 
-    libraries: Vec<vanilla::Library>,
+    libraries: Vec<Library>,
 }
 
 impl ForgeLoaderProfile {
     // TODO: really slow?
-    pub fn join_client(self, mut client: vanilla::Client) -> vanilla::Client {
+    pub fn join_client(self, mut client: Client) -> Client {
         assert_eq!(self.inherits_from, client.id);
         client.id = self.id;
         client.main_class = self.main_class;

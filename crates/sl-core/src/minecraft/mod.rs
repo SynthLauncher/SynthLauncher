@@ -3,13 +3,21 @@ use std::path::{Path, PathBuf};
 use bytes::Bytes;
 use futures::{stream::FuturesUnordered, StreamExt};
 use sha1::{Digest, Sha1};
-use sl_meta::json::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
-use sl_utils::{elog, log, utils::{
-    self, errors::{BackendError, HttpError}, zip::ZipExtractor
-}};
+
+use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
+use sl_utils::{
+    elog, log,
+    utils::{
+        self,
+        errors::{BackendError, HttpError},
+        zip::ZipExtractor,
+    },
+};
 use tokio::{fs::File, io::AsyncReadExt};
 
 use crate::{ASSETS_DIR, HTTP_CLIENT, LIBS_DIR};
+
+pub mod version_manifest;
 
 #[inline(always)]
 pub async fn verify_data(file: &mut File, sha1: &str) -> bool {

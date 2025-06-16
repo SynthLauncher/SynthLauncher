@@ -3,7 +3,7 @@ use std::{fs::{self, OpenOptions}, path::Path};
 use serde::{Deserialize, Serialize};
 use sl_utils::utils::errors::{BackendError, InstallationError};
 
-use crate::{instance::Instance, INSTANCES_DIR, INSTANCES_PATH};
+use crate::{launcher::instance::Instance, INSTANCES_DIR, INSTANCES_PATH};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(transparent)]

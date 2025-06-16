@@ -9,7 +9,6 @@ import net.minecraftforge.installer.json.InstallV1;
 import net.minecraftforge.installer.json.Util;
 
 public class ForgeInstaller {
-
     public static void main(String[] args) throws IOException {
         SimpleInstaller.headless = true;
         System.setProperty("java.net.preferIPv4Stack", "true");
