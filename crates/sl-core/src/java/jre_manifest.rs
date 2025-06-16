@@ -1,7 +1,8 @@
-use std::fs;
+use std::{fs::{self, File}, io::{Cursor, Write}, os::unix::fs::PermissionsExt};
 
+use lzma_rs::lzma_decompress;
 use sl_meta::java::jre_manifest::{JavaFiles, JreManifest, JreManifestDownloadType};
-use sl_utils::utils::{self, download::download_file, errors::BackendError};
+use sl_utils::{utils::{self, download::download_file, errors::BackendError}};
 
 use crate::{HTTP_CLIENT, JAVAS_DIR, JRE_MANIFEST, JRE_MANIFEST_PATH};
 
@@ -30,15 +31,14 @@ pub fn read_jre_manifest() -> JreManifest {
 pub async fn download_jre_manifest_version(
     download_type: &JreManifestDownloadType,
 ) -> Result<(), BackendError> {
-    let downloads = JRE_MANIFEST.get_jre_manifest_download(&download_type);
+    let downloads = JRE_MANIFEST.get_jre_manifest_download(download_type);
     let dir = JAVAS_DIR.join(download_type.to_string());
 
     for download in downloads {
         let res = HTTP_CLIENT.get(&download.manifest.url).send().await?;
         let java_files: JavaFiles = res.json().await?;
-        let files = java_files.java_file_by_type("file");
 
-        for (file_name, java_file) in files {
+        for (file_name, java_file) in java_files.files {
             let path = dir.join(file_name);
 
             if let Some(parent) = path.parent() {
@@ -47,7 +47,23 @@ pub async fn download_jre_manifest_version(
 
             if let Some(downloads) = java_file.downloads.as_ref() {
                 if let Some(lzma_file) = &downloads.lzma {
-                    download_file(&HTTP_CLIENT, &lzma_file.url, &path, 3, std::time::Duration::from_secs(5)).await?;
+                    let compressed = HTTP_CLIENT.get(&lzma_file.url).send().await?.bytes().await?;
+
+                    let mut decompressed = Vec::new();
+                    lzma_decompress(&mut Cursor::new(&compressed), &mut decompressed)
+                        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+
+                    let mut out_file = File::create(&path)?;
+                    out_file.write_all(&decompressed)?;
+
+                    if java_file.executable == Some(true) {
+                        fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;
+                    }
+                } else if let Some(raw_file) = &downloads.raw {
+                    download_file(&HTTP_CLIENT, &raw_file.url, &path, 3, std::time::Duration::from_secs(5)).await?;
+                    if java_file.executable == Some(true) {
+                        fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;
+                    }
                 }
             }
         }

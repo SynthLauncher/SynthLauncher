@@ -95,6 +95,7 @@ impl JreManifest {
 
 #[derive(Debug, Deserialize)]
 pub struct JavaFile {
+    pub executable: Option<bool>,
     pub r#type: String,
     pub target: Option<String>,
     pub downloads: Option<JavaFileDownloads>,
@@ -119,12 +120,12 @@ pub struct JavaFiles {
 }
 
 impl JavaFiles {
-    pub fn java_file_by_type<'a>(
+    pub fn java_file_excluding_type<'a>(
         &'a self,
         r#type: &'a str,
     ) -> impl Iterator<Item = (&'a String, &'a JavaFile)> + 'a {
         self.files
             .iter()
-            .filter(move |(_, file)| file.r#type == r#type)
+            .filter(move |(_, file)| file.r#type != r#type)
     }
 }
