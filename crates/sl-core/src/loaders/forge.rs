@@ -1,8 +1,8 @@
-use sl_meta::json::forge::ForgeVersions;
-use sl_utils::utils::{
+use sl_meta::minecraft::loaders::forge::ForgeVersions;
+use sl_utils::{dlog, elog, log, utils::{
     self,
     errors::{BackendError, ForgeInstallerErr, HttpError, InstallationError},
-};
+}};
 use std::{
     path::{Path, PathBuf},
     process::Command,
