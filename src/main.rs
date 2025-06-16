@@ -25,6 +25,11 @@ async fn run_cli() -> Result<(), BackendError> {
 
             match instance.instance_type {
                 InstanceType::Vanilla => instance.install().await?,
+                InstanceType::Forge => {
+                    instance.install().await?;
+                    instance.install_loader(&loader_version).await?;
+                    instance.install().await?;                    
+                },
                 _ => {
                     instance.install_loader(&loader_version).await?;
                     instance.install().await?;

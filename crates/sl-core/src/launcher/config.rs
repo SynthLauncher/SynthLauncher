@@ -57,8 +57,13 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
             .open(path)?;
     }
 
+    dlog!("Fetching version manifest!");
     fetch_version_manifest().await;
+    dlog!("Fetched version manifest!");
+
+    dlog!("Fetching JRE manifest!");
     fetch_jre_manifest().await;
+    dlog!("Fetched JRE manifest!");
 
     std::env::set_current_dir(&*LAUNCHER_DIR)?;
 
