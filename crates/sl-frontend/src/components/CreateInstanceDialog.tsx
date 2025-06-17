@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,24 +7,38 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import { Input } from "./ui/input";
+import { getMinecraftVersions } from "@/lib/commands/minecraft";
+import { Box, Upload, X } from "lucide-react";
 
 interface CreateInstanceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate: (name: string, version: string) => void;
+  onCreate: (name: string, version: string, loader: string) => void;
 }
 
-const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
+export const CreateInstanceDialog = ({
   open,
   onOpenChange,
   onCreate,
-}) => {
+}: CreateInstanceDialogProps) => {
   const [name, setName] = useState("");
-  const [version, setVersion] = useState("1.21.5");
+  const [version, setVersion] = useState("");
+  const [loader, setLoader] = useState("");
+  const [minecraftVersions, setMinecraftVersions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      await getMinecraftVersions(setMinecraftVersions);
+    };
+
+    fetch();
+    setVersion(minecraftVersions[0]);
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-900 border-gray-700 border-2">
+      <DialogContent className="sm:max-w-[425px] bg-[#1E2128] border-[#2c3039] border-2">
         <DialogHeader>
           <DialogTitle className="text-white">Create New Instance</DialogTitle>
           <DialogDescription className="text-gray-300">
@@ -36,10 +50,10 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
             <label htmlFor="name" className="text-sm font-medium text-gray-200">
               Instance Name
             </label>
-            <input
+            <Input
               id="name"
-              className="flex h-9 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-1 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="My New Instance"
+              className="border-0 bg-[#2b3136] text-white placeholder:text-[#9ca5a8]"
+              placeholder="My new instance"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -54,13 +68,13 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
             </label>
             <select
               id="version"
-              className="flex h-9 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-1 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="appearance-none flex h-9 w-full rounded-md bg-[#2b3136] px-3 py-1 text-sm text-gray-200 justify-between outline-none"
               onChange={(e) => setVersion(e.target.value)}
               value={version}
             >
-              <option value="1.21.5">1.21.5</option>
-              <option value="1.19.4">1.19.4</option>
-              <option value="1.18.2">1.18.2</option>
+              {minecraftVersions.map((version) => (
+                <option value={version}>{version}</option>
+              ))}
             </select>
           </div>
 
@@ -73,11 +87,14 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
             </label>
             <select
               id="modloader"
-              className="flex h-9 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-1 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="appearance-none flex h-9 w-full rounded-md bg-[#2b3136] px-3 py-1 text-sm text-gray-200 outline-none"
+              onChange={(e) => setLoader(e.target.value)}
+              value={loader}
             >
+              <option value="vanilla">Vanilla</option>
               <option value="forge">Forge</option>
               <option value="fabric">Fabric</option>
-              <option value="vanilla">Vanilla</option>
+              <option value="quilt">Quilt</option>
             </select>
           </div>
 
@@ -86,26 +103,35 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
               Instance Icon
             </label>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gray-700 rounded-lg"></div>
-              <button className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-colors">
-                Choose Icon
-              </button>
+              <div className="w-22 h-22 bg-[#2b3136] rounded-lg flex items-center justify-center">
+                <Box className="text-neutral-300" width={68} height={68} />
+              </div>
+              <div className="flex flex-col justify-center gap-2">
+                <button className="px-5 py-[6px] bg-[#2b3136]  hover:bg-gray-600 text-gray-200 rounded-lg transition-colors flex gap-[6px] items-center">
+                  <Upload width={22} height={22} />
+                  Choose Icon
+                </button>
+                <button disabled className="px-5 py-[6px] bg-[#2b3136] hover:bg-gray-600 disabled:bg-[#2d353a]/50 text-gray-200 rounded-lg transition-colors flex gap-[6px] items-center">
+                  <X width={22} height={22} />
+                  Remove Icon
+                </button>
+              </div>
             </div>
           </div>
         </div>
         <DialogFooter>
           <button
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-colors"
+            className="px-4 py-2 bg-[#2b3136] hover:bg-gray-600 text-gray-200 rounded-lg transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={() => {
               onOpenChange(false);
-              onCreate(name, version);
+              onCreate(name, version, loader);
             }}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg transition-colors"
           >
             Create Instance
           </button>
@@ -114,5 +140,3 @@ const CreateInstanceDialog: React.FC<CreateInstanceDialogProps> = ({
     </Dialog>
   );
 };
-
-export default CreateInstanceDialog;

@@ -15,3 +15,14 @@ export const getInstances = async (
     });
   }
 };
+
+export const createInstance = async (name: string, version: string, loader: string) => {
+  try {
+    await invoke("create_instance", { name: name, version: version });
+  } catch (error) {
+    await message(`createInstance error: ${error}`, {
+      title: "SynthLauncher Error",
+      kind: "error"
+    })
+  }
+}

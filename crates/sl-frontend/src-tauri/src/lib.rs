@@ -1,6 +1,6 @@
 mod commands;
 
-use commands::{open_synthlauncher_folder, instances::{get_instances, create_instance, remove_instance}, profiles::{get_current_profile, get_profiles, get_other_profiles}};
+use commands::{instances::{get_instances, create_instance, remove_instance}, profiles::{get_current_profile, get_profiles, get_other_profiles}, launcher::open_synthlauncher_folder, minecraft::get_minecraft_versions};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -14,7 +14,8 @@ pub fn run() {
             get_current_profile,
             get_profiles,
             get_other_profiles,
-            open_synthlauncher_folder
+            open_synthlauncher_folder,
+            get_minecraft_versions
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
