@@ -9,7 +9,8 @@ import {
 } from "../components/ui/dialog";
 import { Input } from "./ui/input";
 import { getMinecraftVersions } from "@/lib/commands/minecraft";
-import { Box, Upload, X } from "lucide-react";
+import { ArrowUpNarrowWide, Box, Plus, Upload, X } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface CreateInstanceDialogProps {
   open: boolean;
@@ -38,7 +39,7 @@ export const CreateInstanceDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-[#1E2128] border-[#2c3039] border-2">
+      <DialogContent className="sm:max-w-[475px] bg-[#1E2128] border-[#2c3039] border-2">
         <DialogHeader>
           <DialogTitle className="text-white">Create New Instance</DialogTitle>
           <DialogDescription className="text-gray-300">
@@ -111,7 +112,7 @@ export const CreateInstanceDialog = ({
                   <Upload width={22} height={22} />
                   Choose Icon
                 </button>
-                <button disabled className="px-5 py-[6px] bg-[#2b3136] hover:bg-gray-600 disabled:bg-[#2d353a]/50 text-gray-200 rounded-lg transition-colors flex gap-[6px] items-center">
+                <button className="px-5 py-[6px] hover:bg-[#d14646] bg-[#f34b4b] disabled:bg-[#d14646]/50 disabled:text-neutral-800 text-neutral-900 rounded-lg transition-colors flex gap-[6px] items-center">
                   <X width={22} height={22} />
                   Remove Icon
                 </button>
@@ -120,21 +121,30 @@ export const CreateInstanceDialog = ({
           </div>
         </div>
         <DialogFooter>
-          <button
+          <Button
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2 bg-[#2b3136] hover:bg-gray-600 text-gray-200 rounded-lg transition-colors"
+            className="px-4 py-4 bg-[#2b3136] hover:bg-gray-600 text-gray-200 rounded-lg transition-colors flex items-center gap-1"
           >
-            Cancel
-          </button>
-          <button
+            <ArrowUpNarrowWide width={24} height={24} />
+            <span>Show Advanced</span>
+          </Button>
+          <Button
+            onClick={() => onOpenChange(false)}
+            className="px-5 py-4 bg-[#2b3136] hover:bg-gray-600 text-gray-200 rounded-lg transition-colors flex items-center gap-1"
+          >
+            <X width={24} height={24} />
+            <span>Cancel</span>
+          </Button>
+          <Button
             onClick={() => {
               onOpenChange(false);
               onCreate(name, version, loader);
             }}
-            className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg transition-colors"
+            className="px-6 py-4 bg-[#f56241] hover:bg-[#f56241]/50 text-white rounded-lg transition-colors flex items-center gap-1"
           >
-            Create Instance
-          </button>
+            <Plus width={24} height={24} />
+            <span>Create Instance</span>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
