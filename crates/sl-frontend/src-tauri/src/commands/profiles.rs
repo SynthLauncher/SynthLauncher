@@ -1,4 +1,4 @@
-use sl_core::launcher::profiles::player::{PlayerProfile, PlayerProfiles};
+use sl_core::launcher::player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles};
 
 
 
@@ -11,10 +11,7 @@ pub fn get_profiles() -> Result<PlayerProfiles, String> {
 pub async fn get_current_profile() -> Result<PlayerProfile, String> {
     let profiles = get_profiles()?;
     let profile = profiles.current_profile();
-    match profile {
-        Some(profile) => Ok(profile.to_owned()),
-        None => Err("Current profile doesn't exist!".to_string())
-    }
+    Ok(profile.into_owned())
 }
 
 #[tauri::command]

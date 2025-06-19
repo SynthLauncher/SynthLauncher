@@ -60,7 +60,7 @@ pub async fn download_jre_manifest_version(
                         fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;
                     }
                 } else if let Some(raw_file) = &downloads.raw {
-                    download_file(&HTTP_CLIENT, &raw_file.url, &path, 3, std::time::Duration::from_secs(5)).await?;
+                    download_file(&HTTP_CLIENT, &raw_file.url, &path, 3, std::time::Duration::from_secs(5), None).await?;
                     if java_file.executable == Some(true) {
                         fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;
                     }

@@ -14,7 +14,7 @@ use sl_utils::{dlog, elog, log, utils::errors::{BackendError, InstallationError}
 use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
-use crate::{launcher::{config::Config, profiles::player::PlayerProfile}, loaders::{fabric::install_fabric_loader, forge::install_forge_loader, quilt::install_quilt_loader, Loaders}, minecraft::{install_client, version_manifest::download_version}, ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST};
+use crate::{launcher::{config::Config, player::player_profile::PlayerProfile}, loaders::{fabric::install_fabric_loader, forge::install_forge_loader, quilt::install_quilt_loader, Loaders}, minecraft::{install_client, version_manifest::download_version}, ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST};
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq, Default, EnumString, Display, AsRefStr)]
 #[strum(serialize_all = "snake_case")]

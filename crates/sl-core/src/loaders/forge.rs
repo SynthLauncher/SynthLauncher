@@ -138,6 +138,7 @@ impl<'a> ForgeInstaller<'a> {
                 path,
                 3,
                 std::time::Duration::from_secs(5),
+                None
             )
             .await;
 

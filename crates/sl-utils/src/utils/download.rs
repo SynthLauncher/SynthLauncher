@@ -3,12 +3,27 @@ use std::{path::Path, time::Duration};
 use bytes::Bytes;
 use futures_util::StreamExt;
 use reqwest::Client;
-use tokio::{io::AsyncWriteExt, time::sleep};
+use serde::{Deserialize, Serialize};
+use tokio::{io::AsyncWriteExt, sync::mpsc::Sender, time::sleep};
 
-use crate::{elog, log};
+use crate::{dlog, elog, log};
 
 use super::errors::HttpError;
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Progress<'a> {
+    pub name: &'a str,
+    pub downloaded: u64,
+    pub total: Option<u64>,
+}
+
+impl<'a> Progress<'a> {
+    pub fn downloaded_fraction(&self) -> Option<f32> {
+        self.total.map(|total| self.downloaded as f32 / total as f32)
+    }
+}
+
+// TODO: Add progress tracking to this too maybe? idk
 pub async fn download_bytes(
     url: &str,
     client: &Client,
@@ -38,7 +53,7 @@ pub async fn download_bytes(
             {
                 attempts += 1;
                 log!("Retrying: download attempt {}", attempts);
-                
+
                 if attempts >= max_retries {
                     elog!(
                         "error while downloading '{url}' with max retries: {max_retries} (reached), reqwest error: {e}"
@@ -56,12 +71,13 @@ pub async fn download_bytes(
     }
 }
 
-pub async fn download_file(
+pub async fn download_file<'a>(
     client: &Client,
-    url: &str,
+    url: &'a str,
     dest: &Path,
     max_retries: u32,
     duration: Duration,
+    progress_tx: Option<Sender<Progress<'a>>>,
 ) -> Result<(), super::errors::HttpError> {
     let mut attempts = 0;
 
@@ -71,13 +87,48 @@ pub async fn download_file(
         match res {
             Ok(response) if response.status().is_success() => {
                 let mut file = tokio::fs::File::create(dest).await?;
+                let total_size = response.content_length();
+                
+                if let Some(tx) = &progress_tx {
+                    let _ = tx
+                        .send(Progress {
+                            name: url,
+                            downloaded: 0,
+                            total: total_size,
+                        })
+                        .await;
+                }
+
                 let mut stream = response.bytes_stream();
+                let mut downloaded: u64 = 0;
 
                 while let Some(item) = stream.next().await {
                     let chunk = item?;
                     file.write_all(&chunk).await?;
+                    downloaded += chunk.len() as u64;
+
+                    if let Some(tx) = &progress_tx {
+                        let _ = tx
+                            .send(Progress {
+                                name: url,
+                                downloaded,
+                                total: total_size,
+                            })
+                            .await;
+                    }
                 }
 
+                if let Some(tx) = &progress_tx {
+                    let _ = tx
+                        .send(Progress {
+                            name: url,
+                            downloaded,
+                            total: Some(downloaded),
+                        })
+                        .await;
+                }
+
+                dlog!("File installed at: {}", dest.display());
                 return Ok(());
             }
             Ok(response) => return Err(HttpError::Status(response.status())),
@@ -106,7 +157,7 @@ pub async fn download_file(
             Err(e) => {
                 elog!(
                     "error while downloading '{url}' to `{}`, reqwest error: {e}",
-                    dest.display()
+                    dest.display(),
                 );
                 return Err(e.into());
             }

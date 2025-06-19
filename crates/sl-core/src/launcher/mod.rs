@@ -1,4 +1,4 @@
 pub mod instance;
 pub mod instances;
-pub mod profiles;
+pub mod player;
 pub mod config;

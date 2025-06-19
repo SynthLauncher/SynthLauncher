@@ -15,3 +15,5 @@ sl-store = { path = "crates/sl-store" }
 tokio = "1.45.1"
 clap = { version = "4.5.39", features = ["derive"] } 
 synrinth = "0.1.8"
+reqwest = "0.12.20"
+indicatif = "0.17.11"

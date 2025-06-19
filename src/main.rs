@@ -1,6 +1,15 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::launcher::{config::init_launcher_dir, instance::{Instance, InstanceType}, instances::Instances, profiles::{auth::AuthFlow, player::{PlayerProfile, PlayerProfiles}}};
+use sl_core::launcher::{
+    config::init_launcher_dir,
+    instance::{Instance, InstanceType},
+    instances::Instances,
+    player::{
+        microsoft_auth::AuthFlow,
+        player_profile::PlayerProfile,
+        player_profiles::PlayerProfiles,
+    },
+};
 use sl_utils::{dlog, elog, log, utils::errors::BackendError};
 
 mod cli;
@@ -13,7 +22,7 @@ async fn run_cli() -> Result<(), BackendError> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Install {
+        Commands::Create {
             instance_name,
             version,
             loader_info,
@@ -28,8 +37,8 @@ async fn run_cli() -> Result<(), BackendError> {
                 InstanceType::Forge => {
                     instance.install().await?;
                     instance.install_loader(&loader_version).await?;
-                    instance.install().await?;                    
-                },
+                    instance.install().await?;
+                }
                 _ => {
                     instance.install_loader(&loader_version).await?;
                     instance.install().await?;
@@ -38,11 +47,11 @@ async fn run_cli() -> Result<(), BackendError> {
         }
         Commands::Launch { instance_name } => {
             let profiles = PlayerProfiles::load()?;
-            let current_profile = profiles.current_profile().unwrap();
+            let current_profile = profiles.current_profile();
 
             let instance = Instances::find(&instance_name)?;
             dlog!("Instance found!");
-            instance.execute(current_profile).await?;
+            instance.execute(current_profile.as_ref()).await?;
         }
         Commands::AddOfflineProfile { name } => {
             let mut profiles = PlayerProfiles::load()?;
@@ -72,6 +81,21 @@ async fn run_cli() -> Result<(), BackendError> {
             } else {
                 return Ok(());
             }
+        }
+        Commands::ListInstances => {
+            for (i, instance) in Instances::load()?.0.iter().enumerate() {
+                println!("[{}] {:#?}", i, instance);
+            }
+        }
+        Commands::ListProfiles => {
+            for (i, profile) in PlayerProfiles::load()?.profiles.iter().enumerate() {
+                println!("[{}] {:#?}", i, profile);
+            }
+        }
+        Commands::CurrentProfile => {
+            let profiles = PlayerProfiles::load()?; 
+            let profile = profiles.current_profile();
+            println!("{:#?}", profile.as_ref())
         }
     }
 
