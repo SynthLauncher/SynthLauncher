@@ -19,7 +19,7 @@ pub enum HttpError {
 }
 
 #[derive(Debug, Error)]
-pub enum InstallationError {
+pub enum InstanceError {
     #[error("Failed to execute the installation {0}")]
     FailedToExecute(String),
     #[error("Minecraft version {0} was not found")]
@@ -27,7 +27,7 @@ pub enum InstallationError {
     #[error("Installation {0} was not found")]
     InstallationNotFound(String),
     #[error("An unknown error occurred: {0}")]
-    OtherInstallationError(String),
+    OtherInstanceError(String),
     #[error("{0}")]
     Forge(#[from] ForgeInstallerErr),
 }
@@ -80,7 +80,7 @@ pub enum BackendError {
     #[error("Java error: {0}")]
     JavaError(#[from] JavaError),
     #[error("Installation error: {0}")]
-    InstallationError(#[from] InstallationError),
+    InstanceError(#[from] InstanceError),
     #[error("Synrinth: {0}")]
     SynrinthError(#[from] SynrinthError),
 }

@@ -1,7 +1,7 @@
 use sl_meta::minecraft::loaders::forge::ForgeVersions;
 use sl_utils::{dlog, elog, log, utils::{
     self,
-    errors::{BackendError, ForgeInstallerErr, HttpError, InstallationError},
+    errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
 }};
 use std::{
     path::{Path, PathBuf},
@@ -312,6 +312,6 @@ pub async fn install_forge_loader(instance: &Instance) -> Result<(), BackendErro
         .await?
         .install()
         .await
-        .map_err(|e| Into::<InstallationError>::into(e))
+        .map_err(|e| Into::<InstanceError>::into(e))
         .map_err(|e| e.into())
 }

@@ -78,7 +78,7 @@ pub async fn download_file<'a>(
     max_retries: u32,
     duration: Duration,
     progress_tx: Option<Sender<Progress<'a>>>,
-) -> Result<(), super::errors::HttpError> {
+) -> Result<(), HttpError> {
     let mut attempts = 0;
 
     loop {

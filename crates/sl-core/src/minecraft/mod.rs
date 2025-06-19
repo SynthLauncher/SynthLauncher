@@ -13,14 +13,14 @@ use sl_utils::{
         zip::ZipExtractor,
     },
 };
-use tokio::{fs::File, io::AsyncReadExt};
+use tokio::io::AsyncReadExt;
 
 use crate::{ASSETS_DIR, HTTP_CLIENT, LIBS_DIR};
 
 pub mod version_manifest;
 
 #[inline(always)]
-pub async fn verify_data(file: &mut File, sha1: &str) -> bool {
+pub async fn verify_data(file: &mut tokio::fs::File, sha1: &str) -> bool {
     let mut hasher = Sha1::new();
     let mut buffer = [0u8; 8192];
 
@@ -61,6 +61,7 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Htt
     }
 
     tokio::fs::write(path, &data).await?;
+    
     Ok(())
 }
 

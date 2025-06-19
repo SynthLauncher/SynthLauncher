@@ -1,7 +1,7 @@
 use std::{fs::{self, OpenOptions}, path::Path};
 
 use serde::{Deserialize, Serialize};
-use sl_utils::utils::errors::{BackendError, InstallationError};
+use sl_utils::utils::errors::{BackendError, InstanceError};
 
 use crate::{launcher::instance::Instance, INSTANCES_DIR, INSTANCES_PATH};
 
@@ -70,8 +70,8 @@ impl Instances {
             return Ok(instance);
         }
 
-        Err(BackendError::InstallationError(
-            InstallationError::InstallationNotFound(name.to_string()),
+        Err(BackendError::InstanceError(
+            InstanceError::InstallationNotFound(name.to_string()),
         ))
     }
 

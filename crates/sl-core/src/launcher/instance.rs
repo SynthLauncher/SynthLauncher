@@ -10,7 +10,7 @@ use std::{
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 use sl_meta::minecraft::{loaders::{fabric::profile::FabricLoaderProfile, forge::ForgeLoaderProfile, quilt::profiles::QuiltLoaderProfile, vanilla::Client}, version_manifest::VersionType};
-use sl_utils::{dlog, elog, log, utils::errors::{BackendError, InstallationError}};
+use sl_utils::{dlog, elog, log, utils::errors::{BackendError, InstanceError}};
 use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
@@ -59,8 +59,8 @@ impl Instance {
         let version = VERSION_MANIFEST
             .versions()
             .find(|x| x.id == version)
-            .ok_or(BackendError::InstallationError(
-                InstallationError::VersionNotFound(version.to_string()),
+            .ok_or(BackendError::InstanceError(
+                InstanceError::VersionNotFound(version.to_string()),
             ))?;
 
         fs::create_dir_all(INSTANCES_DIR.join(name))?;
@@ -412,8 +412,8 @@ impl Instance {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
             elog!("stderr:\n{}\nstdout:\n{}", stderr, stdout);
-            return Err(BackendError::InstallationError(
-                InstallationError::FailedToExecute(self.name.clone()),
+            return Err(BackendError::InstanceError(
+                InstanceError::FailedToExecute(self.name.clone()),
             ));
         }
 

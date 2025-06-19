@@ -4,7 +4,7 @@ use bytes::Bytes;
 use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::utils::{
     self,
-    errors::{BackendError, InstallationError},
+    errors::{BackendError, InstanceError},
 };
 
 use crate::{HTTP_CLIENT, VERSION_MANIFEST, VERSION_MANIFEST_PATH};
@@ -34,8 +34,8 @@ pub fn read_version_manifest() -> VersionManifest {
 pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
     let Some(version) = VERSION_MANIFEST.versions().find(|x| x.id == version) else {
         // TODO: Use a different type for version instead of String
-        return Err(BackendError::InstallationError(
-            InstallationError::VersionNotFound(version.to_string()),
+        return Err(BackendError::InstanceError(
+            InstanceError::VersionNotFound(version.to_string()),
         ));
     };
 
