@@ -1,10 +1,12 @@
-use sl_core::launcher::{
+use std::path::Path;
+
+use sl_core::{launcher::{
     instance::{Instance, InstanceType},
     instances::Instances,
-};
+}, HTTP_CLIENT};
 use sl_utils::{
     elog,
-    utils::{download::Progress, errors::BackendError},
+    utils::{download::download_file, errors::BackendError},
 };
 use tauri::{AppHandle, Emitter};
 
@@ -29,8 +31,8 @@ pub async fn create_instance(name: String, version: String) -> Result<(), String
 }
 
 #[tauri::command]
-pub async fn test_progress(app: AppHandle) {
-    let (tx, mut rx) = tokio::sync::mpsc::channel::<Progress<'static>>(100);
+pub async fn test_progress(app: AppHandle) -> Result<(), String> {
+    let (tx, mut rx) = tokio::sync::mpsc::channel::<f32>(500);
 
     let app_handle = app.clone();
     tokio::spawn(async move {
@@ -41,22 +43,11 @@ pub async fn test_progress(app: AppHandle) {
         }
     });
 
-    for i in 0..=100 {
-        // Simulate work
-        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    let path = Path::new("../../file");
+    
+    download_file(&HTTP_CLIENT, "https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_10MB_OGG.ogg", &path, 3, std::time::Duration::from_secs(5), Some(tx.clone())).await.map_err(|e| e.to_string())?;
 
-        // Send progress update
-        if let Err(e) = tx
-            .send(Progress {
-                name: "s",
-                downloaded: i,
-                total: Some(100),
-            })
-            .await
-        {
-            eprintln!("Failed to send progress: {}", e);
-        }
-    }
+    Ok(())
 }
 
 #[tauri::command]

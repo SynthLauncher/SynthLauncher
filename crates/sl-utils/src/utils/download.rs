@@ -3,25 +3,11 @@ use std::{path::Path, time::Duration};
 use bytes::Bytes;
 use futures_util::StreamExt;
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
 use tokio::{io::AsyncWriteExt, sync::mpsc::Sender, time::sleep};
 
 use crate::{dlog, elog, log};
 
 use super::errors::HttpError;
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Progress<'a> {
-    pub name: &'a str,
-    pub downloaded: u64,
-    pub total: Option<u64>,
-}
-
-impl<'a> Progress<'a> {
-    pub fn downloaded_fraction(&self) -> Option<f32> {
-        self.total.map(|total| self.downloaded as f32 / total as f32)
-    }
-}
 
 // TODO: Add progress tracking to this too maybe? idk
 pub async fn download_bytes(
@@ -77,7 +63,7 @@ pub async fn download_file<'a>(
     dest: &Path,
     max_retries: u32,
     duration: Duration,
-    progress_tx: Option<Sender<Progress<'a>>>,
+    progress_tx: Option<Sender<f32>>,
 ) -> Result<(), HttpError> {
     let mut attempts = 0;
 
@@ -90,13 +76,11 @@ pub async fn download_file<'a>(
                 let total_size = response.content_length();
                 
                 if let Some(tx) = &progress_tx {
-                    let _ = tx
-                        .send(Progress {
-                            name: url,
-                            downloaded: 0,
-                            total: total_size,
-                        })
-                        .await;
+                    if let Err(e) = tx
+                        .send(0.0)
+                        .await {
+                            elog!("{}", e);
+                        }
                 }
 
                 let mut stream = response.bytes_stream();
@@ -108,27 +92,24 @@ pub async fn download_file<'a>(
                     downloaded += chunk.len() as u64;
 
                     if let Some(tx) = &progress_tx {
-                        let _ = tx
-                            .send(Progress {
-                                name: url,
-                                downloaded,
-                                total: total_size,
-                            })
-                            .await;
+                        if let Err(e) = tx
+                            .send((downloaded as f32 / total_size.unwrap() as f32) * 100.0)
+                            .await {
+                                elog!("{}", e);
+                            }
                     }
                 }
 
                 if let Some(tx) = &progress_tx {
-                    let _ = tx
-                        .send(Progress {
-                            name: url,
-                            downloaded,
-                            total: Some(downloaded),
-                        })
-                        .await;
+                    if let Err(e) = tx
+                        .send(100.0)
+                        .await {
+                            elog!("{}", e);
+                        }
                 }
 
                 dlog!("File installed at: {}", dest.display());
+                dlog!("{}",   downloaded);
                 return Ok(());
             }
             Ok(response) => return Err(HttpError::Status(response.status())),
