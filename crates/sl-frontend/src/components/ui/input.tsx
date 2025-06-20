@@ -1,18 +1,29 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { InputProps } from "@/lib/types/components"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+function Input({ className, type, icon, ...props }: React.ComponentProps<"input"> & InputProps) {
   return (
-    <input
-      type={type}
-      data-slot="input"
+    <div
       className={cn(
-        "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed md:text-sm",
-        className
+        "flex h-9 w-full items-center gap-3 rounded-md bg-[#1D2026] px-3 py-5 text-white shadow-xs transition-colors focus-within:ring-2 focus-within:ring-blue-500",
+        "has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50",
+        className,
       )}
-      {...props}
-    />
+    >
+      {icon && (
+        <span className="text-muted-foreground flex-shrink-0">{icon}</span>
+      )}
+
+      <input
+        type={type}
+        className={cn(
+          "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground w-full min-w-0 flex-grow bg-transparent text-sm outline-none disabled:pointer-events-none",
+        )}
+        {...props}
+      />
+    </div>
   )
 }
 

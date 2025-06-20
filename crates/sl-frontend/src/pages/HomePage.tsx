@@ -19,7 +19,7 @@ export const HomePage = () => {
   const test_progress = async () => {
     await invoke("test_progress");
   }
-  
+
   return (
     <div className="p-6 w-full overflow-auto pb-12">
       <div className="mb-8 flex flex-col gap-2">
@@ -27,7 +27,6 @@ export const HomePage = () => {
           {state?.toFixed(2)}
         </h1>
         <Progress key={state} value={state} className="w-[60%] bg-white" />
-
         <button className="bg-white px-4 py-2 w-2xs" onClick={test_progress}>
           Click
         </button>
