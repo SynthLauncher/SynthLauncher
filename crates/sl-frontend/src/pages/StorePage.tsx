@@ -13,14 +13,14 @@ export const StorePage = () => {
   return (
     <div className="p-6 w-full overflow-auto pb-20">
       <div className="flex flex-col gap-3">
-        <CategorySelector>
+        <CategorySelector defaultValue="modrinth">
           <CategoryList>
-            <CategoryTrigger value="modpacks">Modrinth</CategoryTrigger>
-            <CategoryTrigger value="shaders">Curseforge</CategoryTrigger>
+            <CategoryTrigger value="modrinth">Modrinth</CategoryTrigger>
+            <CategoryTrigger value="curseforge">Curseforge</CategoryTrigger>
           </CategoryList>
         </CategorySelector>
 
-        <CategorySelector>
+        <CategorySelector defaultValue="modpacks">
           <CategoryList>
             <CategoryTrigger value="modpacks">Modpacks</CategoryTrigger>
             <CategoryTrigger value="mods">Mods</CategoryTrigger>
