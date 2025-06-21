@@ -47,5 +47,6 @@ export interface StoreCardProps {
     description: string,
     downloads: number,
     followers: number,
+    imageUrl: string,
     slug: string,
 }

@@ -5,10 +5,20 @@ import { Search } from "@/lib/types/store";
 import { useEffect, useState } from "react";
 import { CategorySelector, CategoryList, CategoryTrigger } from "@/components/ui/category-selector";
 import { StoreCard } from "@/components/StoreCard";
+import { StoreCardProps } from "@/lib/types/store";
 import { Input } from "@/components/ui/input";
 import { SearchIcon } from "lucide-react";
 
 export const StorePage = () => {
+  const exampleCard = {
+    name: "Sodium",
+    description: "The fastest and most compatible rendering optimization mod for Minecraft. Now available for both NeoForge and Fabric!",
+    author: "jellysquid3",
+    downloads: 56_690_000,
+    followers: 24_600,
+    imageUrl: "https://cdn.modrinth.com/data/AANobbMI/295862f4724dc3f78df3447ad6072b2dcd3ef0c9_96.webp",
+    slug: "sodium",
+  } satisfies StoreCardProps;
 
   return (
     <div className="p-6 w-full overflow-auto pb-20">
@@ -32,10 +42,7 @@ export const StorePage = () => {
 
         <Input icon={<SearchIcon className="w-4 h-4" />} placeholder="Search modpacks..." />
 
-        <StoreCard slug="hi" />
-        <StoreCard slug="hi" />
-        <StoreCard slug="hi" />
-        <StoreCard slug="hi" />
+        <StoreCard {...exampleCard} />
       </div>
     </div>
   );
