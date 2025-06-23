@@ -42,7 +42,7 @@ function App() {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
         <div className="flex w-full bg-[#141518] rounded-tl-2xl border-t-2 border-l-2 border-[#2D2F32]">
-          <div className="w-full">{renderContent()}</div>
+          <div className="w-full h-full overflow-y-auto">{renderContent()}</div>
           <ProfileSidebar />
         </div>
       </div>

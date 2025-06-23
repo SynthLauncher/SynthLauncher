@@ -57,6 +57,7 @@ export const CreateInstanceDialog = ({
               placeholder="My new instance"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              icon
             />
           </div>
 
