@@ -240,9 +240,10 @@ impl Instance {
         serde_json::from_str(&client).ok()
     }
 
-    fn read_config(&self) -> Option<Config> {
+    /// Reads the instance configuration file and returns the configuration, returns None if the file does not exist or deserialization fails (corrupted)
+    fn read_config_init(&self) -> Option<Config> {
         let file = fs::File::open(self.config_path()).ok()?;
-        Some(serde_json::from_reader(file).expect("Failed to deserialize config.json!"))
+        serde_json::from_reader(file).ok()
     }
 
     async fn override_config(&mut self, config: Config) -> Result<(), std::io::Error> {
@@ -255,17 +256,29 @@ impl Instance {
         Ok(())
     }
 
-    async fn reinit(&mut self) -> Result<Client, BackendError> {
+    async fn reinit_config(&mut self, vanilla_client: &Client) -> Result<Config, BackendError> {
+        tokio::fs::create_dir_all(self.dir_path()).await?;
+        // FIXME: this should only re-initialize the client and not the config, basing the existence of a config on the existence of a client is not a good idea,
+        // however the config needs the client's java version to be initialized so i couldn't figure out how to do it without creating a config
+        let config = Config::create_local_config(&vanilla_client.java_version.component).await?;
+        self.override_config(config.clone()).await?;
+        Ok(config)
+    }
+
+    /// Only reinitialize the config if it doesn't exist or is corrupted
+    async fn init_config(&mut self, vanilla_client: &Client) -> Result<Config, BackendError> {
+        match self.read_config_init() {
+            Some(config) => Ok(config),
+            None => self.reinit_config(vanilla_client).await,
+        }
+    }
+
+    async fn reinit_vanilla_client(&mut self) -> Result<Client, BackendError> {
         dlog!("Re-initializing the instance");
 
         let client_raw = download_version(&self.game_info.version).await?;
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
-
-        // FIXME: this should only re-initialize the client and not the config, basing the existence of a config on the existence of a client is not a good idea,
-        // however the config needs the client's java version to be initialized so i couldn't figure out how to do it without creating a config
-        let config = Config::create_local_config(&client.java_version.component).await?;
-        self.override_config(config).await?;
 
         tokio::fs::create_dir_all(self.dir_path()).await?;
         tokio::fs::write(self.client_json_path(), &client_raw).await?;
@@ -296,19 +309,21 @@ impl Instance {
     async fn init_vanilla_client(&mut self) -> Result<Client, BackendError> {
         match self.read_vanilla_client().await {
             Some(client) => Ok(client),
-            None => self.reinit().await,
+            None => self.reinit_vanilla_client().await,
         }
     }
 
     // PLEASE S I BEG YOU DON'T CHANGE THIS....
     /// Initializes the instance lazily, doesn't do anything if already initialized.
-    async fn init(&mut self) -> Result<Client, BackendError> {
+    async fn init(&mut self) -> Result<(Client, Config), BackendError> {
         let vanilla_client = self.init_vanilla_client().await?;
+        let config = self.init_config(&vanilla_client).await?;
+        // must be done in the following order because loader needs config
         let loader = self.init_loader().await?;
         let client = loader.concat(vanilla_client);
         // will automatically perform hash verification and only re install corrupted files
         install_client(&client, self.client_jar_path(), &self.dir_path()).await?;
-        Ok(client)
+        Ok((client, config))
     }
 
     fn classpath(&self, client: &Client) -> String {
@@ -424,11 +439,9 @@ impl Instance {
     }
 
     pub fn get_java(&self) -> PathBuf {
-        // FIXME: there should be a java to default to in the global config
-        // and we shouldn't assume that there is an existing local config
-        // instead we should have a function that always returns a config not an Option<Config>, returns the global one if there is no local, combines with the global if there is
-        // TODO: cache the Config or at least the java path in memory using Once?
-        let config = self.read_config().unwrap();
+        let config = self
+            .read_config_init()
+            .expect("config should be initialized before calling `get_java`");
         let results = PathBuf::from(config.get("java").unwrap());
         debug_assert!(results.exists());
         results
@@ -449,7 +462,7 @@ impl Instance {
     }
 
     pub async fn execute(&mut self, profile: &PlayerProfile) -> Result<(), BackendError> {
-        let client = self.init().await?;
+        let (client, config) = self.init().await?;
 
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
@@ -458,7 +471,6 @@ impl Instance {
             profile.data.username
         );
 
-        let config = self.read_config().unwrap();
         let current_java_path = config.get("java").unwrap();
 
         let max_ram = config.get("max_ram").unwrap_or("2048");

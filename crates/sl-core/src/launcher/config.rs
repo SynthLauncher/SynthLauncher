@@ -1,9 +1,9 @@
 use std::{
     collections::HashMap,
+    env,
     fs::{self, File, OpenOptions},
     io::BufReader,
     path::PathBuf,
-    env
 };
 
 use serde::{Deserialize, Serialize};
@@ -12,7 +12,11 @@ use sl_meta::java::jre_manifest::JreManifestDownloadType;
 use sl_utils::{dlog, utils::errors::BackendError};
 use velcro::hash_map_from;
 
-use crate::{java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest}, minecraft::version_manifest::fetch_version_manifest, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH};
+use crate::{
+    java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest},
+    minecraft::version_manifest::fetch_version_manifest,
+    ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH,
+};
 
 pub fn get_launcher_dir() -> PathBuf {
     #[cfg(target_os = "windows")]
@@ -43,7 +47,13 @@ pub fn get_launcher_dir() -> PathBuf {
 }
 
 pub async fn init_launcher_dir() -> Result<(), BackendError> {
-    for dir in [&(*LAUNCHER_DIR), &(*LIBS_DIR), &(*ASSETS_DIR), &(*INSTANCES_DIR), &(*JAVAS_DIR)] {
+    for dir in [
+        &(*LAUNCHER_DIR),
+        &(*LIBS_DIR),
+        &(*ASSETS_DIR),
+        &(*INSTANCES_DIR),
+        &(*JAVAS_DIR),
+    ] {
         dlog!("{} dir initialized!", &dir.display());
         tokio::fs::create_dir_all(dir).await?;
     }
@@ -70,7 +80,7 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     Ok(())
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config(HashMap<String, String>);
 
 impl Config {
@@ -108,7 +118,9 @@ impl Config {
         Self(map)
     }
 
-    pub async fn create_local_config(component: &JreManifestDownloadType) -> Result<Self, BackendError> {
+    pub async fn create_local_config(
+        component: &JreManifestDownloadType,
+    ) -> Result<Self, BackendError> {
         let java_path = JAVAS_DIR.join(component.to_string());
 
         let java_binary = if cfg!(target_os = "windows") {
