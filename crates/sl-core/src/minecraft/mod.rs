@@ -2,7 +2,6 @@ use std::path::{Path, PathBuf};
 
 use bytes::Bytes;
 use futures::{stream::FuturesUnordered, StreamExt};
-use sha1::{Digest, Sha1};
 
 use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
 use sl_utils::{
@@ -13,55 +12,60 @@ use sl_utils::{
         zip::ZipExtractor,
     },
 };
-use tokio::io::AsyncReadExt;
 
 use crate::{ASSETS_DIR, HTTP_CLIENT, LIBS_DIR};
 
 pub mod version_manifest;
 
-#[inline(always)]
-pub async fn verify_data(file: &mut tokio::fs::File, sha1: &str) -> bool {
-    let mut hasher = Sha1::new();
-    let mut buffer = [0u8; 8192];
+// TODO: Implement verify_data function that is fast enough, this one is really slow so i removed it and replaced it with verifying size
+// #[inline(always)]
+// async fn verify_data(file: &mut tokio::fs::File, sha1: &str) -> bool {
+//     let mut hasher = Sha1::new();
+//     let mut buffer = [0u8; 8192];
 
-    loop {
-        match file.read(&mut buffer).await {
-            Ok(0) => break, // EOF
-            Ok(n) => hasher.update(&buffer[..n]),
-            Err(_) => return false,
-        }
-    }
+//     loop {
+//         match file.read(&mut buffer).await {
+//             Ok(0) => break, // EOF
+//             Ok(n) => hasher.update(&buffer[..n]),
+//             Err(_) => return false,
+//         }
+//     }
 
-    let hash = hasher.finalize();
-    hash.as_slice() == sha1.as_bytes()
-}
+//     let hash = hasher.finalize();
+//     hash.as_slice() == sha1.as_bytes()
+// }
 
 #[inline(always)]
 async fn download_and_verify(download: &Download, path: &Path) -> Result<(), HttpError> {
-    if let Ok(mut f) = tokio::fs::File::open(path).await {
-        let valid = match &download.sha1 {
-            Some(sha1) => verify_data(&mut f, sha1).await,
+    if let Ok(f) = tokio::fs::File::open(path).await {
+        let valid = match download.size {
+            Some(size) => {
+                let f_metadata = f.metadata().await;
+                let f_size = f_metadata.map(|m| m.len()).ok();
+                f_size.is_none_or(|f_size| f_size == size as u64)
+            }
             None => true,
         };
+
         if valid {
             return Ok(());
         }
     }
 
-    let data = utils::download::download_bytes(
-        &download.url,
-        &HTTP_CLIENT,
-        3,
-        std::time::Duration::from_secs(5),
-    )
-    .await?;
-
     if let Some(parent) = path.parent() {
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    tokio::fs::write(path, &data).await?;
-    
+    utils::download::download_file(
+        &HTTP_CLIENT,
+        &download.url,
+        &path,
+        3,
+        std::time::Duration::from_secs(5),
+        None,
+    )
+    .await?;
+
     Ok(())
 }
 
@@ -211,14 +215,17 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
     Ok(())
 }
 
-pub async fn install_client(client: &Client, path: &Path) -> Result<(), BackendError> {
-    let client_path = path.join("client.jar");
+pub(crate) async fn install_client(
+    client: &Client,
+    client_jar_path: PathBuf,
+    path: &Path,
+) -> Result<(), BackendError> {
     install_assets(client).await?;
     install_libs(client, path).await?;
 
-    log!("Downloading client.jar");
-    download_to(&client.downloads.client, &client_path).await?;
-    log!("Done downloading client.jar");
+    log!("Downloading {}", client_jar_path.display());
+    download_to(&client.downloads.client, &client_jar_path).await?;
+    log!("Done downloading {}", client_jar_path.display());
 
     Ok(())
 }

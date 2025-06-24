@@ -1,9 +1,12 @@
 use std::path::Path;
 
-use sl_core::{launcher::{
-    instance::{Instance, InstanceType},
-    instances::Instances,
-}, HTTP_CLIENT};
+use sl_core::{
+    launcher::{
+        instance::{Instance, InstanceType},
+        instances::Instances,
+    },
+    HTTP_CLIENT,
+};
 use sl_utils::{
     elog,
     utils::{download::download_file, errors::BackendError},
@@ -16,10 +19,7 @@ pub async fn get_instances() -> Result<Instances, String> {
 }
 
 async fn create_instance_inner(name: String, version: String) -> Result<(), BackendError> {
-    let mut instance = Instance::new(&name, &version, InstanceType::Vanilla, None)?;
-    Instances::add(&instance)?;
-    instance.install().await?;
-
+    Instance::create(&name, &version, InstanceType::Vanilla, None, None)?;
     Ok(())
 }
 
@@ -44,8 +44,17 @@ pub async fn test_progress(app: AppHandle) -> Result<(), String> {
     });
 
     let path = Path::new("../../file");
-    
-    download_file(&HTTP_CLIENT, "https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_10MB_OGG.ogg", &path, 3, std::time::Duration::from_secs(5), Some(tx.clone())).await.map_err(|e| e.to_string())?;
+
+    download_file(
+        &HTTP_CLIENT,
+        "https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_10MB_OGG.ogg",
+        &path,
+        3,
+        std::time::Duration::from_secs(5),
+        Some(tx.clone()),
+    )
+    .await
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }

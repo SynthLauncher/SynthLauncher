@@ -1,9 +1,7 @@
 use std::{
     borrow::Cow,
-    ffi::OsStr,
     fs::{self},
-    io::BufReader,
-    path::{Path, PathBuf},
+    path::PathBuf,
     process::Stdio,
 };
 
@@ -24,7 +22,7 @@ use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
 use crate::{
-    launcher::{config::Config, player::player_profile::PlayerProfile},
+    launcher::{config::Config, instances::Instances, player::player_profile::PlayerProfile},
     loaders::{
         fabric::install_fabric_loader, forge::install_forge_loader,
         neoforge::install_neoforge_loader, quilt::install_quilt_loader, Loaders,
@@ -76,14 +74,29 @@ pub struct Instance {
     */
     // TODO: Change this to a string
     pub icon: Option<PathBuf>,
+    pub modloader_version: Option<String>,
     pub instance_type: InstanceType,
 }
 
 impl Instance {
-    pub fn new(
+    /// Creates a new instance, and adds it to the instances list at once
+    pub fn create(
         name: &str,
         version: &str,
         instance_type: InstanceType,
+        loader_version: Option<String>,
+        icon: Option<PathBuf>,
+    ) -> Result<Self, BackendError> {
+        let instance = Self::new(name, version, instance_type, loader_version, icon)?;
+        Instances::add(&instance)?;
+        Ok(instance)
+    }
+
+    fn new(
+        name: &str,
+        version: &str,
+        instance_type: InstanceType,
+        loader_version: Option<String>,
         icon: Option<PathBuf>,
     ) -> Result<Self, BackendError> {
         let version = VERSION_MANIFEST
@@ -104,50 +117,51 @@ impl Instance {
             },
             icon,
             instance_type,
+            modloader_version: loader_version,
         })
     }
 
     // TODO: Change how this works
-    fn get_loader_from_dir(dir: &Path) -> Result<InstanceType, BackendError> {
-        for entry in fs::read_dir(dir)? {
-            let entry = entry?;
-            let path = entry.path();
+    // fn get_loader_from_dir(dir: &Path) -> Result<InstanceType, BackendError> {
+    //     for entry in fs::read_dir(dir)? {
+    //         let entry = entry?;
+    //         let path = entry.path();
 
-            if let Some(file_name) = path.file_name().and_then(OsStr::to_str) {
-                if file_name.contains("fabric.json") {
-                    return Ok(InstanceType::Fabric);
-                } else if file_name.contains("quilt.json") {
-                    return Ok(InstanceType::Quilt);
-                }
-            }
-        }
+    //         if let Some(file_name) = path.file_name().and_then(OsStr::to_str) {
+    //             if file_name.contains("fabric.json") {
+    //                 return Ok(InstanceType::Fabric);
+    //             } else if file_name.contains("quilt.json") {
+    //                 return Ok(InstanceType::Quilt);
+    //             }
+    //         }
+    //     }
 
-        Ok(InstanceType::Vanilla)
-    }
+    //     Ok(InstanceType::Vanilla)
+    // }
 
-    // TODO: Change how this works
-    pub fn get_instance_from_dir(name: &str) -> Result<Self, BackendError> {
-        let dir = Path::new(&INSTANCES_DIR.as_path()).join(&name);
-        let path = dir.join("client.json");
-        let file = std::fs::File::open(path)?;
-        let reader = BufReader::new(file);
-        let client: Client = serde_json::from_reader(reader)?;
+    // // TODO: Change how this works
+    // pub fn get_instance_from_dir(name: &str) -> Result<Self, BackendError> {
+    //     let dir = Path::new(&INSTANCES_DIR.as_path()).join(&name);
+    //     let path = dir.join("client.json");
+    //     let file = std::fs::File::open(path)?;
+    //     let reader = BufReader::new(file);
+    //     let client: Client = serde_json::from_reader(reader)?;
 
-        let game_info = InstanceGameInfo {
-            release_time: client.release_time,
-            r#type: client.r#type,
-            version: client.id,
-        };
+    //     let game_info = InstanceGameInfo {
+    //         release_time: client.release_time,
+    //         r#type: client.r#type,
+    //         version: client.id,
+    //     };
 
-        let instance_type = Instance::get_loader_from_dir(&dir)?;
+    //     let instance_type = Instance::get_loader_from_dir(&dir)?;
 
-        Ok(Self {
-            name: name.to_string(),
-            game_info,
-            icon: None,
-            instance_type,
-        })
-    }
+    //     Ok(Self {
+    //         name: name.to_string(),
+    //         game_info,
+    //         icon: None,
+    //         instance_type,
+    //     })
+    // }
 
     pub fn dir_path(&self) -> PathBuf {
         INSTANCES_DIR.join(&self.name)
@@ -162,7 +176,8 @@ impl Instance {
     }
 
     fn client_jar_path(&self) -> PathBuf {
-        self.dir_path().join("client.jar")
+        self.dir_path()
+            .join(format!("{}.jar", &self.game_info.version))
     }
 
     pub fn loader_json_path(&self) -> Option<PathBuf> {
@@ -177,66 +192,52 @@ impl Instance {
         }
     }
 
-    fn read_loader(&self) -> Option<Loaders> {
+    /// Reads the loader information from the JSON file, returns Some if the loader exists and is correctly initialized otherwise None
+    fn read_loader_init(&self) -> Option<Loaders> {
         macro_rules! generic_concat_loader {
             ($variant: ident, $profile_type: ty) => {{
                 let path = self.loader_json_path()?;
-                let file = fs::File::open(&path).unwrap();
-                let profile: $profile_type = serde_json::from_reader(file).unwrap();
+                let file = fs::File::open(&path).ok()?;
+                let profile: $profile_type = serde_json::from_reader(file).ok()?;
                 println!("Returning variant {}", stringify!($variant));
-                Some(Loaders::$variant(profile))
+                Loaders::$variant(profile)
             }};
         }
 
-        match self.instance_type {
+        Some(match self.instance_type {
             InstanceType::Fabric => generic_concat_loader!(Fabric, FabricLoaderProfile),
             InstanceType::Quilt => generic_concat_loader!(Quilt, QuiltLoaderProfile),
             InstanceType::Forge => generic_concat_loader!(Forge, ForgeLoaderProfile),
             InstanceType::NeoForge => generic_concat_loader!(NeoForge, NeoForgeLoaderProfile),
-            InstanceType::Vanilla => None,
-        }
+            InstanceType::Vanilla => Loaders::Vanilla,
+        })
     }
 
-    pub async fn install_loader(&mut self, loader_version: &str) -> Result<(), BackendError> {
+    async fn reinit_loader(&self) -> Result<Loaders, BackendError> {
+        let loader_version = self.modloader_version.as_deref();
+
         match self.instance_type {
             InstanceType::Vanilla => {
-                return Ok(());
+                return Ok(Loaders::Vanilla);
             }
-            InstanceType::Fabric => install_fabric_loader(&self, loader_version).await,
-            InstanceType::Quilt => install_quilt_loader(&self, loader_version).await,
-            InstanceType::NeoForge => install_neoforge_loader(self).await,
-            InstanceType::Forge => install_forge_loader(self).await,
+            InstanceType::Fabric => Ok(Loaders::Fabric(
+                install_fabric_loader(&self, loader_version).await?,
+            )),
+            InstanceType::Quilt => Ok(Loaders::Quilt(
+                install_quilt_loader(&self, loader_version).await?,
+            )),
+            InstanceType::NeoForge => Ok(Loaders::NeoForge(install_neoforge_loader(self).await?)),
+            InstanceType::Forge => Ok(Loaders::Forge(install_forge_loader(self).await?)),
         }
     }
 
-    async fn read_client_raw(&self) -> Option<Client> {
+    /// Reads the vanilla client.json file and returns the client information, returns None if the file does not exist or deserialization fails.
+    async fn read_vanilla_client(&self) -> Option<Client> {
         let client = tokio::fs::read_to_string(&self.client_json_path())
             .await
             .ok()?;
-        Some(serde_json::from_str(&client).expect("Failed to deserialize client.json!"))
-    }
-
-    pub async fn read_client(&self) -> Option<Client> {
-        let mut client = self.read_client_raw().await?;
-
-        if let Some(loader) = self.read_loader() {
-            match loader {
-                Loaders::Fabric(fabric) => {
-                    client = fabric.join_client(client);
-                }
-                Loaders::Quilt(quilt) => {
-                    client = quilt.join_client(client);
-                }
-                Loaders::Forge(forge) => {
-                    client = forge.join_client(client);
-                }
-                Loaders::NeoForge(neoforge) => {
-                    client = neoforge.join_client(client);
-                }
-            }
-        }
-
-        Some(client)
+        // instead of returning an error, return None if deserialization fails so that it is deserialized
+        serde_json::from_str(&client).ok()
     }
 
     fn read_config(&self) -> Option<Config> {
@@ -255,10 +256,14 @@ impl Instance {
     }
 
     async fn reinit(&mut self) -> Result<Client, BackendError> {
+        dlog!("Re-initializing the instance");
+
         let client_raw = download_version(&self.game_info.version).await?;
         let client: Client =
             serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
 
+        // FIXME: this should only re-initialize the client and not the config, basing the existence of a config on the existence of a client is not a good idea,
+        // however the config needs the client's java version to be initialized so i couldn't figure out how to do it without creating a config
         let config = Config::create_local_config(&client.java_version.component).await?;
         self.override_config(config).await?;
 
@@ -267,17 +272,43 @@ impl Instance {
         Ok(client)
     }
 
-    pub async fn init(&mut self) -> Result<Client, BackendError> {
-        match self.read_client().await {
+    /// Initializes the mod-loader lazily, doesn't do anything if the loader is already initialized, re initializes if corrupted.
+    #[must_use]
+    async fn init_loader(&mut self) -> Result<Loaders, BackendError> {
+        match self.instance_type {
+            InstanceType::Vanilla => Ok(Loaders::Vanilla),
+            InstanceType::Forge
+            | InstanceType::Fabric
+            | InstanceType::Quilt
+            | InstanceType::NeoForge => {
+                if let Some(loader) = self.read_loader_init() {
+                    Ok(loader)
+                } else {
+                    // the loader is not initialized or corrupted, re-initialize it
+                    self.reinit_loader().await
+                }
+            }
+        }
+    }
+
+    /// Initializes the vanilla client lazily, doesn't do anything if already initialized, re initializes if corrupted.
+    #[must_use]
+    async fn init_vanilla_client(&mut self) -> Result<Client, BackendError> {
+        match self.read_vanilla_client().await {
             Some(client) => Ok(client),
             None => self.reinit().await,
         }
     }
 
-    pub async fn install(&mut self) -> Result<(), BackendError> {
-        let client = self.init().await?;
-
-        install_client(&client, &self.dir_path()).await
+    // PLEASE S I BEG YOU DON'T CHANGE THIS....
+    /// Initializes the instance lazily, doesn't do anything if already initialized.
+    async fn init(&mut self) -> Result<Client, BackendError> {
+        let vanilla_client = self.init_vanilla_client().await?;
+        let loader = self.init_loader().await?;
+        let client = loader.concat(vanilla_client);
+        // will automatically perform hash verification and only re install corrupted files
+        install_client(&client, self.client_jar_path(), &self.dir_path()).await?;
+        Ok(client)
     }
 
     fn classpath(&self, client: &Client) -> String {
@@ -337,13 +368,10 @@ impl Instance {
 
     async fn generate_arguments(
         &self,
+        client: Client,
         config: &Config,
         profile: &PlayerProfile,
     ) -> Result<Vec<String>, BackendError> {
-        let client = self
-            .read_client()
-            .await
-            .expect("Failed to read client.json!");
         let classpath = self.classpath(&client);
         let game_dir = self.dir_path();
         let natives_dir = game_dir.join(".natives");
@@ -420,7 +448,9 @@ impl Instance {
         results
     }
 
-    pub async fn execute(&self, profile: &PlayerProfile) -> Result<(), BackendError> {
+    pub async fn execute(&mut self, profile: &PlayerProfile) -> Result<(), BackendError> {
+        let client = self.init().await?;
+
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
             self.name,
@@ -434,7 +464,7 @@ impl Instance {
         let max_ram = config.get("max_ram").unwrap_or("2048");
         let min_ram = config.get("min_ram").unwrap_or("1024");
 
-        let args = self.generate_arguments(&config, profile).await?;
+        let args = self.generate_arguments(client, &config, profile).await?;
 
         // !!! Warning if you're recording your auth_token may get leaked XD
         dlog!("Launching with args: {:?}", &args);

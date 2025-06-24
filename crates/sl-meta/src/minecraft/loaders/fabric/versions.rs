@@ -17,13 +17,18 @@ pub struct FabricVersion {
 // avoid adding deps on reqwest here
 /// Fetches the Fabric versions for a given game version using the provided request function.
 /// the function must return a Vec<u8> representing the response body, and must take a string parameter representing the URL.
-pub fn get_fabric_versions<F>(game_version: &str, do_request: F) -> io::Result<Vec<FabricVersion>>
+pub async fn get_fabric_versions<F, E>(
+    game_version: &str,
+    do_request: F,
+) -> Result<Vec<FabricVersion>, E>
 where
-    F: FnOnce(&str) -> io::Result<Vec<u8>>,
+    F: AsyncFnOnce(&str) -> Result<Vec<u8>, E>,
+    E: From<io::Error>,
 {
     let response = do_request(&format!(
         "https://meta.fabricmc.net/v2/versions/loader/{}/",
         game_version
-    ))?;
-    Ok(serde_json::from_slice(&response)?)
+    ))
+    .await?;
+    Ok(serde_json::from_slice(&response).map_err(|e| Into::<io::Error>::into(e))?)
 }

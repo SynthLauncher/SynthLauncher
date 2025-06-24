@@ -1,6 +1,8 @@
-use std::{path::PathBuf, process::Command};
+use std::{io::BufReader, path::PathBuf, process::Command};
 
-use sl_meta::minecraft::loaders::neoforge::{NeoForgeReleases, NeoForgeVersion};
+use sl_meta::minecraft::loaders::neoforge::{
+    NeoForgeLoaderProfile, NeoForgeReleases, NeoForgeVersion,
+};
 use sl_utils::{
     dlog, log,
     utils::{
@@ -172,7 +174,7 @@ impl<'a> NeoForgeInstaller<'a> {
         format!("neoforge-{}", self.version)
     }
 
-    async fn install(self) -> Result<(), ForgeInstallerErr> {
+    async fn install(self) -> Result<NeoForgeLoaderProfile, ForgeInstallerErr> {
         log!(
             "NeoForge: installing neoforge for instance: '{}' ({})",
             self.instance.name,
@@ -210,13 +212,21 @@ impl<'a> NeoForgeInstaller<'a> {
             neoforge_json_path.display(),
             loader_json_path.display()
         );
-        tokio::fs::copy(&neoforge_json_path, loader_json_path).await?;
+        tokio::fs::copy(&neoforge_json_path, &loader_json_path).await?;
+
+        let loader_json = std::fs::File::open(loader_json_path)?;
+        let loader_json_reader = BufReader::new(loader_json);
+        let loader_json_instance = serde_json::from_reader(loader_json_reader)
+            .map_err(|e| Into::<std::io::Error>::into(e))?;
+
         log!("NeoForge: Installed successfully!");
-        Ok(())
+        Ok(loader_json_instance)
     }
 }
 
-pub async fn install_neoforge_loader(instance: &Instance) -> Result<(), BackendError> {
+pub async fn install_neoforge_loader(
+    instance: &Instance,
+) -> Result<NeoForgeLoaderProfile, BackendError> {
     // it isn't the job of the installer to forge a working instance...
     assert_eq!(instance.instance_type, InstanceType::NeoForge);
     NeoForgeInstaller::new(instance)

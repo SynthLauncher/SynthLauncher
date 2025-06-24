@@ -1,4 +1,4 @@
-use sl_meta::minecraft::loaders::forge::ForgeVersions;
+use sl_meta::minecraft::loaders::forge::{ForgeLoaderProfile, ForgeVersions};
 use sl_utils::{
     dlog, elog, log,
     utils::{
@@ -7,6 +7,7 @@ use sl_utils::{
     },
 };
 use std::{
+    io::BufReader,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -247,7 +248,7 @@ impl<'a> ForgeInstaller<'a> {
         Ok(())
     }
 
-    async fn install(self) -> Result<(), ForgeInstallerErr> {
+    async fn install(self) -> Result<ForgeLoaderProfile, ForgeInstallerErr> {
         log!(
             "Forge: installing forge for instance: '{}' ({})",
             self.instance.name,
@@ -285,13 +286,19 @@ impl<'a> ForgeInstaller<'a> {
             forge_json_path.display(),
             loader_json_path.display()
         );
-        fs::copy(&forge_json_path, loader_json_path).await?;
+        fs::copy(forge_json_path, &loader_json_path).await?;
+
+        let loader_json = std::fs::File::open(loader_json_path)?;
+        let loader_json_reader = BufReader::new(loader_json);
+        let loader_json_instance = serde_json::from_reader(loader_json_reader)
+            .map_err(|e| Into::<std::io::Error>::into(e))?;
+
         log!("Forge: Installed successfully!");
-        Ok(())
+        Ok(loader_json_instance)
     }
 }
 
-pub async fn install_forge_loader(instance: &Instance) -> Result<(), BackendError> {
+pub async fn install_forge_loader(instance: &Instance) -> Result<ForgeLoaderProfile, BackendError> {
     // it isn't the job of the installer to forge a working instance...
     assert_eq!(instance.instance_type, InstanceType::Forge);
     ForgeInstaller::new(instance)

@@ -5,21 +5,26 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct QuiltLoaderVersion {
     pub build: u32,
-    pub version: String
+    pub version: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct QuiltVersion {
-    pub loader: QuiltLoaderVersion
+    pub loader: QuiltLoaderVersion,
 }
 
-pub fn get_quilt_versions<F>(game_version: &str, do_request: F) -> io::Result<Vec<QuiltVersion>>
+/// FIXME: a minecraft version may not have any quilt versions
+pub async fn get_quilt_versions<E>(
+    game_version: &str,
+    do_request: impl AsyncFnOnce(&str) -> Result<Vec<u8>, E>,
+) -> Result<Vec<QuiltVersion>, E>
 where
-    F: FnOnce(&str) -> io::Result<Vec<u8>>,
+    E: From<io::Error>,
 {
     let response = do_request(&format!(
         "https://meta.quiltmc.org/v3/versions/loader/{}",
         game_version
-    ))?;
-    Ok(serde_json::from_slice(&response)?)
+    ))
+    .await?;
+    Ok(serde_json::from_slice(&response).map_err(|e| Into::<io::Error>::into(e))?)
 }

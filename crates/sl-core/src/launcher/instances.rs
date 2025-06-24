@@ -1,4 +1,7 @@
-use std::{fs::{self, OpenOptions}, path::Path};
+use std::{
+    fs::{self, OpenOptions},
+    io,
+};
 
 use serde::{Deserialize, Serialize};
 use sl_utils::utils::errors::{BackendError, InstanceError};
@@ -30,16 +33,21 @@ impl Instances {
         Ok(())
     }
 
-    pub fn add(instance: &Instance) -> std::io::Result<()> {
+    pub(super) fn add(instance: &Instance) -> std::io::Result<()> {
         let mut existing_instances = Self::load()?;
 
-        if !existing_instances
+        if existing_instances
             .0
             .iter()
             .any(|existing| existing.name == instance.name)
         {
-            existing_instances.0.push(instance.clone());
+            return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                "Instance already exists",
+            ));
         }
+
+        existing_instances.0.push(instance.clone());
 
         Instances::overwrite(&existing_instances)?;
 
@@ -60,21 +68,6 @@ impl Instances {
         Ok(())
     }
 
-    fn find_in_instances_dir(name: &str) -> Result<Instance, BackendError> {
-        let path = Path::new(&INSTANCES_DIR.as_path()).join(&name);
-
-        if path.exists() && path.is_dir() {
-            let instance = Instance::get_instance_from_dir(name)?;
-            Instances::add(&instance)?;
-
-            return Ok(instance);
-        }
-
-        Err(BackendError::InstanceError(
-            InstanceError::InstallationNotFound(name.to_string()),
-        ))
-    }
-
     pub fn find(name: &str) -> Result<Instance, BackendError> {
         let instances = Self::load()?;
 
@@ -85,7 +78,9 @@ impl Instances {
         {
             Ok(instance)
         } else {
-            Self::find_in_instances_dir(name)
+            Err(BackendError::InstanceError(
+                InstanceError::InstallationNotFound(name.to_string()),
+            ))
         }
     }
 

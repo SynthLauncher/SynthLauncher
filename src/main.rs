@@ -2,12 +2,10 @@ use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::launcher::{
     config::init_launcher_dir,
-    instance::{Instance, InstanceType},
+    instance::Instance,
     instances::Instances,
     player::{
-        microsoft_auth::AuthFlow,
-        player_profile::PlayerProfile,
-        player_profiles::PlayerProfiles,
+        microsoft_auth::AuthFlow, player_profile::PlayerProfile, player_profiles::PlayerProfiles,
     },
 };
 use sl_utils::{dlog, elog, log, utils::errors::BackendError};
@@ -28,28 +26,15 @@ async fn run_cli() -> Result<(), BackendError> {
             loader_info,
         } => {
             let loader = loader_info.loader.unwrap_or_default();
-            let loader_version = loader_info.loader_version.unwrap_or_default();
+            let loader_version = loader_info.loader_version;
 
-            let mut instance = Instance::new(&instance_name, &version, loader, None)?;
-
-            match instance.instance_type {
-                InstanceType::Vanilla => instance.install().await?,
-                InstanceType::Forge => {
-                    instance.install().await?;
-                    instance.install_loader(&loader_version).await?;
-                    instance.install().await?;
-                }
-                _ => {
-                    instance.install_loader(&loader_version).await?;
-                    instance.install().await?;
-                }
-            }
+            let _ = Instance::create(&instance_name, &version, loader, loader_version, None)?;
         }
         Commands::Launch { instance_name } => {
             let profiles = PlayerProfiles::load()?;
             let current_profile = profiles.current_profile();
 
-            let instance = Instances::find(&instance_name)?;
+            let mut instance = Instances::find(&instance_name)?;
             dlog!("Instance found!");
             instance.execute(current_profile.as_ref()).await?;
         }
@@ -93,7 +78,7 @@ async fn run_cli() -> Result<(), BackendError> {
             }
         }
         Commands::CurrentProfile => {
-            let profiles = PlayerProfiles::load()?; 
+            let profiles = PlayerProfiles::load()?;
             let profile = profiles.current_profile();
             println!("{:#?}", profile.as_ref())
         }
