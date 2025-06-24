@@ -1,5 +1,6 @@
 pub mod download;
 pub mod errors;
-pub mod zip;
+pub mod fs;
 pub mod log;
 pub mod progress;
+pub mod zip;

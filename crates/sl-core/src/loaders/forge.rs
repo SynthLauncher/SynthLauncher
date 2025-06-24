@@ -1,8 +1,11 @@
 use sl_meta::minecraft::loaders::forge::ForgeVersions;
-use sl_utils::{dlog, elog, log, utils::{
-    self,
-    errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
-}};
+use sl_utils::{
+    dlog, elog, log,
+    utils::{
+        self,
+        errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
+    },
+};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -11,10 +14,12 @@ use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::{
-    launcher::instance::{Instance, InstanceType}, HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR
+    launcher::instance::{Instance, InstanceType},
+    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
 };
 
-const FORGE_JAVA_INSTALLER_SRC: &str = include_str!("../../../../assets/scripts/ForgeInstaller.java");
+pub const FORGE_JAVA_INSTALLER_SRC: &str =
+    include_str!("../../../../assets/scripts/ForgeInstaller.java");
 
 struct ForgeInstaller<'a> {
     instance: &'a Instance,
@@ -138,7 +143,7 @@ impl<'a> ForgeInstaller<'a> {
                 path,
                 3,
                 std::time::Duration::from_secs(5),
-                None
+                None,
             )
             .await;
 
@@ -249,25 +254,6 @@ impl<'a> ForgeInstaller<'a> {
             self.instance.game_info.version
         );
 
-        /// Some helper function to recursively copy a directory
-        fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result<()> {
-            std::fs::create_dir_all(&dst)?;
-            for entry in std::fs::read_dir(src)? {
-                let entry = entry?;
-                let ty = entry.file_type()?;
-
-                let src_path = entry.path();
-                let dest_path = dst.as_ref().join(entry.file_name());
-
-                if ty.is_dir() {
-                    copy_dir_all(src_path, dest_path)?
-                } else {
-                    std::fs::copy(src_path, dest_path)?;
-                }
-            }
-            Ok(())
-        }
-
         self.install_to_cache().await?;
 
         let cache_dir = self.cache_dir.path();
@@ -282,7 +268,7 @@ impl<'a> ForgeInstaller<'a> {
             let src_path = entry.path();
             let dest_path = LIBS_DIR.join(entry.file_name());
 
-            copy_dir_all(src_path, dest_path)?;
+            sl_utils::utils::fs::copy_dir_all(src_path, dest_path)?;
         }
 
         // copy the forge json to the instance directory...

@@ -54,7 +54,6 @@ pub enum JavaError {
     VersionNotFound(u16),
 }
 
-
 #[derive(Debug, Error)]
 pub enum ZipExtractionError {
     #[error("Unsupported File Extension: {0}")]

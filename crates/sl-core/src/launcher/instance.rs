@@ -9,21 +9,51 @@ use std::{
 
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
-use sl_meta::minecraft::{loaders::{fabric::profile::FabricLoaderProfile, forge::ForgeLoaderProfile, quilt::profiles::QuiltLoaderProfile, vanilla::Client}, version_manifest::VersionType};
-use sl_utils::{dlog, elog, log, utils::errors::{BackendError, InstanceError}};
+use sl_meta::minecraft::{
+    loaders::{
+        fabric::profile::FabricLoaderProfile, forge::ForgeLoaderProfile,
+        neoforge::NeoForgeLoaderProfile, quilt::profiles::QuiltLoaderProfile, vanilla::Client,
+    },
+    version_manifest::VersionType,
+};
+use sl_utils::{
+    dlog, elog, log,
+    utils::errors::{BackendError, InstanceError},
+};
 use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
-use crate::{launcher::{config::Config, player::player_profile::PlayerProfile}, loaders::{fabric::install_fabric_loader, forge::install_forge_loader, quilt::install_quilt_loader, Loaders}, minecraft::{install_client, version_manifest::download_version}, ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST};
+use crate::{
+    launcher::{config::Config, player::player_profile::PlayerProfile},
+    loaders::{
+        fabric::install_fabric_loader, forge::install_forge_loader,
+        neoforge::install_neoforge_loader, quilt::install_quilt_loader, Loaders,
+    },
+    minecraft::{install_client, version_manifest::download_version},
+    ASSETS_DIR, INSTANCES_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR, VERSION_MANIFEST,
+};
 
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq, Default, EnumString, Display, AsRefStr)]
-#[strum(serialize_all = "snake_case")]
+#[derive(
+    Debug,
+    Deserialize,
+    Serialize,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Default,
+    EnumString,
+    Display,
+    AsRefStr,
+)]
+#[strum(serialize_all = "lowercase")]
 pub enum InstanceType {
     #[default]
     Vanilla,
     Fabric,
     Quilt,
     Forge,
+    NeoForge,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -59,12 +89,12 @@ impl Instance {
         let version = VERSION_MANIFEST
             .versions()
             .find(|x| x.id == version)
-            .ok_or(BackendError::InstanceError(
-                InstanceError::VersionNotFound(version.to_string()),
-            ))?;
+            .ok_or(BackendError::InstanceError(InstanceError::VersionNotFound(
+                version.to_string(),
+            )))?;
 
         fs::create_dir_all(INSTANCES_DIR.join(name))?;
-        
+
         Ok(Self {
             name: name.to_string(),
             game_info: InstanceGameInfo {
@@ -139,7 +169,10 @@ impl Instance {
         let path = format!("{}.json", self.instance_type);
         let path = self.dir_path().join(path);
         match self.instance_type {
-            InstanceType::Fabric | InstanceType::Forge | InstanceType::Quilt => Some(path),
+            InstanceType::Fabric
+            | InstanceType::Forge
+            | InstanceType::Quilt
+            | InstanceType::NeoForge => Some(path),
             InstanceType::Vanilla => None,
         }
     }
@@ -159,6 +192,7 @@ impl Instance {
             InstanceType::Fabric => generic_concat_loader!(Fabric, FabricLoaderProfile),
             InstanceType::Quilt => generic_concat_loader!(Quilt, QuiltLoaderProfile),
             InstanceType::Forge => generic_concat_loader!(Forge, ForgeLoaderProfile),
+            InstanceType::NeoForge => generic_concat_loader!(NeoForge, NeoForgeLoaderProfile),
             InstanceType::Vanilla => None,
         }
     }
@@ -170,6 +204,7 @@ impl Instance {
             }
             InstanceType::Fabric => install_fabric_loader(&self, loader_version).await,
             InstanceType::Quilt => install_quilt_loader(&self, loader_version).await,
+            InstanceType::NeoForge => install_neoforge_loader(self).await,
             InstanceType::Forge => install_forge_loader(self).await,
         }
     }
@@ -193,8 +228,10 @@ impl Instance {
                     client = quilt.join_client(client);
                 }
                 Loaders::Forge(forge) => {
-                    dlog!("FORGE");
                     client = forge.join_client(client);
+                }
+                Loaders::NeoForge(neoforge) => {
+                    client = neoforge.join_client(client);
                 }
             }
         }
@@ -331,6 +368,8 @@ impl Instance {
                 "auth_player_name" => &profile.data.username,
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
                 "version_type" => "SL",
+                "library_directory" => LIBS_DIR.to_str().unwrap(),
+                "classpath_separator" => MULTI_PATH_SEPARATOR,
                 _ => config.get(arg)?,
             })
         };
@@ -384,7 +423,9 @@ impl Instance {
     pub async fn execute(&self, profile: &PlayerProfile) -> Result<(), BackendError> {
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
-            self.name, self.instance_type, profile.data.username
+            self.name,
+            self.instance_type,
+            profile.data.username
         );
 
         let config = self.read_config().unwrap();
@@ -412,9 +453,9 @@ impl Instance {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
             elog!("stderr:\n{}\nstdout:\n{}", stderr, stdout);
-            return Err(BackendError::InstanceError(
-                InstanceError::FailedToExecute(self.name.clone()),
-            ));
+            return Err(BackendError::InstanceError(InstanceError::FailedToExecute(
+                self.name.clone(),
+            )));
         }
 
         Ok(())
