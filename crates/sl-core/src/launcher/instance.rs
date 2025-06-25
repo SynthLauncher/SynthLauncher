@@ -121,48 +121,6 @@ impl Instance {
         })
     }
 
-    // TODO: Change how this works
-    // fn get_loader_from_dir(dir: &Path) -> Result<InstanceType, BackendError> {
-    //     for entry in fs::read_dir(dir)? {
-    //         let entry = entry?;
-    //         let path = entry.path();
-
-    //         if let Some(file_name) = path.file_name().and_then(OsStr::to_str) {
-    //             if file_name.contains("fabric.json") {
-    //                 return Ok(InstanceType::Fabric);
-    //             } else if file_name.contains("quilt.json") {
-    //                 return Ok(InstanceType::Quilt);
-    //             }
-    //         }
-    //     }
-
-    //     Ok(InstanceType::Vanilla)
-    // }
-
-    // // TODO: Change how this works
-    // pub fn get_instance_from_dir(name: &str) -> Result<Self, BackendError> {
-    //     let dir = Path::new(&INSTANCES_DIR.as_path()).join(&name);
-    //     let path = dir.join("client.json");
-    //     let file = std::fs::File::open(path)?;
-    //     let reader = BufReader::new(file);
-    //     let client: Client = serde_json::from_reader(reader)?;
-
-    //     let game_info = InstanceGameInfo {
-    //         release_time: client.release_time,
-    //         r#type: client.r#type,
-    //         version: client.id,
-    //     };
-
-    //     let instance_type = Instance::get_loader_from_dir(&dir)?;
-
-    //     Ok(Self {
-    //         name: name.to_string(),
-    //         game_info,
-    //         icon: None,
-    //         instance_type,
-    //     })
-    // }
-
     pub fn dir_path(&self) -> PathBuf {
         INSTANCES_DIR.join(&self.name)
     }
@@ -231,28 +189,24 @@ impl Instance {
         }
     }
 
-    /// Reads the vanilla client.json file and returns the client information, returns None if the file does not exist or deserialization fails.
+    /// Reads the vanilla client.json file and returns the deserialized Client, or None if the file doesn't exist or deserialization fails.
     async fn read_vanilla_client(&self) -> Option<Client> {
         let client = tokio::fs::read_to_string(&self.client_json_path())
             .await
             .ok()?;
-        // instead of returning an error, return None if deserialization fails so that it is deserialized
         serde_json::from_str(&client).ok()
     }
 
-    /// Reads the instance configuration file and returns the configuration, returns None if the file does not exist or deserialization fails (corrupted)
+    /// Reads the instance config.json file and returns the deserialized Config, or None if the file doesn't exist or deserialization fails.
     fn read_config_init(&self) -> Option<Config> {
         let file = fs::File::open(self.config_path()).ok()?;
         serde_json::from_reader(file).ok()
     }
 
-    async fn override_config(&mut self, config: Config) -> Result<(), std::io::Error> {
-        let installation_dir = self.dir_path();
-        let config_path = self.config_path();
-
-        tokio::fs::create_dir_all(&installation_dir).await?;
-        let file = fs::File::create(config_path)?;
-        serde_json::to_writer_pretty(file, &config)?;
+    async fn override_config(&mut self, config: &Config) -> Result<(), std::io::Error> {
+        tokio::fs::create_dir_all(self.dir_path()).await?;
+        let file = fs::File::create(self.config_path())?;
+        serde_json::to_writer_pretty(file, config)?;
         Ok(())
     }
 
@@ -261,7 +215,7 @@ impl Instance {
         // FIXME: this should only re-initialize the client and not the config, basing the existence of a config on the existence of a client is not a good idea,
         // however the config needs the client's java version to be initialized so i couldn't figure out how to do it without creating a config
         let config = Config::create_local_config(&vanilla_client.java_version.component).await?;
-        self.override_config(config.clone()).await?;
+        self.override_config(&config).await?;
         Ok(config)
     }
 
@@ -448,7 +402,7 @@ impl Instance {
     }
 
     /// Returns the path to the javac executable which the current instance uses
-    /// gruannted to exist otherwise it panciks in debug mode
+    /// gruannted to exist otherwise it panics in debug mode
     pub fn get_javac(&self) -> PathBuf {
         // FIXME: there should be a better implementition
         let java = self.get_java();
@@ -478,7 +432,6 @@ impl Instance {
 
         let args = self.generate_arguments(client, &config, profile).await?;
 
-        // !!! Warning if you're recording your auth_token may get leaked XD
         dlog!("Launching with args: {:?}", &args);
 
         let output = Command::new(current_java_path)

@@ -1,4 +1,3 @@
-use synrinth::errors::SynrinthError;
 use thiserror::Error;
 use zip::result::ZipError;
 
@@ -80,8 +79,6 @@ pub enum BackendError {
     JavaError(#[from] JavaError),
     #[error("Installation error: {0}")]
     InstanceError(#[from] InstanceError),
-    #[error("Synrinth: {0}")]
-    SynrinthError(#[from] SynrinthError),
 }
 
 impl From<reqwest::Error> for HttpError {

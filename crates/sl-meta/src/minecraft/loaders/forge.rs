@@ -42,7 +42,6 @@ pub struct ForgeLoaderProfile {
     /// The .id of the client this extends
     inherits_from: String,
     main_class: String,
-
     libraries: Vec<Library>,
 }
 

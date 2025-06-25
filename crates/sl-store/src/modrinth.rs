@@ -18,7 +18,7 @@ use synrinth::{
 };
 
 pub async fn search_query_default(query: QueryParams) -> Result<Search, BackendError> {
-    Ok(query_search(&HTTP_CLIENT, query).await?)
+    Ok(query_search::<BackendError>(&HTTP_CLIENT, query).await?)
 }
 
 // !!! UNFINISHED DO NOT TOUCH OR COPY THIS CODE
@@ -28,7 +28,8 @@ pub async fn create_modpack_instance(
     project: &Project,
     version: &str,
 ) -> Result<(), BackendError> {
-    let project_version = query_project_version(&client, &project.slug, version).await?;
+    let project_version =
+        query_project_version::<BackendError>(&client, &project.slug, version).await?;
     let name = &project.slug;
     let project_file = &project_version.files[0];
     let loader = &project_version.loaders[0];
@@ -39,10 +40,11 @@ pub async fn create_modpack_instance(
     let loader = DependencyID::from(loader.as_str());
     let vanilla = DependencyID::Minecraft;
 
-    let path = download_project_file(&client, &project_file, &instance_path).await?;
+    let path =
+        download_project_file::<BackendError>(&client, &project_file, &instance_path).await?;
     unpack_modpack(&path, &instance_path).await?;
 
-    let mrpack = read_modpack_file(&instance_path).await?;
+    let mrpack = read_modpack_file::<BackendError>(&instance_path)?;
     let loader_version = mrpack.dependencies.get(&loader).unwrap().clone();
     let vanilla_version = mrpack.dependencies.get(&vanilla).unwrap();
 
@@ -55,6 +57,6 @@ pub async fn create_modpack_instance(
     )?;
     let modpack_files = &mrpack.files;
 
-    download_modpack_files(&client, &instance_path, modpack_files).await?;
+    download_modpack_files::<BackendError>(&client, &instance_path, modpack_files).await?;
     Ok(())
 }

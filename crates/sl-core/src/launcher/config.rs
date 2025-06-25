@@ -1,13 +1,12 @@
 use std::{
     collections::HashMap,
     env,
-    fs::{self, File, OpenOptions},
+    fs::{File, OpenOptions},
     io::BufReader,
     path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use sl_meta::java::jre_manifest::JreManifestDownloadType;
 use sl_utils::{dlog, utils::errors::BackendError};
 use velcro::hash_map_from;
@@ -114,10 +113,6 @@ impl Config {
 }
 
 impl Config {
-    pub fn new(map: HashMap<String, String>) -> Self {
-        Self(map)
-    }
-
     pub async fn create_local_config(
         component: &JreManifestDownloadType,
     ) -> Result<Self, BackendError> {
@@ -140,24 +135,6 @@ impl Config {
         Ok(Self(hash_map_from! {
             "java": java_path.join("bin").join(java_binary).to_string_lossy().to_string()
         }))
-    }
-
-    pub fn update_config_field(
-        &mut self,
-        key: &str,
-        new_value: &str,
-    ) -> Result<(), std::io::Error> {
-        let config_path = LAUNCHER_DIR.join("config.json");
-
-        let config_data = fs::read_to_string(&config_path)?;
-        let mut json: Value = serde_json::from_str(&config_data)?;
-
-        if let Some(obj) = json.as_object_mut() {
-            obj.insert(key.to_string(), Value::String(new_value.to_string()));
-        }
-
-        fs::write(&config_path, serde_json::to_string_pretty(&json)?)?;
-        Ok(())
     }
 
     pub fn get(&self, entry: &str) -> Option<&str> {
