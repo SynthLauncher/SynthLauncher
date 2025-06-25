@@ -4,7 +4,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 
 export const HomePage = () => {
-  const [state, setState] = useState<number>();
+  const [state, setState] = useState<number>(0);
 
   useEffect(() => {
     const unlisten = listen('download-progress', (event) => {

@@ -11,7 +11,7 @@ const ProfileSidebar: React.FC = () => {
 
   return (
     <div className="w-80 bg-gradient-to-b from-[#EC8E4F]/10 to-[#1D2026] border-l-2 border-[#2D2F32] p-4 overflow-y-auto">
-
+      {profile?.data.name}
     </div>
   );
 };

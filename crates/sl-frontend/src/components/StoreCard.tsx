@@ -13,7 +13,7 @@ export const StoreCard = ({
 }: StoreCardProps) => {
     return (
         <div className="bg-[#1D2026] rounded-lg p-5 flex gap-3">
-            <img src={imageUrl} alt="mod icon" className="max-w-24 rounded-md" />
+            <img src={imageUrl} alt="mod icon" className="w-24 h-24 rounded-md" />
             <div className="flex flex-col grow">
                 <h1 className="text-white text-lg font-bold">{name} <span className="text-gray-500 font-normal">by {author}</span></h1>
                 <p className="text-gray-500 grow">{description}</p>

@@ -16,7 +16,7 @@ export const getInstances = async (
   }
 };
 
-export const createInstance = async (name: string, version: string, loader: string) => {
+export const createInstance = async (name: string, version: string) => {
   try {
     await invoke("create_instance", { name: name, version: version });
   } catch (error) {
