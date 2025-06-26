@@ -30,6 +30,7 @@ pub async fn create_instance(name: String, version: String) -> Result<(), String
         .map_err(|e| e.to_string())
 }
 
+
 #[tauri::command]
 pub async fn test_progress(app: AppHandle) -> Result<(), String> {
     let (tx, mut rx) = tokio::sync::mpsc::channel::<f32>(500);
