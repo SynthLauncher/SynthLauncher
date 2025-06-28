@@ -31,12 +31,9 @@ async fn run_cli() -> Result<(), BackendError> {
             let _ = Instance::create(&instance_name, &version, loader, loader_version, None)?;
         }
         Commands::Launch { instance_name } => {
-            let profiles = PlayerProfiles::load()?;
-            let current_profile = profiles.current_profile();
-
             let mut instance = Instances::find(&instance_name)?;
             dlog!("Instance found!");
-            instance.execute(current_profile.as_ref()).await?;
+            instance.execute().await?;
         }
         Commands::AddOfflineProfile { name } => {
             let mut profiles = PlayerProfiles::load()?;

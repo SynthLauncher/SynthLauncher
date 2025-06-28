@@ -64,3 +64,11 @@ pub async fn test_progress(app: AppHandle) -> Result<(), String> {
 pub async fn remove_instance(name: &str) -> Result<(), String> {
     Instances::remove(name).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn launch_instance(name: &str) -> Result<(), String> {
+    let mut instance = Instances::find(name).map_err(|e| e.to_string())?;
+    instance.execute().await.map_err(|e| e.to_string())?;
+
+    Ok(())
+}

@@ -22,7 +22,7 @@ use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
 use crate::{
-    launcher::{config::Config, instances::Instances, player::player_profile::PlayerProfile},
+    launcher::{config::Config, instances::Instances, player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles}},
     loaders::{
         fabric::install_fabric_loader, forge::install_forge_loader,
         neoforge::install_neoforge_loader, quilt::install_quilt_loader, Loaders,
@@ -415,8 +415,10 @@ impl Instance {
         results
     }
 
-    pub async fn execute(&mut self, profile: &PlayerProfile) -> Result<(), BackendError> {
+    pub async fn execute(&mut self) -> Result<(), BackendError> {
         let (client, config) = self.init().await?;
+        let profiles = PlayerProfiles::load()?;
+        let profile = profiles.current_profile();
 
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
@@ -430,7 +432,7 @@ impl Instance {
         let max_ram = config.get("max_ram").unwrap_or("2048");
         let min_ram = config.get("min_ram").unwrap_or("1024");
 
-        let args = self.generate_arguments(client, &config, profile).await?;
+        let args = self.generate_arguments(client, &config, &profile).await?;
 
         dlog!("Launching with args: {:?}", &args);
 

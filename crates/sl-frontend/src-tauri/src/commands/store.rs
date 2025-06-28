@@ -1,10 +1,8 @@
 use sl_store::modrinth::search_query_default;
-use sl_utils::dlog;
 use synrinth::models::{search::{FacetFilter, FacetOp, FacetType, QueryParams, Search}};
 
 #[tauri::command]
 pub async fn search_store(query: &str, category: &str) -> Result<Search, String> {
-    dlog!("{}", category);
     let facets = FacetFilter {
         facet: FacetType::ProjectType,
         op: FacetOp::Eq,

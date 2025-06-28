@@ -1,5 +1,5 @@
 use std::process::Command;
-use sl_core::LAUNCHER_DIR;
+use sl_core::{launcher::themes::{get_themes, Theme}, LAUNCHER_DIR};
 
 #[tauri::command]
 pub async fn open_synthlauncher_folder() {
@@ -21,4 +21,10 @@ pub async fn open_synthlauncher_folder() {
     if let Err(e) = result {
         eprintln!("Failed to open folder: {}", e);
     }
+}
+
+#[tauri::command]
+pub async fn get_synthlauncher_themes() -> Result<Vec<Theme>, String> {
+    let themes = get_themes().map_err(|e| e.to_string())?;
+    Ok(themes)
 }

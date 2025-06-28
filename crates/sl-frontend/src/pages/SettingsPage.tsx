@@ -1,9 +1,3 @@
-
-
 export const SettingsPage = () => {
-    return (
-        <div>
-
-        </div>
-    );
-}
+	return <div></div>;
+};
