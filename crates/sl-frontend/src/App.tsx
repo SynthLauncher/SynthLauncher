@@ -33,7 +33,7 @@ function App() {
 			case 'instances':
 				return <InstancesPage />;
 			case 'store':
-				return <StorePage {...theme[0].storePage} />;
+				return <StorePage {...theme[0]?.storePage} />;
 			case 'settings':
 				return <SettingsPage />;
 			default:
