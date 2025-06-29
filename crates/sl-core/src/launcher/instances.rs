@@ -1,108 +1,101 @@
 use std::{
-    fs::{self, OpenOptions},
-    io,
+    fs::{self, File},
+    io::{self, BufReader},
+    path::PathBuf,
 };
 
-use serde::{Deserialize, Serialize};
-use sl_utils::utils::errors::{BackendError, InstanceError};
+use sl_utils::{
+    elog,
+    utils::errors::{BackendError, InstanceError},
+};
 
-use crate::{launcher::instance::Instance, INSTANCES_DIR, INSTANCES_PATH};
+use crate::{launcher::instance::Instance, INSTANCES_DIR};
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(transparent)]
-pub struct Instances(pub Vec<Instance>);
+const INSTANCE_FILE_NAME: &str = "instance.json";
 
-impl Instances {
-    pub fn new() -> Self {
-        Instances(Vec::new())
+pub(super) fn add_new(instance: &Instance) -> Result<(), BackendError> {
+    let existing_instance = self::find(&instance.name)?.is_some();
+    if existing_instance {
+        return Err(BackendError::InstanceError(
+            InstanceError::InstanceAlreadyExists(instance.name.clone()),
+        ));
     }
 
-    pub fn load() -> std::io::Result<Self> {
-        let content = fs::read_to_string(&INSTANCES_PATH.as_path())?;
-        Ok(serde_json::from_str(&content).unwrap_or(Instances::new()))
+    let new_instance_file_path = INSTANCES_DIR.join(&instance.name).join(INSTANCE_FILE_NAME);
+
+    if let Some(parent) = new_instance_file_path.parent() {
+        std::fs::create_dir_all(parent)?;
     }
 
-    pub fn overwrite(instances: &Instances) -> std::io::Result<()> {
-        let file = OpenOptions::new()
-            .write(true)
-            .truncate(true)
-            .open(INSTANCES_PATH.as_path())?;
+    let instance_file = File::create_new(&new_instance_file_path)?;
+    serde_json::to_writer_pretty(instance_file, &instance)?;
 
-        serde_json::to_writer_pretty(file, &instances)?;
+    Ok(())
+}
 
-        Ok(())
+pub fn remove(name: &str) -> Result<(), BackendError> {
+    let (_, instance_file_path) = self::get_existing(name)?;
+
+    if let Some(parent) = instance_file_path.parent() {
+        fs::remove_dir_all(parent)?;
     }
+    Ok(())
+}
 
-    pub(super) fn add(instance: &Instance) -> std::io::Result<()> {
-        let mut existing_instances = Self::load()?;
+/// Gets an existing instance by name assuming it may not exist
+/// returns Ok(None) if it does not exist
+pub(super) fn find(name: &str) -> std::io::Result<Option<(Instance, PathBuf)>> {
+    // FIXME: maybe don't rely on the name for getting an existing instance's path
+    let instance_file_path = INSTANCES_DIR.join(name).join(INSTANCE_FILE_NAME);
+    let instance_file = match File::open(&instance_file_path) {
+        Ok(file) => file,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
+        Err(err) => return Err(err),
+    };
 
-        if existing_instances
-            .0
-            .iter()
-            .any(|existing| existing.name == instance.name)
-        {
-            return Err(io::Error::new(
-                io::ErrorKind::AlreadyExists,
-                "Instance already exists",
-            ));
-        }
+    let read_buf = BufReader::new(instance_file);
+    let instance = serde_json::from_reader(read_buf)?;
 
-        existing_instances.0.push(instance.clone());
+    Ok(Some((instance, instance_file_path)))
+}
 
-        Instances::overwrite(&existing_instances)?;
+/// Gets an existing instance by name assuming it exists
+/// errors if it does not exist
+pub fn get_existing(name: &str) -> Result<(Instance, PathBuf), BackendError> {
+    let found = self::find(name).map(|option| {
+        option.ok_or(BackendError::InstanceError(
+            InstanceError::InstanceNotFound(name.to_string()),
+        ))
+    });
+    // STABIALIZE FLATTEN PLEASE, THE HORROR
+    found?
+}
 
-        Ok(())
-    }
+/// Loads all instances from the instances directory
+pub fn load_all_instances() -> Result<Vec<Instance>, BackendError> {
+    let instances_dir = INSTANCES_DIR.read_dir()?;
 
-    pub fn remove(name: &str) -> std::io::Result<()> {
-        let mut existing_instances = Self::load()?;
+    let instances_paths = instances_dir
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_type().is_ok_and(|ft| ft.is_dir()))
+        .map(|entry| entry.path())
+        .map(|path| path.join(INSTANCE_FILE_NAME))
+        .filter(|instance_file_path| instance_file_path.exists());
 
-        existing_instances
-            .0
-            .retain(|existing| existing.name != name);
-
-        Instances::overwrite(&existing_instances)?;
-
-        fs::remove_dir_all(INSTANCES_DIR.join(name))?;
-
-        Ok(())
-    }
-
-    pub fn find(name: &str) -> Result<Instance, BackendError> {
-        let instances = Self::load()?;
-
-        if let Some(instance) = instances
-            .0
-            .into_iter()
-            .find(|instance| instance.name == name)
-        {
-            Ok(instance)
-        } else {
-            Err(BackendError::InstanceError(
-                InstanceError::InstallationNotFound(name.to_string()),
-            ))
-        }
-    }
-
-    pub fn load_all_instances() -> Result<Instances, BackendError> {
-        let mut names = Vec::new();
-        let mut instances: Instances = Instances(Vec::new());
-
-        for entry in fs::read_dir(INSTANCES_DIR.as_path())? {
-            let entry = entry?;
-            let entry_path = entry.path();
-
-            if entry_path.is_dir() {
-                if let Some(folder_name_str) = entry_path.file_name().and_then(|f| f.to_str()) {
-                    names.push(folder_name_str.to_string());
-                }
+    let instances = instances_paths
+        .map(|path| -> Result<_, BackendError> {
+            let instance_file = File::open(&path)?;
+            let deserialized: Instance = serde_json::from_reader(instance_file)?;
+            Ok(deserialized)
+        })
+        .filter_map(|instance| match instance {
+            Err(e) => {
+                elog!("failed to load an instance error: {}, ignoring...", e);
+                None
             }
-        }
+            Ok(i) => Some(i),
+        });
 
-        for name in names {
-            instances.0.push(Instances::find(&name)?);
-        }
-
-        Ok(instances)
-    }
+    Ok(instances.collect())
 }

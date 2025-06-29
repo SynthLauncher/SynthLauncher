@@ -23,8 +23,10 @@ pub enum InstanceError {
     FailedToExecute(String),
     #[error("Minecraft version {0} was not found")]
     VersionNotFound(String),
-    #[error("Installation {0} was not found")]
-    InstallationNotFound(String),
+    #[error("Instance '{0}' was not found")]
+    InstanceNotFound(String),
+    #[error("Instance '{0}' already exists")]
+    InstanceAlreadyExists(String),
     #[error("An unknown error occurred: {0}")]
     OtherInstanceError(String),
     #[error("{0}")]

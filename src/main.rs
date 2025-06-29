@@ -3,7 +3,7 @@ use cli::{Cli, Commands};
 use sl_core::launcher::{
     config::init_launcher_dir,
     instance::Instance,
-    instances::Instances,
+    instances,
     player::{
         microsoft_auth::AuthFlow, player_profile::PlayerProfile, player_profiles::PlayerProfiles,
     },
@@ -31,7 +31,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let _ = Instance::create(&instance_name, &version, loader, loader_version, None)?;
         }
         Commands::Launch { instance_name } => {
-            let mut instance = Instances::find(&instance_name)?;
+            let (mut instance, _) = instances::get_existing(&instance_name)?;
             dlog!("Instance found!");
             instance.execute().await?;
         }
@@ -65,7 +65,7 @@ async fn run_cli() -> Result<(), BackendError> {
             }
         }
         Commands::ListInstances => {
-            for (i, instance) in Instances::load()?.0.iter().enumerate() {
+            for (i, instance) in instances::load_all_instances()?.iter().enumerate() {
                 println!("[{}] {:#?}", i, instance);
             }
         }

@@ -22,7 +22,11 @@ use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
 use crate::{
-    launcher::{config::Config, instances::Instances, player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles}},
+    launcher::{
+        config::Config,
+        instances::{self},
+        player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles},
+    },
     loaders::{
         fabric::install_fabric_loader, forge::install_forge_loader,
         neoforge::install_neoforge_loader, quilt::install_quilt_loader, Loaders,
@@ -65,6 +69,7 @@ pub struct InstanceGameInfo {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Instance {
+    /// The name of the instance
     pub name: String,
     pub game_info: InstanceGameInfo,
 
@@ -88,7 +93,7 @@ impl Instance {
         icon: Option<PathBuf>,
     ) -> Result<Self, BackendError> {
         let instance = Self::new(name, version, instance_type, loader_version, icon)?;
-        Instances::add(&instance)?;
+        instances::add_new(&instance)?;
         Ok(instance)
     }
 
