@@ -1,15 +1,16 @@
-use std::fs;
+use std::{fs, path::Path};
 
 use sl_meta::minecraft::loaders::quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile};
 use sl_utils::utils::errors::{BackendError, HttpError};
 
-use crate::launcher::instance::Instance;
+use crate::launcher::instance::InstanceInfo;
 
 pub async fn install_quilt_loader(
-    instance: &Instance,
+    instance: &InstanceInfo,
+    output_loader_json_path: &Path,
     loader_version: Option<&str>,
 ) -> Result<QuiltLoaderProfile, BackendError> {
-    let path = instance.dir_path().join("quilt.json");
+    let path = output_loader_json_path;
     let make_req = async |url: &str| -> Result<Vec<u8>, HttpError> {
         let res = reqwest::get(url).await?;
         let bytes = res.bytes().await?;

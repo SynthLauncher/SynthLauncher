@@ -1,29 +1,25 @@
 use std::{
     borrow::Cow,
-    fs::{self},
-    path::PathBuf,
+    fs::{self, File},
+    io::BufReader,
+    path::{Path, PathBuf},
     process::Stdio,
 };
 
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
-use sl_meta::minecraft::{
-    loaders::{
-        fabric::profile::FabricLoaderProfile, forge::ForgeLoaderProfile,
-        neoforge::NeoForgeLoaderProfile, quilt::profiles::QuiltLoaderProfile, vanilla::Client,
-    },
-    version_manifest::VersionType,
-};
+use sl_meta::minecraft::{loaders::vanilla::Client, version_manifest::VersionType};
 use sl_utils::{
     dlog, elog, log,
     utils::errors::{BackendError, InstanceError},
+    wlog,
 };
 use strum_macros::{AsRefStr, Display, EnumString};
 use tokio::process::Command;
 
 use crate::{
     launcher::{
-        config::Config,
+        config::InstanceConfig,
         instances::{self},
         player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles},
     },
@@ -68,7 +64,7 @@ pub struct InstanceGameInfo {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Instance {
+pub struct InstanceInfo {
     /// The name of the instance
     pub name: String,
     pub game_info: InstanceGameInfo,
@@ -78,20 +74,7 @@ pub struct Instance {
     pub instance_type: InstanceType,
 }
 
-impl Instance {
-    /// Creates a new instance, and adds it to the instances list at once
-    pub fn create(
-        name: &str,
-        version: &str,
-        instance_type: InstanceType,
-        loader_version: Option<String>,
-        icon: Option<String>,
-    ) -> Result<Self, BackendError> {
-        let instance = Self::new(name, version, instance_type, loader_version, icon)?;
-        instances::add_new(&instance)?;
-        Ok(instance)
-    }
-
+impl InstanceInfo {
     fn new(
         name: &str,
         version: &str,
@@ -121,167 +104,181 @@ impl Instance {
         })
     }
 
-    pub fn dir_path(&self) -> PathBuf {
-        INSTANCES_DIR.join(&self.name)
+    /// Creates a new instance, and adds it to the instances list at once
+    pub fn create(
+        name: &str,
+        version: &str,
+        instance_type: InstanceType,
+        loader_version: Option<String>,
+        icon: Option<String>,
+    ) -> Result<Self, BackendError> {
+        let instance = Self::new(name, version, instance_type, loader_version, icon)?;
+        instances::add_new(&instance)?;
+        Ok(instance)
     }
 
-    fn config_path(&self) -> PathBuf {
-        self.dir_path().join("config.json")
-    }
-
-    fn client_json_path(&self) -> PathBuf {
-        self.dir_path().join("client.json")
-    }
-
-    fn client_jar_path(&self) -> PathBuf {
-        self.dir_path()
-            .join(format!("{}.jar", &self.game_info.version))
-    }
-
-    pub fn loader_json_path(&self) -> Option<PathBuf> {
-        let path = format!("{}.json", self.instance_type);
-        let path = self.dir_path().join(path);
-        match self.instance_type {
-            InstanceType::Fabric
-            | InstanceType::Forge
-            | InstanceType::Quilt
-            | InstanceType::NeoForge => Some(path),
-            InstanceType::Vanilla => None,
-        }
-    }
-
-    /// Reads the loader information from the JSON file, returns Some if the loader exists and is correctly initialized otherwise None
-    fn read_loader_init(&self) -> Option<Loaders> {
-        macro_rules! generic_concat_loader {
-            ($variant: ident, $profile_type: ty) => {{
-                let path = self.loader_json_path()?;
-                let file = fs::File::open(&path).ok()?;
-                let profile: $profile_type = serde_json::from_reader(file).ok()?;
-                println!("Returning variant {}", stringify!($variant));
-                Loaders::$variant(profile)
-            }};
-        }
-
-        Some(match self.instance_type {
-            InstanceType::Fabric => generic_concat_loader!(Fabric, FabricLoaderProfile),
-            InstanceType::Quilt => generic_concat_loader!(Quilt, QuiltLoaderProfile),
-            InstanceType::Forge => generic_concat_loader!(Forge, ForgeLoaderProfile),
-            InstanceType::NeoForge => generic_concat_loader!(NeoForge, NeoForgeLoaderProfile),
-            InstanceType::Vanilla => Loaders::Vanilla,
-        })
-    }
-
-    async fn reinit_loader(&self) -> Result<Loaders, BackendError> {
-        let loader_version = self.modloader_version.as_deref();
-
-        match self.instance_type {
-            InstanceType::Vanilla => {
-                return Ok(Loaders::Vanilla);
-            }
-            InstanceType::Fabric => Ok(Loaders::Fabric(
-                install_fabric_loader(&self, loader_version).await?,
-            )),
-            InstanceType::Quilt => Ok(Loaders::Quilt(
-                install_quilt_loader(&self, loader_version).await?,
-            )),
-            InstanceType::NeoForge => Ok(Loaders::NeoForge(install_neoforge_loader(self).await?)),
-            InstanceType::Forge => Ok(Loaders::Forge(install_forge_loader(self).await?)),
-        }
-    }
-
-    /// Reads the vanilla client.json file and returns the deserialized Client, or None if the file doesn't exist or deserialization fails.
-    async fn read_vanilla_client(&self) -> Option<Client> {
-        let client = tokio::fs::read_to_string(&self.client_json_path())
-            .await
-            .ok()?;
-        serde_json::from_str(&client).ok()
-    }
-
-    /// Reads the instance config.json file and returns the deserialized Config, or None if the file doesn't exist or deserialization fails.
-    fn read_config_init(&self) -> Option<Config> {
-        let file = fs::File::open(self.config_path()).ok()?;
-        serde_json::from_reader(file).ok()
-    }
-
-    async fn override_config(&mut self, config: &Config) -> Result<(), std::io::Error> {
-        tokio::fs::create_dir_all(self.dir_path()).await?;
-        let file = fs::File::create(self.config_path())?;
-        serde_json::to_writer_pretty(file, config)?;
-        Ok(())
-    }
-
-    async fn reinit_config(&mut self, vanilla_client: &Client) -> Result<Config, BackendError> {
-        tokio::fs::create_dir_all(self.dir_path()).await?;
-        // FIXME: this should only re-initialize the client and not the config, basing the existence of a config on the existence of a client is not a good idea,
-        // however the config needs the client's java version to be initialized so i couldn't figure out how to do it without creating a config
-        let config = Config::create_local_config(&vanilla_client.java_version.component).await?;
-        self.override_config(&config).await?;
-        Ok(config)
-    }
-
-    /// Only reinitialize the config if it doesn't exist or is corrupted
-    async fn init_config(&mut self, vanilla_client: &Client) -> Result<Config, BackendError> {
-        match self.read_config_init() {
-            Some(config) => Ok(config),
-            None => self.reinit_config(vanilla_client).await,
-        }
-    }
-
-    async fn reinit_vanilla_client(&mut self) -> Result<Client, BackendError> {
+    async fn reinit_vanilla_client(
+        &mut self,
+        dir_path: &Path,
+        client_json_path: &Path,
+    ) -> Result<Client, BackendError> {
         dlog!("Re-initializing the instance");
 
         let client_raw = download_version(&self.game_info.version).await?;
-        let client: Client =
-            serde_json::from_slice(&client_raw).expect("Failed to deserialize client.json!");
+        let client = serde_json::from_slice(&client_raw)?;
 
-        tokio::fs::create_dir_all(self.dir_path()).await?;
-        tokio::fs::write(self.client_json_path(), &client_raw).await?;
+        tokio::fs::create_dir_all(dir_path).await?;
+        tokio::fs::write(client_json_path, &client_raw).await?;
         Ok(client)
     }
 
-    /// Initializes the mod-loader lazily, doesn't do anything if the loader is already initialized, re initializes if corrupted.
-    #[must_use]
-    async fn init_loader(&mut self) -> Result<Loaders, BackendError> {
+    async fn reinit_mod_loader(
+        &self,
+        loader_json_path: &Path,
+        java_path: &Path,
+        javac_path: &Path,
+    ) -> Result<Loaders, BackendError> {
         match self.instance_type {
             InstanceType::Vanilla => Ok(Loaders::Vanilla),
-            InstanceType::Forge
-            | InstanceType::Fabric
-            | InstanceType::Quilt
-            | InstanceType::NeoForge => {
-                if let Some(loader) = self.read_loader_init() {
-                    Ok(loader)
-                } else {
-                    // the loader is not initialized or corrupted, re-initialize it
-                    self.reinit_loader().await
-                }
+            InstanceType::NeoForge => {
+                install_neoforge_loader(self, java_path, javac_path, loader_json_path)
+                    .await
+                    .map(|ok| Loaders::NeoForge(ok))
+            }
+            InstanceType::Fabric => {
+                install_fabric_loader(self, loader_json_path, self.modloader_version.as_deref())
+                    .await
+                    .map(|ok| Loaders::Fabric(ok))
+            }
+            InstanceType::Quilt => {
+                install_quilt_loader(self, loader_json_path, self.modloader_version.as_deref())
+                    .await
+                    .map(|ok| Loaders::Quilt(ok))
+            }
+            InstanceType::Forge => {
+                install_forge_loader(self, java_path, javac_path, loader_json_path)
+                    .await
+                    .map(|ok| Loaders::Forge(ok))
             }
         }
     }
 
-    /// Initializes the vanilla client lazily, doesn't do anything if already initialized, re initializes if corrupted.
-    #[must_use]
-    async fn init_vanilla_client(&mut self) -> Result<Client, BackendError> {
-        match self.read_vanilla_client().await {
-            Some(client) => Ok(client),
-            None => self.reinit_vanilla_client().await,
+    async fn init_vanilla_client(&mut self, dir_path: &Path) -> Result<Client, BackendError> {
+        let client_json_path = dir_path.join("client.json");
+
+        if !client_json_path.exists() {
+            return self
+                .reinit_vanilla_client(dir_path, &client_json_path)
+                .await;
         }
+
+        let client_json_file = File::open(&client_json_path)?;
+        let reader = BufReader::new(client_json_file);
+        let client_json = serde_json::from_reader(reader)?;
+
+        Ok(client_json)
     }
 
-    // PLEASE S I BEG YOU DON'T CHANGE THIS....
-    /// Initializes the instance lazily, doesn't do anything if already initialized.
-    async fn init(&mut self) -> Result<(Client, Config), BackendError> {
-        let vanilla_client = self.init_vanilla_client().await?;
-        let config = self.init_config(&vanilla_client).await?;
-        // must be done in the following order because loader needs config
-        let loader = self.init_loader().await?;
+    async fn init_loader(
+        &mut self,
+        dir_path: &Path,
+        java_path: &Path,
+        javac_path: &Path,
+    ) -> Result<Loaders, BackendError> {
+        if self.instance_type == InstanceType::Vanilla {
+            return Ok(Loaders::Vanilla);
+        }
+
+        let loader_json_path = dir_path.join(format!("{}.json", self.instance_type));
+        if !loader_json_path.exists() {
+            return self
+                .reinit_mod_loader(&loader_json_path, java_path, javac_path)
+                .await;
+        }
+
+        let loader_json = File::open(loader_json_path)?;
+        let loader: Loaders = serde_json::from_reader(loader_json)?;
+        Ok(loader)
+    }
+
+    async fn load_config(
+        &self,
+        instance_dir: &Path,
+        vanilla_client: &Client,
+    ) -> Result<InstanceConfig, BackendError> {
+        super::config::read_instance_config(instance_dir, &vanilla_client.java_version.component)
+            .await
+    }
+
+    fn instance_dir(&self) -> PathBuf {
+        INSTANCES_DIR.join(&self.name)
+    }
+
+    fn minecraft_jar_path(&self) -> PathBuf {
+        self.instance_dir()
+            .join(format!("{}.jar", &self.game_info.version))
+    }
+
+    /// Loads ('Upgrades' information to) an instance's in memory representation
+    pub async fn load_init(mut self) -> Result<LoadedInstance, BackendError> {
+        let instance_dir = self.instance_dir();
+
+        let vanilla_client = self.init_vanilla_client(&instance_dir).await?;
+        let config = self.load_config(&instance_dir, &vanilla_client).await?;
+
+        let java_path = config.java.java();
+        let javac_path = &config.java.get_javac();
+
+        let loader = self
+            .init_loader(&instance_dir, java_path, javac_path)
+            .await?;
         let client = loader.concat(vanilla_client);
-        // will automatically perform hash verification and only re install corrupted files
-        install_client(&client, self.client_jar_path(), &self.dir_path()).await?;
-        Ok((client, config))
+
+        let minecraft_jar_path = self.minecraft_jar_path();
+
+        Ok(LoadedInstance {
+            info: self,
+            config,
+            client,
+            minecraft_jar_path,
+            instance_path: instance_dir,
+        })
+    }
+}
+
+/// Represents a loaded instance of Minecraft with its configurations and things required for launching
+pub struct LoadedInstance {
+    info: InstanceInfo,
+
+    config: InstanceConfig,
+    client: Client,
+
+    minecraft_jar_path: PathBuf,
+    instance_path: PathBuf,
+}
+
+impl LoadedInstance {
+    const fn game_info(&self) -> &InstanceGameInfo {
+        &self.info.game_info
     }
 
-    fn classpath(&self, client: &Client) -> String {
-        let libs = client.libraries();
+    fn instance_dir(&self) -> &Path {
+        &self.instance_path
+    }
+
+    /// Downloads the required files for executing minecraft for this instance, only downloads corrupted or non existing files
+    ///
+    /// the reason why the download operation is not a part of the init, is because this operation results is not part of the instance's memory representation
+    /// so i think splitting them makes the code more maintainable
+    async fn download_minecraft(&self) -> Result<(), BackendError> {
+        // will automatically perform hash verification and only re install corrupted files
+        install_client(&self.client, &self.minecraft_jar_path, &self.instance_path).await?;
+        Ok(())
+    }
+
+    /// Generates the classpath for executing minecraft for this instance
+    fn generate_classpath(&self) -> String {
+        let libs = self.client.libraries();
 
         let mut classpath = Vec::new();
         for lib in libs {
@@ -297,22 +294,22 @@ impl Instance {
             }
         }
 
-        let client_jar = self.client_jar_path();
-        classpath.push(format!("{}", client_jar.display()));
+        let minecraft_jar = &self.minecraft_jar_path;
+        classpath.push(minecraft_jar.to_string_lossy().into_owned());
         classpath.join(MULTI_PATH_SEPARATOR)
     }
 
     // Thanks MrMayMan
     fn generate_sound_arguments(&self, jvm_args: &mut Vec<String>) {
-        if self.game_info.r#type == VersionType::OldBeta
-            || self.game_info.r#type == VersionType::OldAlpha
+        if self.game_info().r#type == VersionType::OldBeta
+            || self.game_info().r#type == VersionType::OldAlpha
         {
             jvm_args.push("-Dhttp.proxyHost=betacraft.uk".to_owned());
 
-            if self.game_info.version.starts_with("c0.") {
+            if self.game_info().version.starts_with("c0.") {
                 // Classic
                 jvm_args.push("-Dhttp.proxyPort=11701".to_owned());
-            } else if self.game_info.r#type == VersionType::OldAlpha {
+            } else if self.game_info().r#type == VersionType::OldAlpha {
                 // Indev, Infdev and Alpha (mostly same)
                 jvm_args.push("-Dhttp.proxyPort=11702".to_owned());
             } else {
@@ -325,7 +322,7 @@ impl Instance {
         } else {
             // 1.5.2 release date
             let v1_5_2 = DateTime::parse_from_rfc3339("2013-04-25T15:45:00+00:00").unwrap();
-            let release = DateTime::parse_from_rfc3339(&self.game_info.release_time).unwrap();
+            let release = DateTime::parse_from_rfc3339(&self.game_info().release_time).unwrap();
 
             if release <= v1_5_2 {
                 // 1.0 - 1.5.2
@@ -337,16 +334,15 @@ impl Instance {
 
     async fn generate_arguments(
         &self,
-        client: Client,
-        config: &Config,
         profile: &PlayerProfile,
     ) -> Result<Vec<String>, BackendError> {
-        let classpath = self.classpath(&client);
-        let game_dir = self.dir_path();
+        let classpath = self.generate_classpath();
+        let game_dir = self.instance_dir();
+
         let natives_dir = game_dir.join(".natives");
 
-        let raw_args = client.arguments;
-        let (mut jvm_args, mut game_args) = raw_args.into_raw();
+        let raw_args = &self.client.arguments;
+        let (mut jvm_args, mut game_args) = raw_args.clone().into_raw();
 
         let regex = regex::Regex::new(r"\$\{(\w+)\}").expect("Failed to compile regex!");
 
@@ -356,8 +352,8 @@ impl Instance {
             Some(match arg {
                 "game_directory" => game_dir.to_str().unwrap(),
                 "assets_root" | "game_assets" => ASSETS_DIR.to_str().unwrap(),
-                "assets_index_name" => &client.assets,
-                "version_name" => &self.game_info.version,
+                "assets_index_name" => &self.client.assets,
+                "version_name" => &self.game_info().version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str().unwrap(),
                 "auth_uuid" => &profile.data.uuid,
@@ -367,7 +363,13 @@ impl Instance {
                 "version_type" => "SL",
                 "library_directory" => LIBS_DIR.to_str().unwrap(),
                 "classpath_separator" => MULTI_PATH_SEPARATOR,
-                _ => config.get(arg)?,
+                other => {
+                    wlog!(
+                        "Couldn't evaluate argument: {}, for launching minecraft",
+                        other
+                    );
+                    return None;
+                }
             })
         };
 
@@ -387,52 +389,34 @@ impl Instance {
         fmt_args(&mut game_args);
         fmt_args(&mut jvm_args);
 
-        jvm_args.push(client.main_class.clone());
+        jvm_args.push(self.client.main_class.clone());
 
         Ok([jvm_args, game_args].concat())
     }
 
-    pub fn get_java(&self) -> PathBuf {
-        let config = self
-            .read_config_init()
-            .expect("config should be initialized before calling `get_java`");
-        let results = PathBuf::from(config.get("java").unwrap());
-        debug_assert!(results.exists());
-        results
-    }
+    /// Performs the execution of the instance.
+    pub async fn execute(self) -> Result<(), BackendError> {
+        // the reason why the download operation is done here is to ensure that the files are available before executing the instance.
+        // AND THE REASON WHY YOU DON'T LEAVE CALLING THIS TO THE CALLER OF THE EXECUTE METHOD is because it is just better and cleaner,
+        // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
+        self.download_minecraft().await?;
 
-    /// Returns the path to the javac executable which the current instance uses
-    /// gruannted to exist otherwise it panics in debug mode
-    pub fn get_javac(&self) -> PathBuf {
-        // FIXME: there should be a better implementition
-        let java = self.get_java();
-        let ext = java.extension();
-        let mut results = java.with_file_name("javac");
-        if let Some(ext) = ext {
-            results.set_extension(ext);
-        }
-        debug_assert!(results.exists());
-        results
-    }
-
-    pub async fn execute(&mut self) -> Result<(), BackendError> {
-        let (client, config) = self.init().await?;
         let profiles = PlayerProfiles::load()?;
         let profile = profiles.current_profile();
 
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
-            self.name,
-            self.instance_type,
+            self.info.name,
+            self.info.instance_type,
             profile.data.username
         );
 
-        let current_java_path = config.get("java").unwrap();
+        let current_java_path = self.config.java.java();
 
-        let max_ram = config.get("max_ram").unwrap_or("2048");
-        let min_ram = config.get("min_ram").unwrap_or("1024");
+        let max_ram = self.config.java.max_ram;
+        let min_ram = self.config.java.min_ram;
 
-        let args = self.generate_arguments(client, &config, &profile).await?;
+        let args = self.generate_arguments(&profile).await?;
 
         dlog!("Launching with args: {:?}", &args);
 
@@ -451,7 +435,7 @@ impl Instance {
             let stdout = String::from_utf8_lossy(&output.stdout);
             elog!("stderr:\n{}\nstdout:\n{}", stderr, stdout);
             return Err(BackendError::InstanceError(InstanceError::FailedToExecute(
-                self.name.clone(),
+                self.info.name.clone(),
             )));
         }
 

@@ -1,4 +1,8 @@
-use std::{io::BufReader, path::PathBuf, process::Command};
+use std::{
+    io::BufReader,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use sl_meta::minecraft::loaders::neoforge::{
     NeoForgeLoaderProfile, NeoForgeReleases, NeoForgeVersion,
@@ -14,7 +18,7 @@ use tempfile::TempDir;
 use tokio::io::AsyncWriteExt;
 
 use crate::{
-    launcher::instance::{Instance, InstanceType},
+    launcher::instance::{InstanceInfo, InstanceType},
     HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
 };
 
@@ -23,14 +27,24 @@ pub const NEOFORGE_JAVA_INSTALLER_SRC: &str =
 
 pub struct NeoForgeInstaller<'a> {
     version: NeoForgeVersion,
-    instance: &'a Instance,
+    instance: &'a InstanceInfo,
+
+    java_path: &'a Path,
+    javac_path: &'a Path,
+    output_loader_json_path: &'a Path,
+
     cache_dir: TempDir,
     // ForgeInstaller.java
     java_forge_installer: PathBuf,
 }
 
 impl<'a> NeoForgeInstaller<'a> {
-    pub async fn new(instance: &'a Instance) -> Result<Self, HttpError> {
+    pub async fn new(
+        instance: &'a InstanceInfo,
+        java_path: &'a Path,
+        javac_path: &'a Path,
+        output_loader_json_path: &'a Path,
+    ) -> Result<Self, HttpError> {
         let version = &instance.game_info.version;
         let mut version = version.split(".");
         let _ = version.next();
@@ -63,6 +77,9 @@ impl<'a> NeoForgeInstaller<'a> {
             instance,
             version: neoforge_version,
             cache_dir,
+            java_path,
+            javac_path,
+            output_loader_json_path,
             java_forge_installer,
         })
     }
@@ -96,7 +113,7 @@ impl<'a> NeoForgeInstaller<'a> {
         let java_forge_installer = &self.java_forge_installer;
 
         // we link using javac
-        let javac = self.instance.get_javac();
+        let javac = self.javac_path;
 
         dlog!(
             "NeoForge: compiling the neoforge installer at {}, relinking with {}, using javac at: '{}'",
@@ -147,7 +164,7 @@ impl<'a> NeoForgeInstaller<'a> {
         launcher_profiles.write(b"{}").await?;
         launcher_profiles_microsoft.write(b"{}").await?;
 
-        let java = self.instance.get_java();
+        let java = self.java_path;
         dlog!(
             "NeoForge: executing compiled neoforge class at: '{}', with java at: '{}'",
             compiled_installer_path.display(),
@@ -205,7 +222,7 @@ impl<'a> NeoForgeInstaller<'a> {
         let neoforge_version_path = neoforge_versions_path.join(neoforge_version);
         let neoforge_json_path = neoforge_version_path.join(neoforge_version_json_file_name);
 
-        let loader_json_path = self.instance.loader_json_path().unwrap();
+        let loader_json_path = self.output_loader_json_path;
 
         dlog!(
             "NeoForge: copying '{}' to '{}'",
@@ -225,11 +242,14 @@ impl<'a> NeoForgeInstaller<'a> {
 }
 
 pub async fn install_neoforge_loader(
-    instance: &Instance,
+    instance: &InstanceInfo,
+    java_path: &Path,
+    javac_path: &Path,
+    output_loader_json_path: &Path,
 ) -> Result<NeoForgeLoaderProfile, BackendError> {
     // it isn't the job of the installer to forge a working instance...
     assert_eq!(instance.instance_type, InstanceType::NeoForge);
-    NeoForgeInstaller::new(instance)
+    NeoForgeInstaller::new(instance, java_path, javac_path, output_loader_json_path)
         .await?
         .install()
         .await

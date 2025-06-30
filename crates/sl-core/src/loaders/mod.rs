@@ -10,6 +10,7 @@ pub mod neoforge;
 pub mod quilt;
 
 #[derive(Debug, Deserialize)]
+#[serde(untagged)]
 pub enum Loaders {
     Fabric(FabricLoaderProfile),
     Quilt(QuiltLoaderProfile),

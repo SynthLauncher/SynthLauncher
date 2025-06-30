@@ -1,6 +1,6 @@
 use reqwest::Client;
 use sl_core::{
-    launcher::instance::{Instance, InstanceType},
+    launcher::instance::{InstanceInfo, InstanceType},
     HTTP_CLIENT, INSTANCES_DIR,
 };
 use sl_utils::utils::errors::BackendError;
@@ -49,7 +49,7 @@ pub async fn create_modpack_instance(
     let loader_version = mrpack.dependencies.get(&loader).unwrap().clone();
     let vanilla_version = mrpack.dependencies.get(&vanilla).unwrap();
 
-    Instance::create(
+    InstanceInfo::create(
         &name,
         &vanilla_version,
         InstanceType::Fabric,

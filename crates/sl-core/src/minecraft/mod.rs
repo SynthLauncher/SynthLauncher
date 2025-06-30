@@ -217,11 +217,11 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
 
 pub(crate) async fn install_client(
     client: &Client,
-    client_jar_path: PathBuf,
-    path: &Path,
+    client_jar_path: &Path,
+    instance_path: &Path,
 ) -> Result<(), BackendError> {
     install_assets(client).await?;
-    install_libs(client, path).await?;
+    install_libs(client, instance_path).await?;
 
     log!("Downloading {}", client_jar_path.display());
     download_to(&client.downloads.client, &client_jar_path).await?;

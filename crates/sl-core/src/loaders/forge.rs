@@ -15,7 +15,7 @@ use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::{
-    launcher::instance::{Instance, InstanceType},
+    launcher::instance::{InstanceInfo, InstanceType},
     HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
 };
 
@@ -23,7 +23,12 @@ pub const FORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/ForgeInstaller.java");
 
 struct ForgeInstaller<'a> {
-    instance: &'a Instance,
+    instance: &'a InstanceInfo,
+
+    java_path: &'a Path,
+    javac_path: &'a Path,
+    output_loader_json_path: &'a Path,
+
     short_version: String,
     norm_version: String,
     mc_version: &'a str,
@@ -35,7 +40,12 @@ struct ForgeInstaller<'a> {
 }
 
 impl<'a> ForgeInstaller<'a> {
-    async fn new(instance: &'a Instance) -> Result<Self, HttpError> {
+    async fn new(
+        instance: &'a InstanceInfo,
+        java_path: &'a Path,
+        javac_path: &'a Path,
+        output_loader_json_path: &'a Path,
+    ) -> Result<Self, HttpError> {
         let mc_version = &instance.game_info.version;
         let forge_versions = ForgeVersions::download::<HttpError>(async |url: &str| {
             utils::download::download_bytes(url, &HTTP_CLIENT, 2, std::time::Duration::from_secs(5))
@@ -93,6 +103,9 @@ impl<'a> ForgeInstaller<'a> {
             forge_version: forge_version.to_string(),
             mc_version,
             major_version: major_mc_version.unwrap(),
+            java_path,
+            javac_path,
+            output_loader_json_path,
         })
     }
 
@@ -177,7 +190,7 @@ impl<'a> ForgeInstaller<'a> {
         let java_forge_installer = &self.java_forge_installer;
 
         // we link using javac
-        let javac = self.instance.get_javac();
+        let javac = self.javac_path;
 
         dlog!(
             "Forge: compiling the forge installer at {}, relinking with {}, using javac at: '{}'",
@@ -227,7 +240,7 @@ impl<'a> ForgeInstaller<'a> {
         launcher_profiles.write(b"{}").await?;
         launcher_profiles_microsoft.write(b"{}").await?;
 
-        let java = self.instance.get_java();
+        let java = self.java_path;
         dlog!(
             "Forge: executing compiled forge class at: '{}', with java at: '{}'",
             compiled_path.display(),
@@ -281,7 +294,7 @@ impl<'a> ForgeInstaller<'a> {
         let forge_version_path = forge_versions_path.join(forge_version);
         let forge_json_path = forge_version_path.join(forge_version_json_file_name);
 
-        let loader_json_path = self.instance.loader_json_path().unwrap();
+        let loader_json_path = self.output_loader_json_path;
 
         dlog!(
             "Forge: copying '{}' to '{}'",
@@ -300,10 +313,15 @@ impl<'a> ForgeInstaller<'a> {
     }
 }
 
-pub async fn install_forge_loader(instance: &Instance) -> Result<ForgeLoaderProfile, BackendError> {
+pub async fn install_forge_loader(
+    instance: &InstanceInfo,
+    java_path: &Path,
+    javac_path: &Path,
+    output_loader_json_path: &Path,
+) -> Result<ForgeLoaderProfile, BackendError> {
     // it isn't the job of the installer to forge a working instance...
     assert_eq!(instance.instance_type, InstanceType::Forge);
-    ForgeInstaller::new(instance)
+    ForgeInstaller::new(instance, java_path, javac_path, output_loader_json_path)
         .await?
         .install()
         .await

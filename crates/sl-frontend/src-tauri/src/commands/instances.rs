@@ -2,7 +2,7 @@ use std::path::Path;
 
 use sl_core::{
     launcher::{
-        instance::{Instance, InstanceType},
+        instance::{InstanceInfo, InstanceType},
         instances,
     },
     HTTP_CLIENT,
@@ -14,12 +14,12 @@ use sl_utils::{
 use tauri::{AppHandle, Emitter};
 
 #[tauri::command]
-pub async fn get_instances() -> Result<Vec<Instance>, String> {
-    instances::load_all_instances().map_err(|e| e.to_string())
+pub async fn get_instances() -> Result<Vec<InstanceInfo>, String> {
+    instances::get_all_instances().map_err(|e| e.to_string())
 }
 
 async fn create_instance_inner(name: String, version: String) -> Result<(), BackendError> {
-    Instance::create(&name, &version, InstanceType::Vanilla, None, None)?;
+    InstanceInfo::create(&name, &version, InstanceType::Vanilla, None, None)?;
     Ok(())
 }
 
@@ -64,10 +64,14 @@ pub async fn remove_instance(name: &str) -> Result<(), String> {
     instances::remove(name).map_err(|e| e.to_string())
 }
 
-#[tauri::command]
-pub async fn launch_instance(name: &str) -> Result<(), String> {
-    let (mut instance, _) = instances::get_existing(name).map_err(|e| e.to_string())?;
-    instance.execute().await.map_err(|e| e.to_string())?;
+async fn launch_instance_inner(name: &str) -> Result<(), BackendError> {
+    let (instance, _) = instances::get_existing(name)?;
+    let loaded_instance = instance.load_init().await?;
+    loaded_instance.execute().await?;
 
     Ok(())
+}
+#[tauri::command]
+pub async fn launch_instance(name: &str) -> Result<(), String> {
+    launch_instance_inner(name).await.map_err(|e| e.to_string())
 }

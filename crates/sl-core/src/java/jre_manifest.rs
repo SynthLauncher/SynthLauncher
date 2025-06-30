@@ -1,11 +1,14 @@
-use std::{fs::{self, File}, io::{Cursor, Write}};
+use std::{
+    fs::{self, File},
+    io::{Cursor, Write},
+};
 
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
 use lzma_rs::lzma_decompress;
 use sl_meta::java::jre_manifest::{JavaFiles, JreManifest, JreManifestDownloadType};
-use sl_utils::{utils::{self, download::download_file, errors::BackendError}};
+use sl_utils::utils::{self, download::download_file, errors::BackendError};
 
 use crate::{HTTP_CLIENT, JAVAS_DIR, JRE_MANIFEST, JRE_MANIFEST_PATH};
 
@@ -50,7 +53,12 @@ pub async fn download_jre_manifest_version(
 
             if let Some(downloads) = java_file.downloads.as_ref() {
                 if let Some(lzma_file) = &downloads.lzma {
-                    let compressed = HTTP_CLIENT.get(&lzma_file.url).send().await?.bytes().await?;
+                    let compressed = HTTP_CLIENT
+                        .get(&lzma_file.url)
+                        .send()
+                        .await?
+                        .bytes()
+                        .await?;
 
                     let mut decompressed = Vec::new();
                     lzma_decompress(&mut Cursor::new(&compressed), &mut decompressed)
@@ -64,7 +72,15 @@ pub async fn download_jre_manifest_version(
                         fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;
                     }
                 } else if let Some(raw_file) = &downloads.raw {
-                    download_file(&HTTP_CLIENT, &raw_file.url, &path, 3, std::time::Duration::from_secs(5), None).await?;
+                    download_file(
+                        &HTTP_CLIENT,
+                        &raw_file.url,
+                        &path,
+                        3,
+                        std::time::Duration::from_secs(5),
+                        None,
+                    )
+                    .await?;
                     #[cfg(unix)]
                     if java_file.executable == Some(true) {
                         fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;
