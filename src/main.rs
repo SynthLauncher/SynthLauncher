@@ -2,7 +2,7 @@ use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::launcher::{
     config::init_launcher_dir,
-    instance::Instance,
+    instance::InstanceInfo,
     instances,
     player::{
         microsoft_auth::AuthFlow, player_profile::PlayerProfile, player_profiles::PlayerProfiles,
@@ -28,12 +28,13 @@ async fn run_cli() -> Result<(), BackendError> {
             let loader = loader_info.loader.unwrap_or_default();
             let loader_version = loader_info.loader_version;
 
-            let _ = Instance::create(&instance_name, &version, loader, loader_version, None)?;
+            let _ = InstanceInfo::create(&instance_name, &version, loader, loader_version, None)?;
         }
         Commands::Launch { instance_name } => {
-            let (mut instance, _) = instances::get_existing(&instance_name)?;
+            let (instance, _) = instances::get_existing(&instance_name)?;
             dlog!("Instance found!");
-            instance.execute().await?;
+            let loaded_instance = instance.load_init().await?;
+            loaded_instance.execute().await?;
         }
         Commands::AddOfflineProfile { name } => {
             let mut profiles = PlayerProfiles::load()?;
@@ -65,7 +66,7 @@ async fn run_cli() -> Result<(), BackendError> {
             }
         }
         Commands::ListInstances => {
-            for (i, instance) in instances::load_all_instances()?.iter().enumerate() {
+            for (i, instance) in instances::get_all_instances()?.iter().enumerate() {
                 println!("[{}] {:#?}", i, instance);
             }
         }
