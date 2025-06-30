@@ -8,6 +8,8 @@
 
 - **Optimized Performance:** We’re focused on maximizing performance, reducing load times, and minimizing resource usage to ensure a smooth Minecraft experience.
 - **Open-Source:** SynthLauncher is completely open-source, and we encourage contributions from developers who share our vision.
+- **Clean and intuitive UI:** SynthLauncher's UI is designed to be as clean and easy for any user to navigate
+- **Modding Support:** SynthLauncher supports the use of modpacks through CurseForge and Modrinth, and support of mod loaders such as Fabric, Forge, NeoForge, and Quilt.
 
 > [!NOTE]
 > We will be implementing more features!
