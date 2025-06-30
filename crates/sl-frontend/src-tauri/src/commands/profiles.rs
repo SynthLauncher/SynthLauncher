@@ -1,7 +1,5 @@
 use sl_core::launcher::player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles};
 
-
-
 #[tauri::command]
 pub fn get_profiles() -> Result<PlayerProfiles, String> {
     PlayerProfiles::load().map_err(|err| err.to_string())

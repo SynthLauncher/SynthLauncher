@@ -13,17 +13,16 @@ import { ArrowUpNarrowWide, Box, Plus, Upload, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 
-interface CreateInstanceDialogProps {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	onCreate: (name: string, version: string, loader: string) => void;
-}
-
+// TODO: Improve this
 export const CreateInstanceDialog = ({
 	open,
 	onOpenChange,
 	onCreate,
-}: CreateInstanceDialogProps) => {
+}: {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	onCreate: (name: string, version: string, loader: string) => void;
+}) => {
 	const [name, setName] = useState('');
 	const [version, setVersion] = useState('');
 	const [loader, setLoader] = useState('');

@@ -1,5 +1,3 @@
-'use client';
-
 import { launchInstance } from '@/lib/commands/instances';
 import { Instance } from '@/lib/types/instances';
 import { Blocks, Gem, Joystick, Pickaxe, Sword } from 'lucide-react';

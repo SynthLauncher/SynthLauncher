@@ -1,6 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
 import { message } from '@tauri-apps/plugin-dialog';
-import { Theme } from '../types/themes/theme';
 
 export const openSynthLauncherFolder = async () => {
 	try {
@@ -13,14 +12,16 @@ export const openSynthLauncherFolder = async () => {
 	}
 };
 
-export const getThemes = async (setThemes: (themes: Theme[]) => void) => {
+export const getSynthLauncherAddons = async (
+	setAddons: (addons: string[]) => void
+) => {
 	try {
-		let themes: Theme[] = await invoke('get_synthlauncher_themes');
-		setThemes(themes);
+		let addons = await invoke<string[]>('get_synthlauncher_addons');
+		setAddons(addons);
 	} catch (error) {
-		await message(`getThemes error: ${error}`, {
+		await message(`getSynthLauncherAddons error: ${error}`, {
 			title: 'SynthLauncher Error',
 			kind: 'error',
 		});
 	}
-};
+}

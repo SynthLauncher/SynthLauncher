@@ -1,5 +1,5 @@
+use sl_core::{launcher::addons::get_addons, LAUNCHER_DIR};
 use std::process::Command;
-use sl_core::{launcher::themes::{get_themes, Theme}, LAUNCHER_DIR};
 
 #[tauri::command]
 pub async fn open_synthlauncher_folder() {
@@ -24,7 +24,9 @@ pub async fn open_synthlauncher_folder() {
 }
 
 #[tauri::command]
-pub async fn get_synthlauncher_themes() -> Result<Vec<Theme>, String> {
-    let themes = get_themes().map_err(|e| e.to_string())?;
-    Ok(themes)
+pub async fn get_synthlauncher_addons() -> Result<Vec<String>, String> {
+    let addons = get_addons().map_err(|e| e.to_string())?;
+
+    Ok(addons)
 }
+

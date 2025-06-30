@@ -1,5 +1,8 @@
 import { cn } from '@/lib/utils';
-import { InputProps } from '@/lib/types/components';
+
+interface InputProps extends React.ComponentProps<'input'> {
+	icon?: React.ReactNode;
+}
 
 function Input({ className, icon, type, ...props }: InputProps) {
 	return (

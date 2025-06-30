@@ -29,3 +29,5 @@ sl-store = { path = "../../sl-store"}
 tokio = "1.45.0"
 sl-utils = { path = "../../sl-utils" }
 synrinth = "0.1.9"
+discord-rich-presence = "0.2.5"
+lazy_static = "1.5.0"

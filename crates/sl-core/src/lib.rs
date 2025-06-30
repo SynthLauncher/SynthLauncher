@@ -44,7 +44,7 @@ lazy_static! {
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
     pub static ref INSTANCES_DIR: PathBuf = LAUNCHER_DIR.join("instances");
     pub static ref JAVAS_DIR: PathBuf = LAUNCHER_DIR.join("javas");
-    pub static ref THEMES_DIR: PathBuf = LAUNCHER_DIR.join("themes");
+    pub static ref ADDONS_DIR: PathBuf = LAUNCHER_DIR.join("addons");
 
     pub static ref INSTANCES_PATH: PathBuf = LAUNCHER_DIR.join("instances.json");
     pub static ref VERSION_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");

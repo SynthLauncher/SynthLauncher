@@ -72,13 +72,8 @@ pub struct Instance {
     /// The name of the instance
     pub name: String,
     pub game_info: InstanceGameInfo,
-
-    /*
-        If none instance tries to get it from
-        INSTANCES_PATH/instance_name/icon.png
-    */
-    // TODO: Change this to a string
-    pub icon: Option<PathBuf>,
+    /// Base 64 Image
+    pub icon: Option<String>,
     pub modloader_version: Option<String>,
     pub instance_type: InstanceType,
 }
@@ -90,7 +85,7 @@ impl Instance {
         version: &str,
         instance_type: InstanceType,
         loader_version: Option<String>,
-        icon: Option<PathBuf>,
+        icon: Option<String>,
     ) -> Result<Self, BackendError> {
         let instance = Self::new(name, version, instance_type, loader_version, icon)?;
         instances::add_new(&instance)?;
@@ -102,7 +97,7 @@ impl Instance {
         version: &str,
         instance_type: InstanceType,
         loader_version: Option<String>,
-        icon: Option<PathBuf>,
+        icon: Option<String>,
     ) -> Result<Self, BackendError> {
         let version = VERSION_MANIFEST
             .versions()

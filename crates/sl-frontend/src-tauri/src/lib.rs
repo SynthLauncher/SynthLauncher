@@ -1,6 +1,6 @@
-mod commands;
+use commands::{instances::{get_instances, test_progress, create_instance, remove_instance, launch_instance}, store::search_store, profiles::{get_current_profile, get_profiles, get_other_profiles}, launcher::{open_synthlauncher_folder, get_synthlauncher_addons}, minecraft::get_minecraft_versions};
 
-use commands::{instances::{get_instances, test_progress, create_instance, remove_instance, launch_instance}, store::search_store, profiles::{get_current_profile, get_profiles, get_other_profiles}, launcher::{open_synthlauncher_folder, get_synthlauncher_themes}, minecraft::get_minecraft_versions};
+mod commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -18,8 +18,8 @@ pub fn run() {
             get_minecraft_versions,
             test_progress,
             search_store,
-            get_synthlauncher_themes,
-            launch_instance
+            get_synthlauncher_addons,
+            launch_instance,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

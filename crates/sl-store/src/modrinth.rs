@@ -23,6 +23,7 @@ pub async fn search_query_default(query: QueryParams) -> Result<Search, BackendE
 
 // !!! UNFINISHED DO NOT TOUCH OR COPY THIS CODE
 // !!! THERE MAY BE A LOT OF PROBLEMS HERE
+// Okay maybe actually do not touch this
 pub async fn create_modpack_instance(
     client: &Client,
     project: &Project,
@@ -48,12 +49,12 @@ pub async fn create_modpack_instance(
     let loader_version = mrpack.dependencies.get(&loader).unwrap().clone();
     let vanilla_version = mrpack.dependencies.get(&vanilla).unwrap();
 
-    let _ = Instance::create(
+    Instance::create(
         &name,
         &vanilla_version,
         InstanceType::Fabric,
         Some(loader_version),
-        None,
+        None 
     )?;
     let modpack_files = &mrpack.files;
 

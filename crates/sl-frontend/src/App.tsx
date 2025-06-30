@@ -1,72 +1,64 @@
-import { useEffect, useState } from 'react';
-import Sidebar from './components/layout/Sidebar';
-import { Navbar } from './components/layout/Navbar';
-import ProfileSidebar from './components/layout/ProfileSidebar';
-import { HomePage } from './pages/HomePage';
-import { InstancesPage } from './pages/InstancesPage';
-import { StorePage } from './pages/StorePage';
-import { SettingsPage } from './pages/SettingsPage';
-import { invoke } from '@tauri-apps/api/core';
-import { Theme } from './lib/types/themes/theme';
+import { ProfileSidebar } from './components/layout/profile-sidebar';
+import { useState } from 'react';
+import { HomePage } from './pages/home-page';
+import { InstancesPage } from './pages/instances-page';
+import { StorePage } from './pages/store-page';
+import { SettingsPage } from './pages/settings-page';
+import { UnknownPage } from './pages/unknown-page';
+import { Navbar } from './components/layout/navbar';
+import { Sidebar } from './components/layout/sidebar';
 
-function App() {
-	const [activeTab, setActiveTab] = useState('home');
-	const [theme, setTheme] = useState<Theme[]>([]);
+function AppLayout({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="flex flex-col h-screen bg-[#1B1D21] overflow-hidden">
+			<Navbar />
+			<div className="flex overflow-hidden h-full">{children}</div>
+		</div>
+	);
+}
 
-	useEffect(() => {
-		const fetch = async () => {
-			let theme1: Theme[] = await invoke('get_synthlauncher_themes');
-			setTheme(theme1);
-		};
-
-		fetch();
-	}, []);
-
-	useEffect(() => {
-		console.log('Theme updated:', theme);
-	}, [theme]);
-
-	const renderContent = () => {
+function MainContent({
+	activeTab,
+	setActiveTab,
+}: {
+	activeTab: string;
+	setActiveTab: (tab: string) => void;
+}) {
+	function renderContent(activeTab: string) {
 		switch (activeTab) {
 			case 'home':
 				return <HomePage />;
 			case 'instances':
 				return <InstancesPage />;
 			case 'store':
-				return <StorePage {...theme[0]?.storePage} />;
+				return <StorePage />;
 			case 'settings':
 				return <SettingsPage />;
 			default:
-				return (
-					<div className="flex items-center justify-center h-full p-8">
-						<div className="text-center">
-							<h2 className="text-white text-2xl font-bold mb-4">
-								Unknown Page
-							</h2>
-							<p className="text-gray-400">Please return to the home page!</p>
-						</div>
-					</div>
-				);
+				return <UnknownPage setActiveTab={setActiveTab} />;
 		}
-	};
+	}
 
 	return (
-		<div className="flex flex-col h-screen bg-[#1B1D21] overflow-hidden">
-			<Navbar />
-
-			<div className="flex h-full overflow-hidden">
-				<Sidebar
-					activeTab={activeTab}
-					setActiveTab={setActiveTab}
-					theme={theme?.[0]?.layout?.sidebarThemeProps}
-				/>
-
-				<div className="flex w-full bg-[#141518] rounded-tl-2xl border-t-2 border-l-2 border-[#2D2F32]">
-					<div className="w-full h-full overflow-y-auto">{renderContent()}</div>
-					<ProfileSidebar />
+		<>
+			<Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+			<div className="flex bg-[#141518] w-full rounded-tl-2xl border-l-2 border-t-2 border-[#2D2F32]">
+				<div className="w-full h-full overflow-y-auto">
+					{renderContent(activeTab)}
 				</div>
+				<ProfileSidebar />
 			</div>
-		</div>
+		</>
+	);
+}
+
+function App() {
+	const [activeTab, setActiveTab] = useState('home');
+
+	return (
+		<AppLayout>
+			<MainContent activeTab={activeTab} setActiveTab={setActiveTab} />
+		</AppLayout>
 	);
 }
 

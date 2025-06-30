@@ -6,7 +6,7 @@ export const getInstances = async (
 	setInstances: (instances: Instance[]) => void
 ) => {
 	try {
-		const instances: Instance[] = await invoke('get_instances');
+		const instances = await invoke<Instance[]>('get_instances');
 		setInstances(instances);
 	} catch (error) {
 		await message(`Failed to get instances!\n getInstances error: ${error}`, {

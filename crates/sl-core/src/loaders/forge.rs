@@ -69,6 +69,7 @@ impl<'a> ForgeInstaller<'a> {
         };
 
         let norm_version = format!("{short_version}-{norm_mc_version}");
+                
         let mut cache_dir = TempDir::new()
             .expect("failed to create a new temporary directory for installing forge");
 
@@ -76,6 +77,7 @@ impl<'a> ForgeInstaller<'a> {
             "Forge: installing to temporary directory at '{}'",
             cache_dir.path().display()
         );
+
         #[cfg(debug_assertions)]
         cache_dir.disable_cleanup(true);
 
