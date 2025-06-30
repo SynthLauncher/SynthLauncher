@@ -25,6 +25,8 @@
 ![ss4](assets/discord-rpc.png)
 
 4. **Sound fixes for older versions**
+5. **Added a store for modpacks, datapacks, and mod loaders**
+![ss5](https://media.discordapp.net/attachments/1325408197678333986/1389142037080571995/image.png?ex=68638ad6&is=68623956&hm=7daa57181245b13c80d4f99c3ad116d1e6d8a8f904986db7dbfb2fd804cf0600&=&format=webp&quality=lossless&width=1258&height=708)
 
 ## Contributing
 
