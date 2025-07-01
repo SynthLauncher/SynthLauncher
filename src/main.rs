@@ -1,13 +1,13 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::launcher::{
+use sl_core::{launcher::{
     config::init_launcher_dir,
     instance::InstanceInfo,
     instances,
     player::{
         microsoft_auth::AuthFlow, player_profile::PlayerProfile, player_profiles::PlayerProfiles,
     },
-};
+}, VERSION_MANIFEST};
 use sl_utils::{dlog, elog, log, utils::errors::BackendError};
 
 mod cli;
@@ -79,6 +79,11 @@ async fn run_cli() -> Result<(), BackendError> {
             let profiles = PlayerProfiles::load()?;
             let profile = profiles.current_profile();
             println!("{:#?}", profile.as_ref())
+        },
+        Commands::ListMinecraftVersions => {
+            for version in VERSION_MANIFEST.versions() {
+                println!("{}", version.id);
+            }
         }
     }
 

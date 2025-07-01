@@ -35,7 +35,7 @@ pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
     let Some(version) = VERSION_MANIFEST.versions().find(|x| x.id == version) else {
         // TODO: Use a different type for version instead of String
         return Err(BackendError::InstanceError(
-            InstanceError::VersionNotFound(version.to_string()),
+            InstanceError::MinecraftVersionNotFound(version.to_string()),
         ));
     };
 

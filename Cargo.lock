@@ -1204,6 +1204,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_home"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7f84e12ccf0a7ddc17a6c41c93326024c42920d7ee630d04950e6926645c0fe"
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4147,6 +4153,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sl-java-manager"
+version = "0.1.0"
+dependencies = [
+ "regex",
+ "sl-utils",
+ "which",
+]
+
+[[package]]
 name = "sl-meta"
 version = "0.1.0"
 dependencies = [
@@ -4180,6 +4195,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "synrinth",
  "thiserror 2.0.12",
  "tokio",
  "zip",
@@ -4370,13 +4386,14 @@ dependencies = [
 
 [[package]]
 name = "synrinth"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d9f638b46a5905d2deedcce10b1cdbaa154b8bee66ce758dab97244e8d64d10"
+checksum = "5a97bab315eec0cb371e1fa0dac7fedc5c4e6ee3c978997cc0347ca982f11558"
 dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "thiserror 2.0.12",
  "zip",
 ]
 
@@ -5594,6 +5611,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "which"
+version = "8.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3fabb953106c3c8eea8306e4393700d7657561cb43122571b172bbfb7c7ba1d"
+dependencies = [
+ "env_home",
+ "rustix",
+ "winsafe",
+]
+
+[[package]]
 name = "winapi"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6018,6 +6046,12 @@ dependencies = [
  "cfg-if",
  "windows-sys 0.59.0",
 ]
+
+[[package]]
+name = "winsafe"
+version = "0.0.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d135d17ab770252ad95e9a872d365cf3090e3be864a34ab46f48555993efc904"
 
 [[package]]
 name = "wit-bindgen-rt"

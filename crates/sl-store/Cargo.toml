@@ -7,6 +7,6 @@ edition = "2021"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 reqwest = { version = "0.12.14", features = [ "json"]} 
-synrinth = "0.1.10"
+synrinth = "0.1.11"
 sl-utils = { path = "../sl-utils" }
 sl-core = { path = "../sl-core" }

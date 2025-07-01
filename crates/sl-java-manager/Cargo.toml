@@ -1,0 +1,9 @@
+[package]
+name = "sl-java-manager"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+regex = "1.11.1"
+which = "8.0.0"
+sl-utils = { path = "../sl-utils" }

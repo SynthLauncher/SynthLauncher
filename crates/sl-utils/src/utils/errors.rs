@@ -1,3 +1,4 @@
+use synrinth::errors::SynrinthErr;
 use thiserror::Error;
 use zip::result::ZipError;
 
@@ -13,7 +14,7 @@ pub enum HttpError {
     Status(reqwest::StatusCode),
     #[error("Invalid Header Value: {0}")]
     InvalidHeaderValue(#[from] reqwest::header::InvalidHeaderValue),
-    #[error("Some other request error: {0}")]
+    #[error("Unknown request error: {0}")]
     Other(reqwest::Error),
 }
 
@@ -22,7 +23,7 @@ pub enum InstanceError {
     #[error("Failed to execute the installation {0}")]
     FailedToExecute(String),
     #[error("Minecraft version {0} was not found")]
-    VersionNotFound(String),
+    MinecraftVersionNotFound(String),
     #[error("Instance '{0}' was not found")]
     InstanceNotFound(String),
     #[error("Instance '{0}' already exists")]
@@ -46,16 +47,6 @@ pub enum ForgeInstallerErr {
 }
 
 #[derive(Debug, Error)]
-pub enum JavaError {
-    #[error("Invalid Java package type {0}")]
-    InvalidPackageType(String),
-    #[error("Java is Already installed")]
-    AlreadyExists,
-    #[error("Java version {0} was not found")]
-    VersionNotFound(u16),
-}
-
-#[derive(Debug, Error)]
 pub enum ZipExtractionError {
     #[error("Unsupported File Extension: {0}")]
     UnsupportedFileExt(String),
@@ -67,6 +58,7 @@ pub enum BackendError {
     ZipError(#[from] ZipError),
     #[error("Zip extraction error: {0}")]
     ZipExtractionError(#[from] ZipExtractionError),
+    
     #[error("Download error: {0}")]
     HttpError(#[from] HttpError),
     #[error("I/O error: {0}")]
@@ -77,10 +69,10 @@ pub enum BackendError {
     EnvVarError(#[from] std::env::VarError),
     #[error("JSON serialization error: {0}")]
     SerdeError(#[from] serde_json::Error),
-    #[error("Java error: {0}")]
-    JavaError(#[from] JavaError),
     #[error("Installation error: {0}")]
     InstanceError(#[from] InstanceError),
+    #[error("Synrinth error: {0}")]
+    SynrinthError(#[from] SynrinthErr)
 }
 
 impl From<reqwest::Error> for HttpError {

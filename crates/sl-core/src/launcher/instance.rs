@@ -85,7 +85,7 @@ impl InstanceInfo {
         let version = VERSION_MANIFEST
             .versions()
             .find(|x| x.id == version)
-            .ok_or(BackendError::InstanceError(InstanceError::VersionNotFound(
+            .ok_or(BackendError::InstanceError(InstanceError::MinecraftVersionNotFound(
                 version.to_string(),
             )))?;
 
