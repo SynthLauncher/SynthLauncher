@@ -9,9 +9,7 @@ use sl_meta::java::jre_manifest::JreManifestDownloadType;
 use sl_utils::{dlog, utils::errors::BackendError};
 
 use crate::{
-    java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest},
-    minecraft::version_manifest::fetch_version_manifest,
-    ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH,
+    java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest}, minecraft::version_manifest::fetch_version_manifest, ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH
 };
 
 pub fn get_launcher_dir() -> PathBuf {
@@ -49,6 +47,7 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
         &(*ASSETS_DIR),
         &(*INSTANCES_DIR),
         &(*JAVAS_DIR),
+        &(*ADDONS_DIR)
     ] {
         dlog!("{} dir initialized!", &dir.display());
         tokio::fs::create_dir_all(dir).await?;

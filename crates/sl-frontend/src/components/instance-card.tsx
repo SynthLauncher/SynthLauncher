@@ -1,6 +1,6 @@
 import { launchInstance } from '@/lib/commands/instances';
 import { Instance } from '@/lib/types/instances';
-import { Blocks, Gem, Joystick, Pickaxe, Sword } from 'lucide-react';
+import { Blocks, Gamepad, Gem, Pickaxe, Sword } from 'lucide-react';
 
 export const InstanceCard = ({ game_info, instance_type, name }: Instance) => {
 	const getIconByTitle = (title: string) => {
@@ -15,28 +15,28 @@ export const InstanceCard = ({ game_info, instance_type, name }: Instance) => {
 	};
 
 	return (
-		<div className="bg-[#1D2026] rounded-lg overflow-hidden p-5 flex items-center">
-			<div className="flex gap-2 items-center">
-				<div className="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center relative">
-					<div className="z-10">{getIconByTitle(name)}</div>
-				</div>
+		<div 
+			className="bg-[#1D2026] hover:bg-[#202627] rounded-lg overflow-hidden p-5 flex gap-2 items-center group transition-all" 
+			onClick={() => {
+				launchInstance(name);
+			}}
+		>
+			<div className="w-12 h-12 rounded-xl bg-[#2a2f3f] group-hover:bg-[#2e2f35] flex items-center justify-center relative transition-colors">
+				<div className="z-10">{getIconByTitle(name)}</div>
+			</div>
 
-				<div className="flex flex-col gap-1">
-					<h3
-						className="text-white font-semibold text-lg leading-tight line-clamp-1"
-						onClick={() => {
-							launchInstance(name);
-						}}
-					>
-						{name}
-					</h3>
+			<div className="flex flex-col gap-1">
+				<h3
+					className="text-white font-semibold text-lg leading-tight line-clamp-1 group-hover:text-sky-400 transition-all"
+				>
+					{name}
+				</h3>
 
-					<div className="flex items-center gap-1">
-						<Joystick className="text-gray-300" width={16} height={16} />
-						<span className="text-gray-300 text-sm rounded-md line-clamp-1">
-							{instance_type} {game_info.id}
-						</span>
-					</div>
+				<div className="flex items-center gap-1">
+					<Gamepad className="text-gray-300" width={16} height={16} />
+					<span className="text-gray-300 text-sm rounded-md line-clamp-1">
+						{instance_type} {game_info.id}
+					</span>
 				</div>
 			</div>
 		</div>
