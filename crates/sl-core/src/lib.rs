@@ -1,15 +1,18 @@
 use std::path::PathBuf;
 
-use lazy_static::lazy_static;
-use sl_meta::{java::jre_manifest::{JreManifest}, minecraft::{version_manifest::VersionManifest, Arch, OsName}};
-use minecraft::version_manifest::read_version_manifest;
+use crate::launcher::config::get_launcher_dir;
 use java::jre_manifest::read_jre_manifest;
-use crate::launcher::{config::get_launcher_dir};
+use lazy_static::lazy_static;
+use minecraft::version_manifest::read_version_manifest;
+use sl_meta::{
+    java::jre_manifest::JreManifest,
+    minecraft::{version_manifest::VersionManifest, Arch, OsName},
+};
 
-pub mod loaders;
-pub mod launcher;
-pub mod minecraft;
 pub mod java;
+pub mod launcher;
+pub mod loaders;
+pub mod minecraft;
 
 pub const MULTI_PATH_SEPARATOR: &'static str = if cfg!(target_os = "windows") {
     ";"
@@ -50,7 +53,7 @@ lazy_static! {
     pub static ref VERSION_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("version_manifest.json");
     pub static ref JRE_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("jre_manifest.json");
     pub static ref PROFILES_PATH: PathBuf = LAUNCHER_DIR.join("profiles.json");
-    
+
     pub static ref JRE_MANIFEST: JreManifest = read_jre_manifest();
     pub static ref VERSION_MANIFEST: VersionManifest = read_version_manifest();
     pub static ref HTTP_CLIENT: reqwest::Client = reqwest::Client::new();

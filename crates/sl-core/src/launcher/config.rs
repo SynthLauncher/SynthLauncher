@@ -6,13 +6,16 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 use sl_meta::java::jre_manifest::JreManifestDownloadType;
-use sl_utils::{dlog, utils::errors::BackendError};
+use sl_utils::{
+    dlog,
+    utils::{errors::BackendError, log::set_log_file},
+};
 
 use crate::{
     java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest}, minecraft::version_manifest::fetch_version_manifest, ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH
 };
 
-pub fn get_launcher_dir() -> PathBuf {
+fn get_launcher_dir_inner() -> PathBuf {
     #[cfg(target_os = "windows")]
     {
         return env::var("APPDATA")
@@ -38,6 +41,13 @@ pub fn get_launcher_dir() -> PathBuf {
             .map(|home| PathBuf::from(home).join(".synthlauncher"))
             .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
     }
+}
+
+pub fn get_launcher_dir() -> PathBuf {
+    let inner = get_launcher_dir_inner();
+    let log_file_path = inner.join("last_run.log");
+    set_log_file(log_file_path);
+    inner
 }
 
 pub async fn init_launcher_dir() -> Result<(), BackendError> {
@@ -75,9 +85,12 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     Ok(())
 }
 
+/// Defines the config file name, relative to the launcher directory and the instance directory.
+pub const CONFIG_FILE_NAME: &str = "config.toml";
+
 fn launcher_config_name() -> String {
     LAUNCHER_DIR
-        .join("config.toml")
+        .join(CONFIG_FILE_NAME)
         .to_string_lossy()
         .to_string()
 }
@@ -183,7 +196,7 @@ pub(crate) async fn read_instance_config(
     instance_directory: &Path,
     java_version: &JreManifestDownloadType,
 ) -> Result<InstanceConfig, BackendError> {
-    let instance_local_config_path = instance_directory.join("config.toml");
+    let instance_local_config_path = instance_directory.join(CONFIG_FILE_NAME);
     get_instance_config(&instance_local_config_path, java_version)
         .await
         .map(|con| {
