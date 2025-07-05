@@ -1,5 +1,5 @@
 use clap::{ArgAction, Args, Parser, Subcommand};
-use sl_core::launcher::instance::InstanceType;
+use sl_core::launcher::instances::metadata::ModLoader;
 
 #[derive(Parser)]
 #[command(about, long_about = None)]
@@ -11,7 +11,7 @@ pub struct Cli {
 #[derive(Args, Default)]
 pub struct LoaderInfo {
     /// Can be "vanilla"/"fabric"/"quilt"/"forge"
-    pub loader: Option<InstanceType>,
+    pub loader: Option<ModLoader>,
     /// Depends on the loader, can be left empty for vanilla
     pub loader_version: Option<String>,
 }

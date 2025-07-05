@@ -30,11 +30,19 @@ export const CreateInstanceDialog = ({
 
 	useEffect(() => {
 		const fetch = async () => {
-			await getMinecraftVersions(setMinecraftVersions);
+			let versions = await getMinecraftVersions();
+			setMinecraftVersions(versions);
+
+			if (versions.length > 0 && !version) {
+				setVersion(versions[0]);
+			}
+
+			if (!loader) {
+				setLoader("Vanilla");
+			}
 		};
 
 		fetch();
-		setVersion(minecraftVersions[0]);
 	}, []);
 
 	return (
@@ -92,10 +100,11 @@ export const CreateInstanceDialog = ({
 							onChange={(e) => setLoader(e.target.value)}
 							value={loader}
 						>
-							<option value="vanilla">Vanilla</option>
-							<option value="forge">Forge</option>
-							<option value="fabric">Fabric</option>
-							<option value="quilt">Quilt</option>
+							<option value="Vanilla">Vanilla</option>
+							<option value="NeoForge">Neoforge</option>
+							<option value="Forge">Forge</option>
+							<option value="Fabric">Fabric</option>
+							<option value="Quilt">Quilt</option>
 						</select>
 					</div>
 

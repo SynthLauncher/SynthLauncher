@@ -15,15 +15,14 @@ use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::{
-    launcher::instance::{InstanceInfo, InstanceType},
-    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
+    launcher::instances::metadata::{InstanceMetadata, ModLoader}, HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR
 };
 
 pub const FORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/ForgeInstaller.java");
 
 struct ForgeInstaller<'a> {
-    instance: &'a InstanceInfo,
+    instance: &'a InstanceMetadata,
 
     java_path: &'a Path,
     javac_path: &'a Path,
@@ -41,12 +40,12 @@ struct ForgeInstaller<'a> {
 
 impl<'a> ForgeInstaller<'a> {
     async fn new(
-        instance: &'a InstanceInfo,
+        instance: &'a InstanceMetadata,
         java_path: &'a Path,
         javac_path: &'a Path,
         output_loader_json_path: &'a Path,
     ) -> Result<Self, HttpError> {
-        let mc_version = &instance.game_info.version;
+        let mc_version = &instance.game_metadata.version;
         let forge_versions = ForgeVersions::download::<HttpError>(async |url: &str| {
             utils::download::download_bytes(url, &HTTP_CLIENT, 2, std::time::Duration::from_secs(5))
                 .await
@@ -267,7 +266,7 @@ impl<'a> ForgeInstaller<'a> {
         log!(
             "Forge: installing forge for instance: '{}' ({})",
             self.instance.name,
-            self.instance.game_info.version
+            self.instance.game_metadata.version
         );
 
         self.install_to_cache().await?;
@@ -314,13 +313,13 @@ impl<'a> ForgeInstaller<'a> {
 }
 
 pub async fn install_forge_loader(
-    instance: &InstanceInfo,
+    instance: &InstanceMetadata,
     java_path: &Path,
     javac_path: &Path,
     output_loader_json_path: &Path,
 ) -> Result<ForgeLoaderProfile, BackendError> {
     // it isn't the job of the installer to forge a working instance...
-    assert_eq!(instance.instance_type, InstanceType::Forge);
+    assert_eq!(instance.mod_loader, ModLoader::Forge);
     ForgeInstaller::new(instance, java_path, javac_path, output_loader_json_path)
         .await?
         .install()

@@ -1,45 +1,27 @@
 import { CreateInstanceDialog } from '@/components/create-instance-dialog';
 import { InstanceCard } from '@/components/instance-card';
 import { createInstance, getInstances } from '@/lib/commands/instances';
-import { getSynthLauncherAddons } from '@/lib/commands/launcher';
 import { Instance } from '@/lib/types/instances';
 import { Plus } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export const InstancesPage: React.FC = () => {
+export const InstancesPage = () => {
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const [instances, setInstances] = useState<Instance[]>([]);
-	const [addons, setAddons] = useState<string[]>();
-	const [addonObject, setAddonObject] = useState<any>();
+
+	const fetchInstances = async () => {
+		const allInstances = await getInstances();
+		setInstances(allInstances);
+	};
 
 	useEffect(() => {
-		const fetch = async () => {
-			await getInstances(setInstances);
-		};
-
-		fetch();
+		fetchInstances();
 	}, []);
 
-	useEffect(() => {
-		const fetch = async () => {
-			await getSynthLauncherAddons(setAddons)
-		}
-
-		fetch();
-		console.log(addons?.[0]);
-	}, [])
-
-	useEffect(() => {
-		if (addons?.[0]) {
-			try {
-				const addon = eval(`(() => { ${addons[0]}; return AddonModule; })()`);
-				setAddonObject(addon);
-				console.log(addon.Addon);
-			} catch (err) {
-				console.error("Addon eval failed:", err);
-			}
-		}
-	}, [addons]);
+	const handleCreateInstance = async (name: string, version: string, modLoader: string) => {
+		await createInstance(name, version, modLoader);
+		await fetchInstances();
+	};
 
 	return (
 		<div className="p-6 w-full overflow-auto pb-20">
@@ -49,7 +31,6 @@ export const InstancesPage: React.FC = () => {
 				))}
 
 				<button
-					{...addonObject?.Addon.Theme.button}
 					onClick={() => {
 						setCreateDialogOpen(true);
 					}}
@@ -69,7 +50,7 @@ export const InstancesPage: React.FC = () => {
 			<CreateInstanceDialog
 				onOpenChange={setCreateDialogOpen}
 				open={createDialogOpen}
-				onCreate={createInstance}
+				onCreate={handleCreateInstance}
 			/>
 		</div>
 	);

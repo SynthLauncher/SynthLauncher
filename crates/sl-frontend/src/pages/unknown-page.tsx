@@ -1,19 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
 
-export const UnknownPage = ({
-	setActiveTab,
-}: {
-	setActiveTab: (tab: string) => void;
-}) => {
-	const [redirecting, setRedirecting] = useState(false);
-
-	const goHome = () => {
-		setRedirecting(true);
-		setActiveTab('home');
-	};
-
+export const UnknownPage = () => {
 	return (
 		<div className="flex items-center justify-center h-full p-8 text-white">
 			<div className="text-center max-w-md">
@@ -27,13 +15,13 @@ export const UnknownPage = ({
 				</p>
 
 				<Button
-					onClick={goHome}
-					disabled={redirecting}
+					// onClick={goHome}
+					// disabled={redirecting}
 					variant="error"
 					className="inline-flex items-center gap-2"
 				>
 					<ArrowLeft className="w-4 h-4" />
-					{redirecting ? 'Redirecting...' : 'Go to Home'}
+					{/* {redirecting ? 'Redirecting...' : 'Go to Home'} */}
 				</Button>
 			</div>
 		</div>

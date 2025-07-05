@@ -2,6 +2,7 @@ import { Home, Settings, Library, Store, Folder } from 'lucide-react';
 import { Button } from '../ui/button';
 import { openSynthLauncherFolder } from '@/lib/commands/launcher';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { useNavigate } from 'react-router-dom';
 
 const SidebarItem = ({
 	icon,
@@ -14,11 +15,10 @@ const SidebarItem = ({
 }) => {
 	return (
 		<Button
-			className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${
-				active
+			className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${active
 					? 'bg-[#41a5e7]/20 text-[#41a5e7] hover:bg-[#41a5e7]/30'
 					: 'bg-transparent text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
-			}`}
+				}`}
 			size="icon"
 			onClick={onClick}
 		>
@@ -27,13 +27,9 @@ const SidebarItem = ({
 	);
 };
 
-export const Sidebar = ({
-	activeTab,
-	setActiveTab,
-}: {
-	activeTab: string;
-	setActiveTab: (tab: string) => void;
-}) => {
+export const Sidebar = ({ activeTab }: { activeTab: string }) => {
+	const navigate = useNavigate();
+
 	interface SidebarItemConfig {
 		id: string;
 		label: string;
@@ -44,12 +40,7 @@ export const Sidebar = ({
 
 	const sidebarItems: SidebarItemConfig[] = [
 		{ id: 'home', label: 'Home', icon: <Home size={24} />, section: 'top' },
-		{
-			id: 'instances',
-			label: 'Instances',
-			icon: <Library size={24} />,
-			section: 'top',
-		},
+		{ id: 'instances', label: 'Instances', icon: <Library size={24} />, section: 'top' },
 		{ id: 'store', label: 'Store', icon: <Store size={24} />, section: 'top' },
 		{
 			id: '_folder',
@@ -69,26 +60,31 @@ export const Sidebar = ({
 	const renderItems = (section: 'top' | 'bottom') =>
 		sidebarItems
 			.filter((item) => item.section === section)
-			.map((item) => (
-				<Tooltip key={item.id}>
-					<TooltipTrigger>
-						<SidebarItem
-							icon={item.icon}
-							active={activeTab === item.id}
-							onClick={
-								item.onClick ? item.onClick : () => setActiveTab(item.id)
-							}
-						/>
-					</TooltipTrigger>
-					<TooltipContent
-						arrowClassName="bg-[#2e3137] fill-[#2e3137]"
-						className="text-md text-white bg-[#2e3137]"
-						side="right"
-					>
-						{item.label}
-					</TooltipContent>
-				</Tooltip>
-			));
+			.map((item) => {
+				const isActive = activeTab === item.id;
+				const handleClick = () => {
+					if (item.onClick) {
+						item.onClick();
+					} else {
+						navigate(`/${item.id}`);
+					}
+				};
+
+				return (
+					<Tooltip key={item.id}>
+						<TooltipTrigger>
+							<SidebarItem icon={item.icon} active={isActive} onClick={handleClick} />
+						</TooltipTrigger>
+						<TooltipContent
+							arrowClassName="bg-[#2e3137] fill-[#2e3137]"
+							className="text-md text-white bg-[#2e3137]"
+							side="right"
+						>
+							{item.label}
+						</TooltipContent>
+					</Tooltip>
+				);
+			});
 
 	return (
 		<div className="bg-[#1B1D21] h-full p-2 flex flex-col items-center justify-between">

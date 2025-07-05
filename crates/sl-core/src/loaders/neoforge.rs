@@ -18,8 +18,7 @@ use tempfile::TempDir;
 use tokio::io::AsyncWriteExt;
 
 use crate::{
-    launcher::instance::{InstanceInfo, InstanceType},
-    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
+    launcher::instances::metadata::{InstanceMetadata, ModLoader}, HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR
 };
 
 pub const NEOFORGE_JAVA_INSTALLER_SRC: &str =
@@ -27,7 +26,7 @@ pub const NEOFORGE_JAVA_INSTALLER_SRC: &str =
 
 pub struct NeoForgeInstaller<'a> {
     version: NeoForgeVersion,
-    instance: &'a InstanceInfo,
+    instance: &'a InstanceMetadata,
 
     java_path: &'a Path,
     javac_path: &'a Path,
@@ -40,12 +39,12 @@ pub struct NeoForgeInstaller<'a> {
 
 impl<'a> NeoForgeInstaller<'a> {
     pub async fn new(
-        instance: &'a InstanceInfo,
+        instance: &'a InstanceMetadata,
         java_path: &'a Path,
         javac_path: &'a Path,
         output_loader_json_path: &'a Path,
     ) -> Result<Self, HttpError> {
-        let version = &instance.game_info.version;
+        let version = &instance.game_metadata.version;
         let mut version = version.split(".");
         let _ = version.next();
 
@@ -195,7 +194,7 @@ impl<'a> NeoForgeInstaller<'a> {
         log!(
             "NeoForge: installing neoforge for instance: '{}' ({})",
             self.instance.name,
-            self.instance.game_info.version
+            self.instance.game_metadata.version
         );
 
         self.install_to_cache().await?;
@@ -242,13 +241,13 @@ impl<'a> NeoForgeInstaller<'a> {
 }
 
 pub async fn install_neoforge_loader(
-    instance: &InstanceInfo,
+    instance: &InstanceMetadata,
     java_path: &Path,
     javac_path: &Path,
     output_loader_json_path: &Path,
 ) -> Result<NeoForgeLoaderProfile, BackendError> {
     // it isn't the job of the installer to forge a working instance...
-    assert_eq!(instance.instance_type, InstanceType::NeoForge);
+    assert_eq!(instance.mod_loader, ModLoader::NeoForge);
     NeoForgeInstaller::new(instance, java_path, javac_path, output_loader_json_path)
         .await?
         .install()

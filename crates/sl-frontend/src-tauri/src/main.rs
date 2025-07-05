@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use sl_core::launcher::config::init_launcher_dir;
+use sl_core::launcher::init_launcher_dir;
 use sl_utils::utils::errors::BackendError;
 use tokio::runtime::Runtime;
 

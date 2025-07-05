@@ -1,8 +1,8 @@
-import { launchInstance } from '@/lib/commands/instances';
 import { Instance } from '@/lib/types/instances';
 import { Blocks, Gamepad, Gem, Pickaxe, Sword } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export const InstanceCard = ({ game_info, instance_type, name }: Instance) => {
+export const InstanceCard = ({ game_metadata, mod_loader, name }: Instance) => {
 	const getIconByTitle = (title: string) => {
 		const lowerTitle = title.toLowerCase();
 		if (lowerTitle.includes('survival'))
@@ -14,11 +14,13 @@ export const InstanceCard = ({ game_info, instance_type, name }: Instance) => {
 		return <Blocks className="w-8 h-8 text-blue-500" />;
 	};
 
+	const navigate = useNavigate();
+
 	return (
 		<div 
 			className="bg-[#1D2026] hover:bg-[#202627] rounded-lg overflow-hidden p-5 flex gap-2 items-center group transition-all" 
 			onClick={() => {
-				launchInstance(name);
+				navigate(`/instances/${name}`, { state: name })
 			}}
 		>
 			<div className="w-12 h-12 rounded-xl bg-[#2a2f3f] group-hover:bg-[#2e2f35] flex items-center justify-center relative transition-colors">
@@ -35,7 +37,7 @@ export const InstanceCard = ({ game_info, instance_type, name }: Instance) => {
 				<div className="flex items-center gap-1">
 					<Gamepad className="text-gray-300" width={16} height={16} />
 					<span className="text-gray-300 text-sm rounded-md line-clamp-1">
-						{instance_type} {game_info.id}
+						{mod_loader} {game_metadata.id}
 					</span>
 				</div>
 			</div>

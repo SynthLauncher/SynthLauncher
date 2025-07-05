@@ -1,12 +1,9 @@
 use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::{launcher::{
-    config::init_launcher_dir,
-    instance::InstanceInfo,
-    instances,
-    player::{
+    init_launcher_dir, instances::{self, metadata::InstanceMetadata}, player::{
         microsoft_auth::AuthFlow, player_profile::PlayerProfile, player_profiles::PlayerProfiles,
-    },
+    }
 }, VERSION_MANIFEST};
 use sl_utils::{dlog, elog, log, utils::errors::BackendError};
 
@@ -28,7 +25,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let loader = loader_info.loader.unwrap_or_default();
             let loader_version = loader_info.loader_version;
 
-            let _ = InstanceInfo::create(&instance_name, &version, loader, loader_version, None)?;
+            let _ = InstanceMetadata::create(&instance_name, &version, loader, loader_version, None)?;
         }
         Commands::Launch { instance_name } => {
             let (instance, _) = instances::get_existing(&instance_name)?;

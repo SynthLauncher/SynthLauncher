@@ -2,13 +2,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { PlayerProfile } from '../types/profiles';
 import { message } from '@tauri-apps/plugin-dialog';
 
-export const getCurrentProfile = async (
-	setProfile: (profile: PlayerProfile) => void
-) => {
+export const getCurrentProfile = async () => {
 	try {
 		const profile: PlayerProfile = await invoke('get_current_profile');
-
-		setProfile(profile);
+		return profile;
 	} catch (err) {
 		await message(`getCurrentProfile error: ${err}`, {
 			title: 'SynthLauncher Error',

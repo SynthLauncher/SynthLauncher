@@ -1,89 +1,13 @@
-use std::{
-    env,
-    fs::OpenOptions,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use sl_meta::java::jre_manifest::JreManifestDownloadType;
-use sl_utils::{
-    dlog,
-    utils::{errors::BackendError, log::set_log_file},
-};
+use sl_utils::utils::errors::BackendError;
 
 use crate::{
-    java::jre_manifest::{download_jre_manifest_version, fetch_jre_manifest}, minecraft::version_manifest::fetch_version_manifest, ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH
+    java::jre_manifest::download_jre_manifest_version,
+    JAVAS_DIR, LAUNCHER_DIR,
 };
-
-fn get_launcher_dir_inner() -> PathBuf {
-    #[cfg(target_os = "windows")]
-    {
-        return env::var("APPDATA")
-            .map(|appdata| PathBuf::from(appdata).join("SynthLauncher"))
-            .unwrap_or_else(|_| PathBuf::from("C:\\SynthLauncher"));
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        return env::var("HOME")
-            .map(|home| {
-                PathBuf::from(home)
-                    .join("Library")
-                    .join("Application Support")
-                    .join("SynthLauncher")
-            })
-            .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        return env::var("HOME")
-            .map(|home| PathBuf::from(home).join(".synthlauncher"))
-            .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
-    }
-}
-
-pub fn get_launcher_dir() -> PathBuf {
-    let inner = get_launcher_dir_inner();
-    let log_file_path = inner.join("last_run.log");
-    set_log_file(log_file_path);
-    inner
-}
-
-pub async fn init_launcher_dir() -> Result<(), BackendError> {
-    for dir in [
-        &(*LAUNCHER_DIR),
-        &(*LIBS_DIR),
-        &(*ASSETS_DIR),
-        &(*INSTANCES_DIR),
-        &(*JAVAS_DIR),
-        &(*ADDONS_DIR)
-    ] {
-        dlog!("{} dir initialized!", &dir.display());
-        tokio::fs::create_dir_all(dir).await?;
-    }
-
-    for path in [&(*INSTANCES_PATH), &(*PROFILES_PATH)] {
-        dlog!("{} path initialized!", path.display());
-        OpenOptions::new()
-            .write(true)
-            .create(true)
-            .append(true)
-            .open(path)?;
-    }
-
-    dlog!("Fetching version manifest!");
-    fetch_version_manifest().await;
-    dlog!("Fetched version manifest!");
-
-    dlog!("Fetching JRE manifest!");
-    fetch_jre_manifest().await;
-    dlog!("Fetched JRE manifest!");
-
-    std::env::set_current_dir(&*LAUNCHER_DIR)?;
-
-    Ok(())
-}
 
 /// Defines the config file name, relative to the launcher directory and the instance directory.
 pub const CONFIG_FILE_NAME: &str = "config.toml";
@@ -123,7 +47,7 @@ async fn default_java_path(component: &JreManifestDownloadType) -> Result<PathBu
 pub struct MinecraftConfig {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct JavaConfig {
+pub struct JavaConfig {
     #[serde(default = "default_min_memory")]
     pub min_ram: usize,
     #[serde(default = "default_max_memory")]
@@ -148,7 +72,7 @@ impl JavaConfig {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub(crate) struct InstanceConfig {
+pub struct InstanceConfig {
     #[serde(default)]
     pub minecraft: MinecraftConfig,
     pub java: JavaConfig,

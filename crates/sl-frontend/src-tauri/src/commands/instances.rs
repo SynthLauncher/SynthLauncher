@@ -1,11 +1,7 @@
 use std::path::Path;
 
 use sl_core::{
-    launcher::{
-        instance::{InstanceInfo, InstanceType},
-        instances,
-    },
-    HTTP_CLIENT,
+    launcher::instances::{self, metadata::{InstanceMetadata, ModLoader}}, HTTP_CLIENT
 };
 use sl_utils::{
     elog,
@@ -14,18 +10,18 @@ use sl_utils::{
 use tauri::{AppHandle, Emitter};
 
 #[tauri::command]
-pub async fn get_instances() -> Result<Vec<InstanceInfo>, String> {
+pub async fn get_instances() -> Result<Vec<InstanceMetadata>, String> {
     instances::get_all_instances().map_err(|e| e.to_string())
 }
 
-async fn create_instance_inner(name: String, version: String) -> Result<(), BackendError> {
-    InstanceInfo::create(&name, &version, InstanceType::Vanilla, None, None)?;
+async fn create_instance_inner(name: String, version: String, mod_loader: ModLoader) -> Result<(), BackendError> {
+    InstanceMetadata::create(&name, &version, mod_loader, None, None)?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn create_instance(name: String, version: String) -> Result<(), String> {
-    create_instance_inner(name, version)
+pub async fn create_instance(name: String, version: String, mod_loader: ModLoader) -> Result<(), String> {
+    create_instance_inner(name, version, mod_loader)
         .await
         .map_err(|e| e.to_string())
 }
@@ -75,3 +71,9 @@ async fn launch_instance_inner(name: &str) -> Result<(), BackendError> {
 pub async fn launch_instance(name: &str) -> Result<(), String> {
     launch_instance_inner(name).await.map_err(|e| e.to_string())
 }
+
+// #[tauri::command]
+// pub fn load_game_info(name: &str) -> Result<GameInfo, String> {
+//     load_game_info_from_instance(name).map_err(|e| e.to_string())
+// }
+

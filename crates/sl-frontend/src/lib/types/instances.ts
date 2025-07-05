@@ -5,10 +5,12 @@ enum VersionType {
 	Snapshot,
 }
 
-enum InstanceType {
+enum ModLoader {
 	Vanilla,
 	Fabric,
 	Quilt,
+	Forge,
+	Neoforge
 }
 
 interface InstanceGameInfo {
@@ -19,8 +21,9 @@ interface InstanceGameInfo {
 
 export interface Instance {
 	name: string;
-	game_info: InstanceGameInfo;
-	instance_type: InstanceType;
+	game_metadata: InstanceGameInfo;
+	mod_loader: ModLoader;
+	mod_loader_version: string
 }
 
 export type InstanceCardProps = {
@@ -32,3 +35,12 @@ export type InstanceCardProps = {
 	image: string;
 	favorite?: boolean;
 };
+
+export interface MinecraftWorldMetadata {
+	name: string,
+	icon: string
+}
+
+export interface GameInfo {
+	worlds: MinecraftWorldMetadata[]
+}

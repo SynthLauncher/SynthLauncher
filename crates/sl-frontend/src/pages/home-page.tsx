@@ -22,13 +22,7 @@ export const HomePage = () => {
 
 	return (
 		<div className="p-6 pb-12 w-full overflow-auto">
-			<div className="flex flex-col gap-2 mb-8">
-				<h1 className="text-white text-xl">{state?.toFixed(2)}</h1>
-				<Progress key={state} value={state} className="w-[60%] bg-white" />
-				<button className="bg-white px-4 py-2 w-2xs" onClick={test_progress}>
-					Click
-				</button>
-			</div>
+
 		</div>
 	);
 };

@@ -9,13 +9,33 @@ use sl_utils::{
     utils::errors::{BackendError, InstanceError},
 };
 
-use crate::{launcher::instance::InstanceInfo, INSTANCES_DIR};
+use crate::{launcher::instances::metadata::InstanceMetadata, INSTANCES_DIR};
+
+pub mod instance;
+pub mod metadata;
+pub mod game;
 
 const INSTANCE_FILE_NAME: &str = "instance.json";
 
-pub(super) fn add_new(instance: &InstanceInfo) -> Result<(), BackendError> {
-    let existing_instance = self::find(&instance.name)?.is_some();
-    if existing_instance {
+/// Gets an existing instance by name assuming it may not exist
+/// returns Ok(None) if it does not exist
+pub(super) fn find(name: &str) -> std::io::Result<Option<(InstanceMetadata, PathBuf)>> {
+    // FIXME: maybe don't rely on the name for getting an existing instance's path
+    let instance_file_path = INSTANCES_DIR.join(name).join(INSTANCE_FILE_NAME);
+    let instance_file = match File::open(&instance_file_path) {
+        Ok(file) => file,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
+        Err(err) => return Err(err),
+    };
+
+    let read_buf = BufReader::new(instance_file);
+    let instance = serde_json::from_reader(read_buf)?;
+
+    Ok(Some((instance, instance_file_path)))
+}
+
+pub(super) fn add_new(instance: &InstanceMetadata) -> Result<(), BackendError> {
+    if self::find(&instance.name)?.is_some() {
         return Err(BackendError::InstanceError(
             InstanceError::InstanceAlreadyExists(instance.name.clone()),
         ));
@@ -42,37 +62,16 @@ pub fn remove(name: &str) -> Result<(), BackendError> {
     Ok(())
 }
 
-/// Gets an existing instance by name assuming it may not exist
-/// returns Ok(None) if it does not exist
-pub(super) fn find(name: &str) -> std::io::Result<Option<(InstanceInfo, PathBuf)>> {
-    // FIXME: maybe don't rely on the name for getting an existing instance's path
-    let instance_file_path = INSTANCES_DIR.join(name).join(INSTANCE_FILE_NAME);
-    let instance_file = match File::open(&instance_file_path) {
-        Ok(file) => file,
-        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
-        Err(err) => return Err(err),
-    };
-
-    let read_buf = BufReader::new(instance_file);
-    let instance = serde_json::from_reader(read_buf)?;
-
-    Ok(Some((instance, instance_file_path)))
-}
-
 /// Gets an existing instance by name assuming it exists
 /// errors if it does not exist
-pub fn get_existing(name: &str) -> Result<(InstanceInfo, PathBuf), BackendError> {
-    let found = self::find(name).map(|option| {
-        option.ok_or(BackendError::InstanceError(
-            InstanceError::InstanceNotFound(name.to_string()),
-        ))
-    });
-    // STABIALIZE FLATTEN PLEASE, THE HORROR
-    found?
+pub fn get_existing(name: &str) -> Result<(InstanceMetadata, PathBuf), BackendError> {
+    self::find(name)?.ok_or_else(|| {
+        BackendError::InstanceError(InstanceError::InstanceNotFound(name.to_string()))
+    })
 }
 
 /// Gets all instances information from the instances directory
-pub fn get_all_instances() -> Result<Vec<InstanceInfo>, BackendError> {
+pub fn get_all_instances() -> Result<Vec<InstanceMetadata>, BackendError> {
     let instances_dir = INSTANCES_DIR.read_dir()?;
 
     let instances_paths = instances_dir
@@ -86,7 +85,7 @@ pub fn get_all_instances() -> Result<Vec<InstanceInfo>, BackendError> {
     let instances = instances_paths
         .map(|path| -> Result<_, BackendError> {
             let instance_file = File::open(&path)?;
-            let deserialized: InstanceInfo = serde_json::from_reader(instance_file)?;
+            let deserialized: InstanceMetadata = serde_json::from_reader(instance_file)?;
             Ok(deserialized)
         })
         .filter_map(|instance| match instance {
