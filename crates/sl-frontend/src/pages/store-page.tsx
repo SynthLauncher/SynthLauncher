@@ -50,56 +50,56 @@ export const StorePage = () => {
 	}, [searchQuery, category, isOnline]);
 
 	return (
-		<div className="bg-transparent p-6 w-full overflow-y-auto min-h-screen">
-			<div className="flex flex-col gap-3">
-				<StoreCategorySelector
-					values={['Modrinth', 'Curseforge']}
-					defaultValue="modrinth"
-				/>
+		<div className="flex flex-col gap-3">
+			<StoreCategorySelector
+				values={['Modrinth', 'Curseforge']}
+				defaultValue="modrinth"
+			/>
 
-				<StoreCategorySelector
-					values={['Modpack', 'Mod', 'Shader', 'Resourcepack', 'Datapack']}
-					defaultValue="modpack"
-					onValueChange={(value: string) => setCategory(value.toLowerCase())}
-				/>
+			<StoreCategorySelector
+				values={['Modpack', 'Mod', 'Shader', 'Resourcepack', 'Datapack']}
+				defaultValue="modpack"
+				onValueChange={(value: string) => setCategory(value.toLowerCase())}
+			/>
 
-				<Input
-					icon={<SearchIcon className="w-4 h-4" />}
-					placeholder="Search modpacks..."
-					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-				/>
+			<Input
+				icon={<SearchIcon className="w-4 h-4" />}
+				placeholder="Search modpacks..."
+				value={searchQuery}
+				onChange={(e) => setSearchQuery(e.target.value)}
+			/>
 
-				{loading && (
-					<div className="flex items-center justify-center gap-2 text-muted-foreground mt-4">
-						<Loader2 className="animate-spin w-5 h-5" />
-						<span>Loading...</span>
-					</div>
-				)}
+			{loading && (
+				<div className="flex items-center justify-center gap-2 text-muted-foreground mt-4">
+					<Loader2 className="animate-spin w-5 h-5" />
+					<span>Loading...</span>
+				</div>
+			)}
 
-				{error === 'offline' && (
-					<div className="flex flex-col items-center justify-center h-[50vh] text-muted-foreground gap-3">
-						<WifiOff className="w-16 h-16 text-gray-400" />
-						<h2 className="text-xl font-semibold">You're offline</h2>
-						<p className="text-sm">Please check your internet connection.</p>
-					</div>
-				)}
+			{error === 'offline' && (
+				<div className="flex flex-col items-center justify-center h-[50vh] text-muted-foreground gap-3">
+					<WifiOff className="w-16 h-16 text-gray-400" />
+					<h2 className="text-xl font-semibold">You're offline</h2>
+					<p className="text-sm">Please check your internet connection.</p>
+				</div>
+			)}
 
+			{error === 'failed' && (
+				<div className="flex items-center justify-center gap-2 text-red-500 mt-4">
+					<AlertCircle className="w-5 h-5" />
+					<span>Failed to load mods. Try again later.</span>
+				</div>
+			)}
 
-				{error === 'failed' && (
-					<div className="flex items-center justify-center gap-2 text-red-500 mt-4">
-						<AlertCircle className="w-5 h-5" />
-						<span>Failed to load mods. Try again later.</span>
-					</div>
-				)}
+			{!loading && !error && search?.hits.length === 0 && (
+				<div className="flex items-center justify-center text-muted-foreground mt-4">
+					<span>No results found.</span>
+				</div>
+			)}
 
-				{!loading && !error && search?.hits.length === 0 && (
-					<div className="flex items-center justify-center text-muted-foreground mt-4">
-						<span>No results found.</span>
-					</div>
-				)}
-
-				{!loading && !error && search?.hits.map((hit) => (
+			{!loading &&
+				!error &&
+				search?.hits.map((hit) => (
 					<StoreCard
 						author={hit.author}
 						description={hit.description}
@@ -111,7 +111,6 @@ export const StorePage = () => {
 						key={hit.slug}
 					/>
 				))}
-			</div>
 		</div>
 	);
 };

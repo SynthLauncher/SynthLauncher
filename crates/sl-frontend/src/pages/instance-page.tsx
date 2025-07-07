@@ -1,23 +1,40 @@
-import { getInstances, launchInstance } from "@/lib/commands/instances";
-import { Instance } from "@/lib/types/instances";
-import { Blocks, Play, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import {
+	getGameInfo,
+	getInstances,
+	launchInstance,
+} from '@/lib/commands/instances';
+import { openInstanceFolder } from '@/lib/commands/launcher';
+import { GameInfo, Instance } from '@/lib/types/instances';
+import { Blocks, Folder, Play, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 export const InstancePage = () => {
 	const { name } = useParams<{ name: string }>();
 	const [instance, setInstance] = useState<Instance>();
-	const [tab, setTab] = useState<"content" | "logs" | "saves" | "screenshots" | "console">("content");
+	const [tab, setTab] = useState<
+		'content' | 'logs' | 'saves' | 'screenshots' | 'console'
+	>('content');
 	const [isRunning, setIsRunning] = useState(false);
+	const [gameInfo, setGameInfo] = useState<GameInfo>();
 
 	useEffect(() => {
 		const fetchAll = async () => {
 			let instances = await getInstances();
-			const match = instances?.find(inst => inst.name === name);
+			const match = instances?.find((inst) => inst.name === name);
 			setInstance(match);
 		};
 		fetchAll();
 	}, []);
+
+	useEffect(() => {
+		if (!instance) return;
+		const fetchAll = async () => {
+			const gameInfo = await getGameInfo(instance.name);
+			setGameInfo(gameInfo);
+		};
+		fetchAll();
+	}, [instance]);
 
 	if (!instance) {
 		return (
@@ -28,22 +45,24 @@ export const InstancePage = () => {
 	}
 
 	return (
-		<div className="w-full p-8 min-h-screen text-white">
-			<div className="flex items-center justify-between bg-neutral-800 rounded-2xl p-6 shadow-lg">
-				<div className="flex gap-6 items-center">
-					<div className="w-24 h-24 bg-neutral-700 rounded-xl flex justify-center items-center">
-						<Blocks className="w-14 h-14 text-blue-400" />
+		<div className="w-full px-4 md:px-8 py-6 min-h-screen text-white">
+			<div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-neutral-800 rounded-2xl p-6 gap-6 shadow-lg">
+				<div className="flex gap-6 items-center w-full lg:w-auto">
+					<div className="w-20 h-20 sm:w-24 sm:h-24 bg-neutral-700 rounded-xl flex justify-center items-center shrink-0">
+						<Blocks className="w-10 h-10 sm:w-14 sm:h-14 text-blue-400" />
 					</div>
 
 					<div className="flex flex-col gap-2">
-						<h1 className="text-3xl font-bold">{instance.name}</h1>
+						<h1 className="text-2xl sm:text-3xl font-bold break-all">
+							{instance.name}
+						</h1>
 						<div className="inline-block bg-blue-500/20 text-blue-400 text-sm font-semibold px-3 py-1 rounded-full w-fit">
 							{instance.mod_loader}
 						</div>
 					</div>
 				</div>
 
-				<div className="flex gap-2 items-center">
+				<div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
 					<button
 						className="bg-green-500 hover:bg-green-600 text-black font-semibold px-5 h-10 rounded-md flex items-center gap-2 shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
 						onClick={async () => {
@@ -57,43 +76,105 @@ export const InstancePage = () => {
 						disabled={isRunning}
 					>
 						<Play className="w-5 h-5" />
-						<span>{isRunning ? "Running..." : "Play"}</span>
+						<span>{isRunning ? 'Running...' : 'Play'}</span>
 					</button>
 
 					<button className="w-10 h-10 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded-md shadow transition">
 						<Settings className="w-5 h-5 text-white" />
 					</button>
+
+					<button
+						className="w-10 h-10 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded-md shadow transition"
+						onClick={async () => {
+							await openInstanceFolder(instance.name);
+						}}
+					>
+						<Folder className="w-5 h-5 text-white" />
+					</button>
 				</div>
 			</div>
 
-			<div className="mt-6 border-b border-neutral-700 flex gap-4">
-				{(["content", "logs", "saves", "screenshots", "console"] as const).map((t) => (
-					<button
-						key={t}
-						onClick={() => setTab(t)}
-						className={`capitalize px-4 py-2 font-medium border-b-2 ${tab === t
-							? "text-blue-400 border-blue-400"
-							: "text-neutral-400 border-transparent hover:text-white"
+			<div className="mt-6 border-b border-neutral-700 flex gap-2 sm:gap-4 flex-wrap">
+				{(['content', 'logs', 'saves', 'screenshots', 'console'] as const).map(
+					(t) => (
+						<button
+							key={t}
+							onClick={() => setTab(t)}
+							className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${
+								tab === t
+									? 'text-blue-400 border-blue-400'
+									: 'text-neutral-400 border-transparent hover:text-white'
 							} transition`}
-					>
-						{t}
-					</button>
-					))}
+						>
+							{t}
+						</button>
+					)
+				)}
 			</div>
 
-			<div className="mt-6 p-6 bg-neutral-800 rounded-xl text-neutral-300 text-lg min-h-[200px] flex items-center justify-center">
-				{tab === "content" && (
-					<div className="text-center">
-						<p className="text-white mb-4">You haven’t added any content to this instance yet.</p>
+			<div className="mt-6 p-4 sm:p-6 bg-neutral-800 rounded-xl text-neutral-300 text-base min-h-[200px] flex items-center justify-center">
+				{tab === 'content' && (
+					<div className="text-center w-full">
+						<p className="text-white mb-4">
+							You haven’t added any content to this instance yet.
+						</p>
 						<button className="bg-neutral-700 hover:bg-neutral-600 px-4 py-2 rounded-md text-white font-medium transition">
 							+ Install content
 						</button>
 					</div>
 				)}
-				{tab === "logs" && <></>}
-				{tab === "saves" && <></>}
-				{tab === "screenshots" && <></>}
-				{tab === "console" && <></>}
+
+				{tab === 'logs' && (
+					<div className="text-neutral-500">Logs tab coming soon...</div>
+				)}
+
+				{tab === 'saves' && (
+					<div className="w-full flex flex-col gap-4">
+						{gameInfo?.worlds.map((world, index) => (
+							<div
+								key={index}
+								className="bg-neutral-700 rounded-xl shadow-lg hover:shadow-xl transition flex items-center p-4 gap-4"
+							>
+								<img
+									src={`data:image/png;base64,${world.icon}`}
+									alt={world.name}
+									className="w-14 h-14 object-cover rounded-md"
+								/>
+								<div className="flex flex-col">
+									<h3 className="text-white font-semibold text-lg">
+										{world.name}
+									</h3>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
+
+				{tab === 'screenshots' && (
+					<div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+						{gameInfo?.screenshots.map((screenshot, index) => (
+							<div
+								key={index}
+								className="bg-neutral-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition"
+							>
+								<img
+									src={`data:image/png;base64,${screenshot.screenshot}`}
+									alt={screenshot.name}
+									className="w-full h-52 object-cover sm:h-60"
+								/>
+								<div className="p-3 sm:p-4">
+									<p className="text-neutral-300 text-sm truncate">
+										{screenshot.name}
+									</p>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
+
+				{tab === 'console' && (
+					<div className="text-neutral-500">Console tab coming soon...</div>
+				)}
 			</div>
 		</div>
 	);

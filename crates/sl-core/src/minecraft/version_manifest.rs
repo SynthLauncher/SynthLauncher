@@ -15,6 +15,7 @@ pub async fn fetch_version_manifest() {
         &HTTP_CLIENT,
         3,
         std::time::Duration::from_secs(5),
+        None,
     )
     .await;
 
@@ -44,6 +45,7 @@ pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
         &HTTP_CLIENT,
         3,
         std::time::Duration::from_secs(5),
+        None,
     )
     .await?;
     Ok(res)

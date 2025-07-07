@@ -8,6 +8,7 @@ use sl_utils::{
     elog, log,
     utils::{
         self,
+        download::download_file,
         errors::{BackendError, HttpError},
         zip::ZipExtractor,
     },
@@ -129,14 +130,14 @@ where
     outputs
 }
 
-async fn install_assets(client: &Client) -> Result<(), HttpError> {
+async fn install_assets(client: &Client) -> Result<(), BackendError> {
     let assets = &client.assets;
     let indexes_dir = ASSETS_DIR.join("indexes");
     let indexes_path = indexes_dir.join(format!("{}.json", assets));
 
     let download = download_and_read_file(&client.asset_index, &indexes_path).await?;
 
-    let index: AssetIndex = serde_json::from_slice(&download).unwrap();
+    let index: AssetIndex = serde_json::from_slice(&download)?;
     let objects = index.objects;
 
     let download_object = async |object: AssetObject| -> Result<(), HttpError> {
@@ -149,18 +150,19 @@ async fn install_assets(client: &Client) -> Result<(), HttpError> {
         }
 
         tokio::fs::create_dir_all(&dir).await?;
-        let data = utils::download::download_bytes(
+        download_file(
+            &HTTP_CLIENT,
             &format!(
                 "https://resources.download.minecraft.net/{dir_name}/{}",
                 object.hash
             ),
-            &HTTP_CLIENT,
+            &path,
             3,
             std::time::Duration::from_secs(5),
+            None,
         )
         .await?;
 
-        tokio::fs::write(path, data).await?;
         Ok(())
     };
 
@@ -170,7 +172,7 @@ async fn install_assets(client: &Client) -> Result<(), HttpError> {
     for (i, output) in outputs.into_iter().enumerate() {
         if let Err(err) = output {
             elog!("Failed to download object indexed {i}: {err:?}");
-            return Err(err);
+            return Err(BackendError::HttpError(err));
         }
     }
 

@@ -38,7 +38,7 @@ export const CreateInstanceDialog = ({
 			}
 
 			if (!loader) {
-				setLoader("Vanilla");
+				setLoader('Vanilla');
 			}
 		};
 

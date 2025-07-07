@@ -1,24 +1,17 @@
 use sl_core::VERSION_MANIFEST;
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 use tauri::command;
-use uuid::Uuid;
-
-#[derive(Deserialize)]
-pub struct MinecraftLoginRequest {
-    username: String,
-    password: String,
-    twofa: Option<String>,
-}
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MinecraftLoginResponse {
-    accessToken: Option<String>,
-    clientToken: Option<String>,
-    availableProfiles: Option<serde_json::Value>,
-    selectedProfile: Option<serde_json::Value>,
-    user: Option<serde_json::Value>,
-    error: Option<String>,
-    errorMessage: Option<String>,
+    pub access_token: Option<String>,
+    pub client_token: Option<String>,
+    pub available_profiles: Option<serde_json::Value>,
+    pub selected_profile: Option<serde_json::Value>,
+    pub user: Option<serde_json::Value>,
+    pub error: Option<String>,
+    pub error_message: Option<String>,
 }
 
 #[tauri::command]
@@ -67,33 +60,33 @@ pub async fn minecraft_login(
 
     if status == 200 {
         Ok(MinecraftLoginResponse {
-            accessToken: json.get("accessToken").and_then(|v| v.as_str()).map(|s| s.to_string()),
-            clientToken: json.get("clientToken").and_then(|v| v.as_str()).map(|s| s.to_string()),
-            availableProfiles: json.get("availableProfiles").cloned(),
-            selectedProfile: json.get("selectedProfile").cloned(),
+            access_token: json.get("accessToken").and_then(|v| v.as_str()).map(|s| s.to_string()),
+            client_token: json.get("clientToken").and_then(|v| v.as_str()).map(|s| s.to_string()),
+            available_profiles: json.get("availableProfiles").cloned(),
+            selected_profile: json.get("selectedProfile").cloned(),
             user: json.get("user").cloned(),
             error: None,
-            errorMessage: None,
+            error_message: None,
         })
     } else if json.get("errorMessage").and_then(|v| v.as_str()) == Some("Account protected with two factor auth.") {
         Ok(MinecraftLoginResponse {
-            accessToken: None,
-            clientToken: None,
-            availableProfiles: None,
-            selectedProfile: None,
+            access_token: None,
+            client_token: None,
+            available_profiles: None,
+            selected_profile: None,
             user: None,
             error: Some("2fa".to_string()),
-            errorMessage: Some("Two-factor authentication required.".to_string()),
+            error_message: Some("Two-factor authentication required.".to_string()),
         })
     } else {
         Ok(MinecraftLoginResponse {
-            accessToken: None,
-            clientToken: None,
-            availableProfiles: None,
-            selectedProfile: None,
+            access_token: None,
+            client_token: None,
+            available_profiles: None,
+            selected_profile: None,
             user: None,
             error: json.get("error").and_then(|v| v.as_str()).map(|s| s.to_string()),
-            errorMessage: json.get("errorMessage").and_then(|v| v.as_str()).map(|s| s.to_string()),
+            error_message: json.get("errorMessage").and_then(|v| v.as_str()).map(|s| s.to_string()),
         })
     }
 }

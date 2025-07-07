@@ -15,7 +15,8 @@ use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::{
-    launcher::instances::metadata::{InstanceMetadata, ModLoader}, HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR
+    launcher::instances::metadata::{InstanceMetadata, ModLoader},
+    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
 };
 
 pub const FORGE_JAVA_INSTALLER_SRC: &str =
@@ -47,9 +48,15 @@ impl<'a> ForgeInstaller<'a> {
     ) -> Result<Self, HttpError> {
         let mc_version = &instance.game_metadata.version;
         let forge_versions = ForgeVersions::download::<HttpError>(async |url: &str| {
-            utils::download::download_bytes(url, &HTTP_CLIENT, 2, std::time::Duration::from_secs(5))
-                .await
-                .map(|bytes| bytes.to_vec())
+            utils::download::download_bytes(
+                url,
+                &HTTP_CLIENT,
+                2,
+                std::time::Duration::from_secs(5),
+                None,
+            )
+            .await
+            .map(|bytes| bytes.to_vec())
         })
         .await?;
 
@@ -78,7 +85,7 @@ impl<'a> ForgeInstaller<'a> {
         };
 
         let norm_version = format!("{short_version}-{norm_mc_version}");
-                
+
         let mut cache_dir = TempDir::new()
             .expect("failed to create a new temporary directory for installing forge");
 

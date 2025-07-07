@@ -2,8 +2,6 @@ use std::{
     borrow::Cow,
     path::{Path, PathBuf},
     process::Stdio,
-    fs,
-    io::Write,
 };
 
 use chrono::DateTime;
@@ -12,7 +10,6 @@ use sl_utils::{
     dlog, elog, log, utils::errors::{BackendError, InstanceError}, wlog
 };
 use tokio::process::Command;
-use reqwest::Client as ReqwestClient;
 
 use crate::{
     launcher::{

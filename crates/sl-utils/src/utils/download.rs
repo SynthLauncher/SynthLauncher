@@ -5,16 +5,16 @@ use futures_util::StreamExt;
 use reqwest::Client;
 use tokio::{io::AsyncWriteExt, sync::mpsc::Sender, time::sleep};
 
-use crate::{dlog, elog, log};
+use crate::{elog, log};
 
 use super::errors::HttpError;
 
-// TODO: Add progress tracking to this too maybe? idk
 pub async fn download_bytes(
     url: &str,
     client: &Client,
     max_retries: u32,
     duration: Duration,
+    progress_tx: Option<Sender<f32>>,
 ) -> Result<Bytes, HttpError> {
     let mut attempts = 0;
 
@@ -57,9 +57,9 @@ pub async fn download_bytes(
     }
 }
 
-pub async fn download_file<'a>(
+pub async fn download_file(
     client: &Client,
-    url: &'a str,
+    url: &str,
     dest: &Path,
     max_retries: u32,
     duration: Duration,
@@ -74,13 +74,11 @@ pub async fn download_file<'a>(
             Ok(response) if response.status().is_success() => {
                 let mut file = tokio::fs::File::create(dest).await?;
                 let total_size = response.content_length();
-                
+
                 if let Some(tx) = &progress_tx {
-                    if let Err(e) = tx
-                        .send(0.0)
-                        .await {
-                            elog!("{}", e);
-                        }
+                    if let Err(e) = tx.send(0.0).await {
+                        elog!("{}", e);
+                    }
                 }
 
                 let mut stream = response.bytes_stream();
@@ -94,22 +92,19 @@ pub async fn download_file<'a>(
                     if let Some(tx) = &progress_tx {
                         if let Err(e) = tx
                             .send((downloaded as f32 / total_size.unwrap() as f32) * 100.0)
-                            .await {
-                                elog!("{}", e);
-                            }
+                            .await
+                        {
+                            elog!("{}", e);
+                        }
                     }
                 }
 
                 if let Some(tx) = &progress_tx {
-                    if let Err(e) = tx
-                        .send(100.0)
-                        .await {
-                            elog!("{}", e);
-                        }
+                    if let Err(e) = tx.send(100.0).await {
+                        elog!("{}", e);
+                    }
                 }
 
-                dlog!("File installed at: {}", dest.display());
-                dlog!("{}",   downloaded);
                 return Ok(());
             }
             Ok(response) => return Err(HttpError::Status(response.status())),

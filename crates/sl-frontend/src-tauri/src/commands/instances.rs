@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use sl_core::{
-    launcher::instances::{self, metadata::{InstanceMetadata, ModLoader}}, HTTP_CLIENT
+    launcher::instances::{self, game::{get_game_info, GameInfo}, metadata::{InstanceMetadata, ModLoader}}, HTTP_CLIENT
 };
 use sl_utils::{
     elog,
@@ -72,8 +72,8 @@ pub async fn launch_instance(name: &str) -> Result<(), String> {
     launch_instance_inner(name).await.map_err(|e| e.to_string())
 }
 
-// #[tauri::command]
-// pub fn load_game_info(name: &str) -> Result<GameInfo, String> {
-//     load_game_info_from_instance(name).map_err(|e| e.to_string())
-// }
+#[tauri::command]
+pub fn load_game_info(name: &str) -> Result<GameInfo, String> {
+    get_game_info(name).map_err(|e| e.to_string())
+}
 

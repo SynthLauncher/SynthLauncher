@@ -18,7 +18,8 @@ use tempfile::TempDir;
 use tokio::io::AsyncWriteExt;
 
 use crate::{
-    launcher::instances::metadata::{InstanceMetadata, ModLoader}, HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR
+    launcher::instances::metadata::{InstanceMetadata, ModLoader},
+    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
 };
 
 pub const NEOFORGE_JAVA_INSTALLER_SRC: &str =
@@ -52,9 +53,15 @@ impl<'a> NeoForgeInstaller<'a> {
         let minor = version.next().unwrap().parse::<u16>().unwrap();
 
         let neoforge_releases = NeoForgeReleases::download(async |url: &str| {
-            utils::download::download_bytes(url, &HTTP_CLIENT, 2, std::time::Duration::from_secs(5))
-                .await
-                .map(|bytes| bytes.to_vec())
+            utils::download::download_bytes(
+                url,
+                &HTTP_CLIENT,
+                2,
+                std::time::Duration::from_secs(5),
+                None,
+            )
+            .await
+            .map(|bytes| bytes.to_vec())
         })
         .await?;
 

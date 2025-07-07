@@ -4,7 +4,7 @@ import { message } from '@tauri-apps/plugin-dialog';
 export const getMinecraftVersions = async () => {
 	try {
 		let minecraftVersions = await invoke<string[]>('get_minecraft_versions');
-		return minecraftVersions ?? []
+		return minecraftVersions ?? [];
 	} catch (error) {
 		await message(`getMinecraftVersions error: ${error}`, {
 			title: 'SynthLauncher Error',

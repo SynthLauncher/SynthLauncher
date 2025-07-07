@@ -10,7 +10,7 @@ enum ModLoader {
 	Fabric,
 	Quilt,
 	Forge,
-	Neoforge
+	Neoforge,
 }
 
 interface InstanceGameInfo {
@@ -23,7 +23,7 @@ export interface Instance {
 	name: string;
 	game_metadata: InstanceGameInfo;
 	mod_loader: ModLoader;
-	mod_loader_version: string
+	mod_loader_version: string;
 }
 
 export type InstanceCardProps = {
@@ -37,10 +37,16 @@ export type InstanceCardProps = {
 };
 
 export interface MinecraftWorldMetadata {
-	name: string,
-	icon: string
+	name: string;
+	icon: string;
+}
+
+export interface ScreenshotMetadata {
+	name: string;
+	screenshot: string;
 }
 
 export interface GameInfo {
-	worlds: MinecraftWorldMetadata[]
+	worlds: MinecraftWorldMetadata[];
+	screenshots: ScreenshotMetadata[];
 }

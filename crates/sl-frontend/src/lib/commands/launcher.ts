@@ -12,6 +12,17 @@ export const openSynthLauncherFolder = async () => {
 	}
 };
 
+export const openInstanceFolder = async (name: string) => {
+	try {
+		await invoke('open_instance_folder', { name: name });
+	} catch (error) {
+		await message(`openInstanceFolder error: ${error}`, {
+			title: 'SynthLauncher Error',
+			kind: 'error',
+		});
+	}
+};
+
 export const getSynthLauncherAddons = async (
 	setAddons: (addons: string[]) => void
 ) => {
@@ -24,4 +35,4 @@ export const getSynthLauncherAddons = async (
 			kind: 'error',
 		});
 	}
-}
+};

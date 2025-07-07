@@ -18,6 +18,7 @@ pub async fn fetch_jre_manifest() {
         &HTTP_CLIENT,
         3,
         std::time::Duration::from_secs(5),
+        None
     )
     .await;
 
@@ -81,6 +82,7 @@ pub async fn download_jre_manifest_version(
                         None,
                     )
                     .await?;
+
                     #[cfg(unix)]
                     if java_file.executable == Some(true) {
                         fs::set_permissions(&path, fs::Permissions::from_mode(0o777))?;

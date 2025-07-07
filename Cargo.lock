@@ -4317,6 +4317,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "sl-player"
+version = "0.1.0"
+
+[[package]]
 name = "sl-skin"
 version = "0.1.0"
 dependencies = [

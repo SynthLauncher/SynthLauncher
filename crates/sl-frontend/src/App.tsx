@@ -12,7 +12,7 @@ import { InstancePage } from './pages/instance-page';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="flex flex-col h-screen bg-[#1B1D21] overflow-hidden">
+		<div className="flex flex-col h-screen overflow-hidden">
 			<Navbar />
 			<div className="flex overflow-hidden h-full">{children}</div>
 		</div>
@@ -31,11 +31,11 @@ function MainContent() {
 		<>
 			<Sidebar activeTab={location.pathname.slice(1)} />
 			<div className="flex bg-neutral-900 w-full rounded-tl-2xl border-l-2 border-t-2 border-[#2D2F32]">
-				<div className="w-full h-full overflow-y-auto">
+				<div className="w-full h-full overflow-y-auto p-6">
 					<Routes>
 						<Route path="/home" element={<HomePage />} />
 						<Route path="/instances" element={<InstancesPage />} />
-						<Route path='/instances/:name' element={<InstancePage />} />
+						<Route path="/instances/:name" element={<InstancePage />} />
 						<Route path="/store" element={<StorePage />} />
 						<Route path="/settings" element={<SettingsPage />} />
 						<Route path="*" element={<UnknownPage />} />

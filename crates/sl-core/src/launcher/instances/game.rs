@@ -1,12 +1,12 @@
-use std::{fs::File, io::Read, path::Path};
 use base64::{engine::general_purpose, Engine};
 use serde::{Deserialize, Serialize};
 use sha1::Digest;
 use sha2::Sha512;
-use sl_utils::utils::errors::BackendError;
+use sl_utils::{utils::errors::BackendError};
+use std::{fs::File, io::Read, path::Path};
 use zip::ZipArchive;
 
-use crate::launcher::instances::metadata::ModLoader;
+use crate::{launcher::instances::metadata::ModLoader, INSTANCES_DIR};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModMetadata {
@@ -80,20 +80,97 @@ pub fn get_mod_metadata(
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct ScreenshotMetadata {
+    pub name: String,
+    pub screenshot: String,
+}
+
+pub fn get_screenshot_metadata(screenshot_path: &Path) -> Result<ScreenshotMetadata, BackendError> {
+    let screenshot_name = screenshot_path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or_default()
+        .to_string();
+
+    let image_bytes = std::fs::read(screenshot_path)?;
+
+    let image_base64 = general_purpose::STANDARD.encode(&image_bytes);
+
+    Ok(ScreenshotMetadata {
+        name: screenshot_name,
+        screenshot: image_base64,
+    })
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MinecraftWorldMetadata {
     pub name: String,
     pub icon: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ScreenshotMetadata {
-    pub name: String,
-    pub screenshot: String
+pub fn get_minecraft_world_metadata(
+    world_folder_path: &Path,
+) -> Result<MinecraftWorldMetadata, BackendError> {
+    let world_name = world_folder_path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or_default()
+        .to_string();
+
+    let icon_path = world_folder_path.join("icon.png");
+    let image_bytes = std::fs::read(icon_path)?;
+
+    let image_base64 = general_purpose::STANDARD.encode(&image_bytes);
+    Ok(MinecraftWorldMetadata { name:  world_name, icon: image_base64 })
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GameInfo {
     pub worlds: Vec<MinecraftWorldMetadata>,
     pub screenshots: Vec<ScreenshotMetadata>,
-    pub mods: Vec<Mod>,
+}
+
+pub fn get_game_info(instance_name: &str) -> Result<GameInfo, BackendError> {
+    let instance_path  = &*INSTANCES_DIR.join(instance_name);
+    let saves_path = instance_path.join("saves");
+    let mut worlds = Vec::new();
+
+    if saves_path.exists() {
+        for entry in std::fs::read_dir(&saves_path)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.is_dir() {
+                match get_minecraft_world_metadata(&path) {
+                    Ok(world) => worlds.push(world),
+                    Err(e) => {
+                        eprintln!("Failed to load world metadata for {:?}: {}", path, e);
+                    }
+                }
+            }
+        }
+    }
+
+    let screenshots_path = instance_path.join("screenshots");
+    let mut screenshots = Vec::new();
+
+    if screenshots_path.exists() {
+        for entry in std::fs::read_dir(&screenshots_path)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_file() && path.extension().and_then(|s| s.to_str()).unwrap_or("") == "png" {
+                match get_screenshot_metadata(&path) {
+                    Ok(screenshot) => screenshots.push(screenshot),
+                    Err(e) => {
+                        eprintln!("Failed to load screenshot metadata for {:?}: {}", path, e);
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(GameInfo {
+        worlds,
+        screenshots,
+    })
 }

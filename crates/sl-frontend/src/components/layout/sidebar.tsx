@@ -15,10 +15,11 @@ const SidebarItem = ({
 }) => {
 	return (
 		<Button
-			className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${active
-					? 'bg-[#41a5e7]/20 text-[#41a5e7] hover:bg-[#41a5e7]/30'
-					: 'bg-transparent text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
-				}`}
+			className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${
+				active
+					? 'bg-layout-accent/20 hover:bg-layout-accent/30 text-layout-accent-foreground'
+					: 'bg-transparent text-layout-foreground hover:bg-layout-primary/20 hover:text-layout-primary-foreground'
+			}`}
 			size="icon"
 			onClick={onClick}
 		>
@@ -39,11 +40,26 @@ export const Sidebar = ({ activeTab }: { activeTab: string }) => {
 	}
 
 	const sidebarItems: SidebarItemConfig[] = [
-		{ id: 'home', label: 'Home', icon: <Home size={24} />, section: 'top' },
-		{ id: 'instances', label: 'Instances', icon: <Library size={24} />, section: 'top' },
-		{ id: 'store', label: 'Store', icon: <Store size={24} />, section: 'top' },
 		{
-			id: '_folder',
+			id: 'home',
+			label: 'Home',
+			icon: <Home size={24} />,
+			section: 'top',
+		},
+		{
+			id: 'instances',
+			label: 'Instances',
+			icon: <Library size={24} />,
+			section: 'top',
+		},
+		{
+			id: 'store',
+			label: 'Store',
+			icon: <Store size={24} />,
+			section: 'top',
+		},
+		{
+			id: 'folder',
 			label: 'Folder',
 			icon: <Folder size={24} />,
 			section: 'bottom',
@@ -73,11 +89,15 @@ export const Sidebar = ({ activeTab }: { activeTab: string }) => {
 				return (
 					<Tooltip key={item.id}>
 						<TooltipTrigger>
-							<SidebarItem icon={item.icon} active={isActive} onClick={handleClick} />
+							<SidebarItem
+								icon={item.icon}
+								active={isActive}
+								onClick={handleClick}
+							/>
 						</TooltipTrigger>
 						<TooltipContent
-							arrowClassName="bg-[#2e3137] fill-[#2e3137]"
-							className="text-md text-white bg-[#2e3137]"
+							arrowClassName="bg-layout-secondary fill-layout-secondary"
+							className="bg-layout-secondary text-layout-secondary-foreground text-md"
 							side="right"
 						>
 							{item.label}
@@ -87,7 +107,7 @@ export const Sidebar = ({ activeTab }: { activeTab: string }) => {
 			});
 
 	return (
-		<div className="bg-[#1B1D21] h-full p-2 flex flex-col items-center justify-between">
+		<div className="flex flex-col items-center justify-between p-2">
 			<div className="flex flex-col gap-1">{renderItems('top')}</div>
 			<div className="flex flex-col gap-1">{renderItems('bottom')}</div>
 		</div>
