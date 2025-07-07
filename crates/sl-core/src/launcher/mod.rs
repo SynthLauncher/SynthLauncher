@@ -1,5 +1,5 @@
-use std::{env, fs::OpenOptions};
 use std::path::PathBuf;
+use std::{env, fs::OpenOptions};
 
 use sl_utils::dlog;
 use sl_utils::utils::errors::BackendError;
@@ -7,7 +7,10 @@ use sl_utils::utils::log::set_log_file;
 
 use crate::java::jre_manifest::fetch_jre_manifest;
 use crate::minecraft::version_manifest::fetch_version_manifest;
-use crate::{ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR, PROFILES_PATH};
+use crate::{
+    ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR,
+    PROFILES_PATH,
+};
 
 pub mod addons;
 pub mod config;
@@ -19,7 +22,7 @@ pub fn get_launcher_dir() -> PathBuf {
     {
         return env::var("APPDATA")
             .map(|appdata| PathBuf::from(appdata).join("SynthLauncher"))
-            .unwrap_or_else(|_| PathBuf::from("C:\\SynthLauncher"));
+            .expect("%APPDATA% not found");
     }
 
     #[cfg(target_os = "macos")]
@@ -31,14 +34,14 @@ pub fn get_launcher_dir() -> PathBuf {
                     .join("Application Support")
                     .join("SynthLauncher")
             })
-            .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
+            .expect("$HOME not found");
     }
 
     #[cfg(target_os = "linux")]
     {
         return env::var("HOME")
             .map(|home| PathBuf::from(home).join(".synthlauncher"))
-            .unwrap_or_else(|_| PathBuf::from("/usr/local/synthlauncher"));
+            .expect("$HOME not found");
     }
 }
 
