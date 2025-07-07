@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use sl_meta::java::jre_manifest::JreManifestDownloadType;
 use sl_utils::utils::errors::BackendError;
+use sl_utils::wlog;
 
 use crate::{
     java::jre_manifest::download_jre_manifest_version,
@@ -60,7 +61,36 @@ pub struct JavaConfig {
 
 impl JavaConfig {
     pub fn java(&self) -> &Path {
-        &self.path
+        // If the configured path exists, use it
+        if self.path.exists() {
+            &self.path
+        } else {
+            #[cfg(target_os = "macos")]
+            {
+                use std::path::Path;
+                // Fallback to /usr/bin/java if available
+                static FALLBACK: &str = "/usr/bin/java";
+                if Path::new(FALLBACK).exists() {
+                    wlog!("Configured Java path {:?} does not exist, falling back to /usr/bin/java", self.path);
+                    return Path::new(FALLBACK);
+                }
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                use std::process::Command;
+                if let Ok(output) = Command::new("which").arg("java").output() {
+                    if output.status.success() {
+                        let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                        if !path.is_empty() && std::path::Path::new(&path).exists() {
+                            wlog!("Configured Java path {:?} does not exist, falling back to {}", self.path, path);
+                            return std::path::Path::new(Box::leak(path.into_boxed_str()));
+                        }
+                    }
+                }
+            }
+            // If all else fails, return the original (will error later)
+            &self.path
+        }
     }
 
     pub fn get_javac(&self) -> PathBuf {

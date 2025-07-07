@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { HomePage } from './pages/home-page';
 import { InstancesPage } from './pages/instances-page';
 import { StorePage } from './pages/store-page';
-import { SettingsPage } from './pages/settings-page';
+import SettingsPage from './pages/settings-page';
 import { UnknownPage } from './pages/unknown-page';
 import { Navbar } from './components/layout/navbar';
 import { Sidebar } from './components/layout/sidebar';

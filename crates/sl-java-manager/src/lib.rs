@@ -95,15 +95,39 @@ impl JavaInstallation {
         Self::get_installation_paths_from_dirs(&common_paths)
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    fn get_common_installations() -> Vec<PathBuf> {
+        let mut java_paths = Vec::new();
+
+        // Standard Linux/Unix JVM locations
+        let common_paths = vec![
+            Path::new("/usr/lib/jvm"),
+            Path::new("/usr/lib64/jvm"),
+            Path::new("/usr/lib32/jvm"),
+        ];
+        java_paths.extend(Self::get_installation_paths_from_dirs(&common_paths));
+
+        // macOS JavaVirtualMachines
+        let jvm_dir = Path::new("/Library/Java/JavaVirtualMachines");
+        if let Ok(entries) = fs::read_dir(jvm_dir) {
+            for entry in entries.flatten() {
+                let java_path = entry.path().join("Contents").join("Home").join("bin").join(JAVA_BINARY);
+                if java_path.exists() {
+                    java_paths.push(java_path);
+                }
+            }
+        }
+
+        java_paths
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
     fn get_common_installations() -> Vec<PathBuf> {
         let common_paths = vec![
             Path::new("/usr/lib/jvm"),
             Path::new("/usr/lib64/jvm"),
             Path::new("/usr/lib32/jvm"),
-            Path::new("/Library/Java/JavaVirtualMachines"),
         ];
-
         Self::get_installation_paths_from_dirs(&common_paths)
     }
 

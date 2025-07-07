@@ -85,8 +85,14 @@ pub fn get_all_instances() -> Result<Vec<InstanceMetadata>, BackendError> {
     let instances = instances_paths
         .map(|path| -> Result<_, BackendError> {
             let instance_file = File::open(&path)?;
-            let deserialized: InstanceMetadata = serde_json::from_reader(instance_file)?;
-            Ok(deserialized)
+            let deserialized: Result<InstanceMetadata, _> = serde_json::from_reader(instance_file);
+            match deserialized {
+                Ok(instance) => Ok(instance),
+                Err(e) => {
+                    elog!("Failed to load instance at {:?}: {}. Skipping.", path, e);
+                    Err(BackendError::InstanceError(InstanceError::FailedToExecute(format!("{:?}: {}", path, e))))
+                }
+            }
         })
         .filter_map(|instance| match instance {
             Err(e) => {

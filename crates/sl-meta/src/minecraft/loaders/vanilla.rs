@@ -192,6 +192,26 @@ impl Library {
         let natives = self.natives.as_ref()?;
         let classifiers = self.downloads.classifiers.as_ref()?;
 
+        #[cfg(target_os = "macos")]
+        {
+            use std::env;
+            // On Apple Silicon, prefer arm64 natives if available
+            if cfg!(target_arch = "aarch64") {
+                if let Some(native_key) = natives.get(&crate::OsName::Osx) {
+                    // Try arm64 classifier first
+                    let arm64_key = native_key.replace("natives-macos", "natives-macos-arm64");
+                    if let Some(download) = classifiers.get(&arm64_key) {
+                        return Some(download);
+                    }
+                    // Fallback to regular macos natives
+                    if let Some(download) = classifiers.get(native_key) {
+                        return Some(download);
+                    }
+                }
+                return None;
+            }
+        }
+        // Default: use the native for the current OS
         let mut results = natives
             .iter()
             .filter(|(os, _)| **os == crate::OS)

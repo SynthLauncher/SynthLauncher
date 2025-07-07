@@ -2,6 +2,8 @@ use std::{
     borrow::Cow,
     path::{Path, PathBuf},
     process::Stdio,
+    fs,
+    io::Write,
 };
 
 use chrono::DateTime;
@@ -10,6 +12,7 @@ use sl_utils::{
     dlog, elog, log, utils::errors::{BackendError, InstanceError}, wlog
 };
 use tokio::process::Command;
+use reqwest::Client as ReqwestClient;
 
 use crate::{
     launcher::{
@@ -20,6 +23,9 @@ use crate::{
     minecraft::install_client,
     ASSETS_DIR, LIBS_DIR, MULTI_PATH_SEPARATOR,
 };
+
+const AUTHLIB_INJECTOR_PATH: &str = "crates/sl-skin/src/authlib-injector.jar";
+const AUTHLIB_INJECTOR_URL: &str = "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar";
 
 // Represents a loaded instance of Minecraft with its configurations and things required for launching
 pub struct LoadedInstance {
@@ -105,6 +111,27 @@ impl LoadedInstance {
         }
     }
 
+    async fn ensure_authlib_injector() -> Result<(), BackendError> {
+        let path = std::path::Path::new(AUTHLIB_INJECTOR_PATH);
+        if !path.exists() {
+            let resp = reqwest::get(AUTHLIB_INJECTOR_URL)
+                .await
+                .map_err(|e| BackendError::InstanceError(InstanceError::FailedToExecute(format!("Failed to download authlib-injector: {}", e))))?;
+            let bytes = resp.bytes()
+                .await
+                .map_err(|e| BackendError::InstanceError(InstanceError::FailedToExecute(format!("Failed to read authlib-injector bytes: {}", e))))?;
+            if let Some(parent) = path.parent() {
+                tokio::fs::create_dir_all(parent)
+                    .await
+                    .map_err(|e| BackendError::InstanceError(InstanceError::FailedToExecute(format!("Failed to create directory for authlib-injector: {}", e))))?;
+            }
+            tokio::fs::write(path, &bytes)
+                .await
+                .map_err(|e| BackendError::InstanceError(InstanceError::FailedToExecute(format!("Failed to write authlib-injector: {}", e))))?;
+        }
+        Ok(())
+    }
+
     async fn generate_arguments(
         &self,
         profile: &PlayerProfile,
@@ -116,6 +143,12 @@ impl LoadedInstance {
 
         let raw_args = &self.client.arguments;
         let (mut jvm_args, mut game_args) = raw_args.clone().into_raw();
+
+        // Insert the javaagent argument for Ely.by (non-premium) accounts
+        if !profile.premium {
+            Self::ensure_authlib_injector().await?;
+            jvm_args.insert(0, format!("-javaagent:{}=ely.by", AUTHLIB_INJECTOR_PATH));
+        }
 
         let regex = regex::Regex::new(r"\$\{(\w+)\}").expect("Failed to compile regex!");
 
@@ -185,6 +218,11 @@ impl LoadedInstance {
         );
 
         let current_java_path = self.config.java.java();
+
+        log!(
+            "Using Java path: {}",
+            current_java_path.display()
+        );
 
         let max_ram = self.config.java.max_ram;
         let min_ram = self.config.java.min_ram;

@@ -14,3 +14,20 @@ export const getMinecraftVersions = async () => {
 		return [];
 	}
 };
+
+export async function minecraftLogin(
+	username: string,
+	password: string,
+	twofa?: string
+): Promise<any> {
+	try {
+		const result = await invoke("minecraft_login", {
+			username,
+			password,
+			twofa,
+		});
+		return result;
+	} catch (err: any) {
+		return { error: "network", errorMessage: err?.toString() };
+	}
+}

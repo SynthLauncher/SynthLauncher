@@ -1,4 +1,4 @@
-use commands::{instances::{get_instances, test_progress, create_instance, remove_instance, launch_instance}, store::search_store, profiles::{get_current_profile, get_profiles, get_other_profiles}, launcher::{open_synthlauncher_folder, get_synthlauncher_addons}, minecraft::get_minecraft_versions};
+use commands::{instances::{get_instances, test_progress, create_instance, remove_instance, launch_instance}, store::search_store, profiles::{get_current_profile, get_profiles, get_other_profiles, set_elyby_profile, reset_profile_to_default}, launcher::{open_synthlauncher_folder, get_synthlauncher_addons}, minecraft::{get_minecraft_versions, minecraft_login}, skins::{get_skin_url, get_cape_url, get_textures}};
 
 mod commands;
 
@@ -20,6 +20,12 @@ pub fn run() {
             search_store,
             get_synthlauncher_addons,
             launch_instance,
+            get_skin_url,
+            get_cape_url,
+            get_textures,
+            minecraft_login,
+            set_elyby_profile,
+            reset_profile_to_default,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

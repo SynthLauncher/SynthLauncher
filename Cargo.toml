@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["crates/sl-frontend/src-tauri", "crates/sl-meta", "crates/sl-utils", "crates/sl-core", "crates/sl-store", "crates/sl-java-manager"]
+members = ["crates/sl-frontend/src-tauri", "crates/sl-meta", "crates/sl-utils", "crates/sl-core", "crates/sl-store", "crates/sl-java-manager", "crates/sl-skin"]
 
 [dependencies]
 sl-meta = { path = "crates/sl-meta" }
@@ -18,3 +18,4 @@ synrinth = "0.1.8"
 reqwest = "0.12.20"
 indicatif = "0.17.11"
 lazy_static = "1.5.0"
+uuid = "1.17.0"

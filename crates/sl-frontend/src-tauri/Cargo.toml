@@ -31,3 +31,8 @@ sl-utils = { path = "../../sl-utils" }
 synrinth = "0.1.9"
 discord-rich-presence = "0.2.5"
 lazy_static = "1.5.0"
+sl-skin = { path = "../../sl-skin" }
+once_cell = "1.19"
+anyhow = "1.0.98"
+uuid = { version = "1.17", features = ["v4"] }
+reqwest = "0.12.22"

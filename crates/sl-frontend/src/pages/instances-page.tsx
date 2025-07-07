@@ -4,10 +4,12 @@ import { createInstance, getInstances } from '@/lib/commands/instances';
 import { Instance } from '@/lib/types/instances';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { getCurrentProfile } from '@/lib/commands/profiles';
 
 export const InstancesPage = () => {
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const [instances, setInstances] = useState<Instance[]>([]);
+	const [playerName, setPlayerName] = useState<string>('Steve');
 
 	const fetchInstances = async () => {
 		const allInstances = await getInstances();
@@ -16,6 +18,10 @@ export const InstancesPage = () => {
 
 	useEffect(() => {
 		fetchInstances();
+		(async () => {
+			const profile = await getCurrentProfile();
+			if (profile?.data?.name) setPlayerName(profile.data.name);
+		})();
 	}, []);
 
 	const handleCreateInstance = async (name: string, version: string, modLoader: string) => {
@@ -27,7 +33,7 @@ export const InstancesPage = () => {
 		<div className="p-6 w-full overflow-auto pb-20">
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
 				{instances.map((instance) => (
-					<InstanceCard key={instance.name} {...instance} />
+					<InstanceCard key={instance.name} {...instance} playerName={playerName} />
 				))}
 
 				<button
