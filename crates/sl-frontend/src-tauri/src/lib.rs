@@ -3,7 +3,7 @@ use commands::{
     store::search_store, 
     profiles::{get_current_profile, get_profiles, get_other_profiles, set_elyby_profile, reset_profile_to_default}, 
     launcher::{open_synthlauncher_folder, get_synthlauncher_addons, open_instance_folder}, 
-    minecraft::{get_minecraft_versions, minecraft_login}, skins::{get_skin_url, get_cape_url, get_textures}
+    minecraft::{get_minecraft_versions, minecraft_login},
 };
 
 mod commands;
@@ -26,9 +26,6 @@ pub fn run() {
             search_store,
             get_synthlauncher_addons,
             launch_instance,
-            get_skin_url,
-            get_cape_url,
-            get_textures,
             minecraft_login,
             set_elyby_profile,
             reset_profile_to_default,

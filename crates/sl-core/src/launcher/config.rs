@@ -1,13 +1,14 @@
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use sl_meta::java::jre_manifest::JreManifestDownloadType;
+use sl_java_manager::{jre_manifest::installer::download_jre_manifest_version, JAVA_BINARY};
+use sl_meta::{minecraft::loaders::vanilla::JavaComponent};
 use sl_utils::utils::errors::BackendError;
 use sl_utils::wlog;
 
 use crate::{
-    java::jre_manifest::download_jre_manifest_version,
-    JAVAS_DIR, LAUNCHER_DIR,
+    // java::jre_manifest::download_jre_manifest_version,
+    HTTP_CLIENT, JAVAS_DIR, JRE_MANIFEST, LAUNCHER_DIR
 };
 
 /// Defines the config file name, relative to the launcher directory and the instance directory.
@@ -28,17 +29,18 @@ const fn default_max_memory() -> usize {
     2048
 }
 
-async fn default_java_path(component: &JreManifestDownloadType) -> Result<PathBuf, BackendError> {
+async fn default_java_path(component: &JavaComponent) -> Result<PathBuf, BackendError> {
     let java_path = JAVAS_DIR.join(component.to_string());
 
-    let java_binary = if cfg!(target_os = "windows") {
-        "java.exe"
-    } else {
-        "java"
-    };
+    let java_binary = JAVA_BINARY;
 
     if !java_path.exists() {
-        download_jre_manifest_version(component).await?;
+        download_jre_manifest_version(
+            &HTTP_CLIENT,
+            &JRE_MANIFEST,
+            &JAVAS_DIR,
+            component
+        ).await?;
     }
 
     Ok(java_path.join("bin").join(java_binary))
@@ -110,7 +112,7 @@ pub struct InstanceConfig {
 
 async fn get_instance_config(
     instance_local_config_path: &Path,
-    java_component: &JreManifestDownloadType,
+    java_component: &JavaComponent,
 ) -> Result<config::Config, BackendError> {
     let instance_local_config_name = instance_local_config_path
         .to_str()
@@ -148,7 +150,7 @@ async fn get_instance_config(
 /// Implement a method to edit the configuration for an instance and also globally
 pub(crate) async fn read_instance_config(
     instance_directory: &Path,
-    java_version: &JreManifestDownloadType,
+    java_version: &JavaComponent,
 ) -> Result<InstanceConfig, BackendError> {
     let instance_local_config_path = instance_directory.join(CONFIG_FILE_NAME);
     get_instance_config(&instance_local_config_path, java_version)

@@ -1,7 +1,6 @@
 use crate::minecraft::{Arch, OsName};
 
 pub mod minecraft;
-pub mod java;
 
 pub const OS: OsName = if cfg!(target_os = "windows") {
     OsName::Windows

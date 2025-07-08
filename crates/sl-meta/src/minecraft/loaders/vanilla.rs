@@ -1,8 +1,9 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
+use strum_macros::{Display, EnumString};
 
-use crate::{java::jre_manifest::JreManifestDownloadType, minecraft::{version_manifest::VersionType, JavaClassName, Os, OsName}};
+use crate::{minecraft::{version_manifest::VersionType, JavaClassName, Os, OsName}};
 
 #[derive(Debug, Deserialize)]
 pub struct AssetObject {
@@ -151,10 +152,23 @@ impl Arguments {
     }
 }
 
+#[derive(Debug, Deserialize, Clone, Display, EnumString)]
+#[strum(serialize_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
+pub enum JavaComponent {
+    JavaRuntimeAlpha,
+    JavaRuntimeBeta,
+    JavaRuntimeDelta,
+    JavaRuntimeGamma,
+    JavaRuntimeGammaSnapshot,
+    JreLegacy,
+    MinecraftJavaExe,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct JavaVersion {
-    pub component: JreManifestDownloadType,
+    pub component: JavaComponent,
     pub major_version: u16,
 }
 

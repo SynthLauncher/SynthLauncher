@@ -1,15 +1,14 @@
 use std::path::PathBuf;
-use java::jre_manifest::read_jre_manifest;
+use launcher::java::read_jre_manifest;
 use lazy_static::lazy_static;
 use minecraft::version_manifest::read_version_manifest;
+use sl_java_manager::jre_manifest::JreManifest;
 use sl_meta::{
-    java::jre_manifest::JreManifest,
     minecraft::{version_manifest::VersionManifest, Arch, OsName},
 };
 
 use crate::launcher::get_launcher_dir;
 
-pub mod java;
 pub mod launcher;
 pub mod loaders;
 pub mod minecraft;

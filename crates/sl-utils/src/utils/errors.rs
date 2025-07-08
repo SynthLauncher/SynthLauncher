@@ -1,5 +1,6 @@
 use synrinth::errors::SynrinthErr;
 use thiserror::Error;
+use tokio::task::JoinError;
 use zip::result::ZipError;
 
 #[derive(Debug, Error)]
@@ -72,7 +73,9 @@ pub enum BackendError {
     #[error("Installation error: {0}")]
     InstanceError(#[from] InstanceError),
     #[error("Synrinth error: {0}")]
-    SynrinthError(#[from] SynrinthErr)
+    SynrinthError(#[from] SynrinthErr),
+    #[error("Join error: {0}")]
+    JoinError(#[from] JoinError),
 }
 
 impl From<reqwest::Error> for HttpError {

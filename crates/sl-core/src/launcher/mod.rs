@@ -5,7 +5,7 @@ use sl_utils::dlog;
 use sl_utils::utils::errors::BackendError;
 use sl_utils::utils::log::set_log_file;
 
-use crate::java::jre_manifest::fetch_jre_manifest;
+use crate::launcher::java::fetch_jre_manifest;
 use crate::minecraft::version_manifest::fetch_version_manifest;
 use crate::{
     ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR,
@@ -15,6 +15,7 @@ use crate::{
 pub mod addons;
 pub mod config;
 pub mod instances;
+pub mod java;
 pub mod player;
 
 pub fn get_launcher_dir() -> PathBuf {
