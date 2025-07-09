@@ -2,7 +2,7 @@ use commands::{
     instances::{get_instances, create_instance, remove_instance, launch_instance, load_game_info}, 
     store::search_store, 
     profiles::{get_current_profile, get_profiles, get_other_profiles}, 
-    launcher::{open_synthlauncher_folder, get_synthlauncher_addons, open_instance_folder}, 
+    launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
 };
 
@@ -22,7 +22,6 @@ pub fn run() {
             get_other_profiles,
             open_synthlauncher_folder,
             search_store,
-            get_synthlauncher_addons,
             launch_instance,
             open_instance_folder,
             load_game_info,

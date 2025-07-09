@@ -4,7 +4,7 @@ use std::{
 };
 
 use regex::Regex;
-use sl_utils::utils::errors::BackendError;
+use sl_utils::errors::BackendError;
 use which::which;
 
 use crate::{JAVA_BINARY, SEPARATOR};
@@ -100,7 +100,7 @@ impl JavaInstallation {
 
         // macOS JavaVirtualMachines
         let jvm_dir = Path::new("/Library/Java/JavaVirtualMachines");
-        if let Ok(entries) = fs::read_dir(jvm_dir) {
+        if let Ok(entries) = std::fs::read_dir(jvm_dir) {
             for entry in entries.flatten() {
                 let java_path = entry
                     .path()

@@ -1,7 +1,7 @@
 use std::{borrow::Cow, fs::{self, OpenOptions}};
 
 use serde::{Deserialize, Serialize};
-use sl_utils::utils::errors::BackendError;
+use sl_utils::errors::BackendError;
 
 use crate::{launcher::player::player_profile::PlayerProfile, PROFILES_PATH};
 

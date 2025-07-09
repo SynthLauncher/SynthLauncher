@@ -1,5 +1,5 @@
 use sl_core::HTTP_CLIENT;
-use sl_utils::utils::errors::BackendError;
+use sl_utils::errors::BackendError;
 use synrinth::{
     api::search::query_search,
     models::search::{QueryParams, Search},

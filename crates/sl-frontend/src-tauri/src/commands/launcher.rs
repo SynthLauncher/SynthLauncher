@@ -1,4 +1,4 @@
-use sl_core::{launcher::addons::get_addons, INSTANCES_DIR, LAUNCHER_DIR};
+use sl_core::{INSTANCES_DIR, LAUNCHER_DIR};
 use std::{path::Path, process::Command};
 
 pub fn open_folder(folder_path: &Path) {
@@ -31,11 +31,3 @@ pub async fn open_instance_folder(name: String) {
     let folder_path = &*INSTANCES_DIR.join(name);
     open_folder(&folder_path);
 }
-
-#[tauri::command]
-pub async fn get_synthlauncher_addons() -> Result<Vec<String>, String> {
-    let addons = get_addons().map_err(|e| e.to_string())?;
-
-    Ok(addons)
-}
-

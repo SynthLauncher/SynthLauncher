@@ -9,7 +9,7 @@ use futures::{stream::FuturesUnordered, StreamExt};
 use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
 use sl_utils::{
     elog, log,
-    utils::{
+    {
         downloader::downloader, errors::{BackendError, HttpError}, zip::ZipExtractor
     },
 };

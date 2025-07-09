@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use sl_meta::minecraft::{loaders::vanilla::Client, version_manifest::VersionType};
 use sl_utils::{
     dlog,
-    utils::errors::{BackendError, InstanceError},
+    errors::{BackendError, InstanceError},
 };
 use strum_macros::{AsRefStr, Display, EnumString};
 

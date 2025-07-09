@@ -5,7 +5,7 @@ use sl_core::{launcher::{
         microsoft_auth::AuthFlow, player_profile::PlayerProfile, player_profiles::PlayerProfiles,
     }
 }, VERSION_MANIFEST};
-use sl_utils::{dlog, elog, log, utils::errors::BackendError};
+use sl_utils::{dlog, elog, log, errors::BackendError};
 
 
 mod cli;

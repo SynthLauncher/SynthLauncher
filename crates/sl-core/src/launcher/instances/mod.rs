@@ -6,7 +6,7 @@ use std::{
 
 use sl_utils::{
     elog,
-    utils::errors::{BackendError, InstanceError},
+    errors::{BackendError, InstanceError},
 };
 
 use crate::{launcher::instances::metadata::InstanceMetadata, INSTANCES_DIR};

@@ -1,5 +1,5 @@
 use sl_java_manager::jre_manifest::JreManifest;
-use sl_utils::utils::downloader::downloader;
+use sl_utils::downloader::downloader;
 use std::fs::{self};
 
 use crate::{HTTP_CLIENT, JRE_MANIFEST_PATH};

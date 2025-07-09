@@ -1,7 +1,7 @@
 use sl_meta::minecraft::loaders::forge::{ForgeLoaderProfile, ForgeVersions};
 use sl_utils::{
     dlog, elog, log,
-    utils::{
+    {
         downloader::downloader, errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError}
     },
 };
@@ -287,7 +287,7 @@ impl<'a> ForgeInstaller<'a> {
             let src_path = entry.path();
             let dest_path = LIBS_DIR.join(entry.file_name());
 
-            sl_utils::utils::fs::copy_dir_all(src_path, dest_path)?;
+            sl_utils::fs::copy_dir_all(src_path, dest_path)?;
         }
 
         // copy the forge json to the instance directory...

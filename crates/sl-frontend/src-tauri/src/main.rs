@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use sl_core::launcher::init_launcher_dir;
-use sl_utils::utils::errors::BackendError;
+use sl_utils::errors::BackendError;
 use tokio::runtime::Runtime;
 
 fn main() -> Result<(), BackendError> {

@@ -2,7 +2,7 @@ use base64::{engine::general_purpose, Engine};
 use serde::{Deserialize, Serialize};
 use sha1::Digest;
 use sha2::Sha512;
-use sl_utils::{utils::errors::BackendError};
+use sl_utils::{errors::BackendError};
 use std::{fs::File, io::Read, path::Path};
 use zip::ZipArchive;
 

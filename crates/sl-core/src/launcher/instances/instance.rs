@@ -7,7 +7,7 @@ use std::{
 use chrono::DateTime;
 use sl_meta::minecraft::{loaders::vanilla::Client, version_manifest::VersionType};
 use sl_utils::{
-    dlog, elog, log, utils::errors::{BackendError, InstanceError}, wlog
+    dlog, elog, log, errors::{BackendError, InstanceError}, wlog
 };
 use tokio::process::Command;
 

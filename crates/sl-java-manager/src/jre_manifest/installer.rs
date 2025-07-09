@@ -5,7 +5,7 @@ use lzma_rs::lzma_decompress;
 use reqwest::Client;
 use serde::Deserialize;
 use sl_meta::minecraft::loaders::vanilla::JavaComponent;
-use sl_utils::utils::{
+use sl_utils::{
     downloader::downloader,
     errors::BackendError,
 };

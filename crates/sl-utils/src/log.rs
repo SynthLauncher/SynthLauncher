@@ -22,7 +22,7 @@ pub fn _write_to_log_file(args: std::fmt::Arguments) {
 #[macro_export]
 macro_rules! write_to_log_file {
     ($($arg:tt)*) => {
-        $crate::utils::log::_write_to_log_file(format_args!($($arg)*))
+        $crate::log::_write_to_log_file(format_args!($($arg)*))
     };
 }
 

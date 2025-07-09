@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use sl_java_manager::{jre_manifest::installer::download_jre_manifest_version, JAVA_BINARY};
 use sl_meta::{minecraft::loaders::vanilla::JavaComponent};
-use sl_utils::utils::errors::BackendError;
+use sl_utils::errors::BackendError;
 use sl_utils::wlog;
 
 use crate::{

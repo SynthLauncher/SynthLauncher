@@ -5,7 +5,7 @@ use reqwest::Client;
 use tokio::{fs::File, io::AsyncWriteExt, sync::mpsc::Sender, time::sleep};
 use tokio_stream::StreamExt;
 
-use crate::{log, utils::errors::HttpError};
+use crate::{log, errors::HttpError};
 
 pub async fn retry<T, F, Fut>(
     mut f: F,

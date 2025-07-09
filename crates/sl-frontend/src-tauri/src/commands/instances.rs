@@ -2,7 +2,7 @@ use sl_core::{
     launcher::instances::{self, game::{get_game_info, GameInfo}, metadata::{InstanceMetadata, ModLoader}}
 };
 use sl_utils::{
-    utils::{errors::BackendError},
+    {errors::BackendError},
 };
 
 #[tauri::command]
@@ -21,6 +21,29 @@ pub async fn create_instance(name: String, version: String, mod_loader: ModLoade
         .await
         .map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn remove_instance(name: &str) -> Result<(), String> {
+    instances::remove(name).map_err(|e| e.to_string())
+}
+
+async fn launch_instance_inner(name: &str) -> Result<(), BackendError> {
+    let (instance, _) = instances::get_existing(name)?;
+    let loaded_instance = instance.load_init().await?;
+    loaded_instance.execute().await?;
+
+    Ok(())
+}
+#[tauri::command]
+pub async fn launch_instance(name: &str) -> Result<(), String> {
+    launch_instance_inner(name).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn load_game_info(name: &str) -> Result<GameInfo, String> {
+    get_game_info(name).map_err(|e| e.to_string())
+}
+
 
 // #[tauri::command]
 // pub async fn test_progress(app: AppHandle) -> Result<(), String> {
@@ -50,26 +73,3 @@ pub async fn create_instance(name: String, version: String, mod_loader: ModLoade
 
 //     Ok(())
 // }
-
-#[tauri::command]
-pub async fn remove_instance(name: &str) -> Result<(), String> {
-    instances::remove(name).map_err(|e| e.to_string())
-}
-
-async fn launch_instance_inner(name: &str) -> Result<(), BackendError> {
-    let (instance, _) = instances::get_existing(name)?;
-    let loaded_instance = instance.load_init().await?;
-    loaded_instance.execute().await?;
-
-    Ok(())
-}
-#[tauri::command]
-pub async fn launch_instance(name: &str) -> Result<(), String> {
-    launch_instance_inner(name).await.map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub fn load_game_info(name: &str) -> Result<GameInfo, String> {
-    get_game_info(name).map_err(|e| e.to_string())
-}
-

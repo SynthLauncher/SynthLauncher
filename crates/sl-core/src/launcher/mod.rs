@@ -2,8 +2,8 @@ use std::path::PathBuf;
 use std::{env, fs::OpenOptions};
 
 use sl_utils::dlog;
-use sl_utils::utils::errors::BackendError;
-use sl_utils::utils::log::set_log_file;
+use sl_utils::errors::BackendError;
+use sl_utils::log::set_log_file;
 
 use crate::launcher::java::fetch_jre_manifest;
 use crate::minecraft::version_manifest::fetch_version_manifest;
@@ -12,7 +12,6 @@ use crate::{
     PROFILES_PATH,
 };
 
-pub mod addons;
 pub mod config;
 pub mod instances;
 pub mod java;

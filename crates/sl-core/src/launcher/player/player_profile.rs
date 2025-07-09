@@ -3,7 +3,7 @@ use reqwest::{
     Client,
 };
 use serde::{Deserialize, Serialize};
-use sl_utils::utils::errors::{BackendError, HttpError};
+use sl_utils::errors::{BackendError, HttpError};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerProfileData {

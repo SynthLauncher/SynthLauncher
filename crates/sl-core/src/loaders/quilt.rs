@@ -1,7 +1,7 @@
 use std::{fs, path::Path};
 
 use sl_meta::minecraft::loaders::quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile};
-use sl_utils::utils::errors::{BackendError, HttpError};
+use sl_utils::errors::{BackendError, HttpError};
 
 use crate::launcher::instances::metadata::InstanceMetadata;
 

@@ -2,7 +2,7 @@ use std::fs;
 
 use bytes::Bytes;
 use sl_meta::minecraft::version_manifest::VersionManifest;
-use sl_utils::utils::{
+use sl_utils::{
     downloader::downloader,
     errors::{BackendError, InstanceError},
 };
