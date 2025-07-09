@@ -70,9 +70,10 @@ impl JavaInstallation {
         java_paths
     }
 
-    #[cfg(windows)]
+
+    #[cfg(target_os = "windows")]
     fn get_common_installations() -> Vec<PathBuf> {
-        let system_drive = env::var("SystemDrive").unwrap_or_else(|_| "C:".to_string());
+        let system_drive = std::env::var("SystemDrive").unwrap_or_else(|_| "C:".to_string());
         let mut drive_path = PathBuf::from(&system_drive);
         if drive_path.as_os_str().to_string_lossy().ends_with(':') {
             drive_path.push("\\");
