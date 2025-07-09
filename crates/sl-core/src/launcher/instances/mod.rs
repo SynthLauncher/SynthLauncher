@@ -103,7 +103,6 @@ pub fn get_all_instances() -> Result<Vec<InstanceMetadata>, BackendError> {
         });
 
     let vec_instances = instances.collect();
-    println!("{:#?}", vec_instances);
 
     Ok(vec_instances)
 }

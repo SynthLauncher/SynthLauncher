@@ -1,13 +1,9 @@
-use std::path::Path;
-
 use sl_core::{
-    launcher::instances::{self, game::{get_game_info, GameInfo}, metadata::{InstanceMetadata, ModLoader}}, HTTP_CLIENT
+    launcher::instances::{self, game::{get_game_info, GameInfo}, metadata::{InstanceMetadata, ModLoader}}
 };
 use sl_utils::{
-    elog,
-    utils::{download::download_file, errors::BackendError},
+    utils::{errors::BackendError},
 };
-use tauri::{AppHandle, Emitter};
 
 #[tauri::command]
 pub async fn get_instances() -> Result<Vec<InstanceMetadata>, String> {
@@ -26,34 +22,34 @@ pub async fn create_instance(name: String, version: String, mod_loader: ModLoade
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
-pub async fn test_progress(app: AppHandle) -> Result<(), String> {
-    let (tx, mut rx) = tokio::sync::mpsc::channel::<f32>(500);
+// #[tauri::command]
+// pub async fn test_progress(app: AppHandle) -> Result<(), String> {
+//     let (tx, mut rx) = tokio::sync::mpsc::channel::<f32>(500);
 
-    let app_handle = app.clone();
-    tokio::spawn(async move {
-        while let Some(progress) = rx.recv().await {
-            if let Err(e) = app_handle.emit("download-progress", progress) {
-                elog!("Failed to emit progress: {e}");
-            }
-        }
-    });
+//     let app_handle = app.clone();
+//     tokio::spawn(async move {
+//         while let Some(progress) = rx.recv().await {
+//             if let Err(e) = app_handle.emit("download-progress", progress) {
+//                 elog!("Failed to emit progress: {e}");
+//             }
+//         }
+//     });
 
-    let path = Path::new("../../file");
+//     let path = Path::new("../../file");
 
-    download_file(
-        &HTTP_CLIENT,
-        "https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_10MB_OGG.ogg",
-        &path,
-        3,
-        std::time::Duration::from_secs(5),
-        Some(tx.clone()),
-    )
-    .await
-    .map_err(|e| e.to_string())?;
+//     download_file(
+//         &HTTP_CLIENT,
+//         "https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_10MB_OGG.ogg",
+//         &path,
+//         3,
+//         std::time::Duration::from_secs(5),
+//         Some(tx.clone()),
+//     )
+//     .await
+//     .map_err(|e| e.to_string())?;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 #[tauri::command]
 pub async fn remove_instance(name: &str) -> Result<(), String> {

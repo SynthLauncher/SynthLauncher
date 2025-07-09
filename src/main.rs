@@ -7,6 +7,7 @@ use sl_core::{launcher::{
 }, VERSION_MANIFEST};
 use sl_utils::{dlog, elog, log, utils::errors::BackendError};
 
+
 mod cli;
 
 async fn run_cli() -> Result<(), BackendError> {

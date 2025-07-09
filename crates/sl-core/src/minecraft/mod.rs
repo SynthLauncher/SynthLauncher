@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    time::Instant,
+};
 
 use bytes::Bytes;
 use futures::{stream::FuturesUnordered, StreamExt};
@@ -7,10 +10,7 @@ use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Down
 use sl_utils::{
     elog, log,
     utils::{
-        self,
-        download::download_file,
-        errors::{BackendError, HttpError},
-        zip::ZipExtractor,
+        downloader::downloader, errors::{BackendError, HttpError}, zip::ZipExtractor
     },
 };
 
@@ -57,15 +57,12 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Htt
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    utils::download::download_file(
-        &HTTP_CLIENT,
-        &download.url,
-        &path,
-        3,
-        std::time::Duration::from_secs(5),
-        None,
-    )
-    .await?;
+    downloader()
+        .client(&HTTP_CLIENT)
+        .url(&download.url)
+        .target(&path)
+        .call()
+        .await?;
 
     Ok(())
 }
@@ -130,7 +127,9 @@ where
     outputs
 }
 
+// This could be made faster maybe
 async fn install_assets(client: &Client) -> Result<(), BackendError> {
+    log!("Downloading assets!");
     let assets = &client.assets;
     let indexes_dir = ASSETS_DIR.join("indexes");
     let indexes_path = indexes_dir.join(format!("{}.json", assets));
@@ -150,18 +149,16 @@ async fn install_assets(client: &Client) -> Result<(), BackendError> {
         }
 
         tokio::fs::create_dir_all(&dir).await?;
-        download_file(
-            &HTTP_CLIENT,
-            &format!(
+
+        downloader()
+            .client(&HTTP_CLIENT)
+            .url(&format!(
                 "https://resources.download.minecraft.net/{dir_name}/{}",
                 object.hash
-            ),
-            &path,
-            3,
-            std::time::Duration::from_secs(5),
-            None,
-        )
-        .await?;
+            ))
+            .target(&path)
+            .call()
+            .await?;
 
         Ok(())
     };
@@ -222,7 +219,10 @@ pub(crate) async fn install_client(
     client_jar_path: &Path,
     instance_path: &Path,
 ) -> Result<(), BackendError> {
+    let start = Instant::now();
     install_assets(client).await?;
+    println!("Assets download time: {:?}", start.elapsed());
+
     install_libs(client, instance_path).await?;
 
     log!("Downloading {}", client_jar_path.display());

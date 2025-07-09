@@ -10,7 +10,7 @@ use sl_meta::minecraft::loaders::neoforge::{
 use sl_utils::{
     dlog, log,
     utils::{
-        self,
+        downloader::downloader,
         errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
     },
 };
@@ -53,15 +53,16 @@ impl<'a> NeoForgeInstaller<'a> {
         let minor = version.next().unwrap().parse::<u16>().unwrap();
 
         let neoforge_releases = NeoForgeReleases::download(async |url: &str| {
-            utils::download::download_bytes(
-                url,
-                &HTTP_CLIENT,
-                2,
-                std::time::Duration::from_secs(5),
-                None,
-            )
-            .await
-            .map(|bytes| bytes.to_vec())
+            downloader()
+                .client(&HTTP_CLIENT)
+                .url(&url)
+                .call()
+                .await
+                .map(|bytes| {
+                    bytes
+                        .expect("Downloader expected to return Bytes!")
+                        .to_vec()
+                })
         })
         .await?;
 
@@ -99,15 +100,12 @@ impl<'a> NeoForgeInstaller<'a> {
             installer_path.display()
         );
 
-        utils::download::download_file(
-            &HTTP_CLIENT,
-            &url,
-            &installer_path,
-            2,
-            std::time::Duration::from_secs(5),
-            None,
-        )
-        .await?;
+        downloader()
+            .client(&HTTP_CLIENT)
+            .url(&url)
+            .target(&installer_path)
+            .call()
+            .await?;
 
         Ok(installer_path)
     }

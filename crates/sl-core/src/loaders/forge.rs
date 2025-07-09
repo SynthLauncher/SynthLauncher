@@ -2,8 +2,7 @@ use sl_meta::minecraft::loaders::forge::{ForgeLoaderProfile, ForgeVersions};
 use sl_utils::{
     dlog, elog, log,
     utils::{
-        self,
-        errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
+        downloader::downloader, errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError}
     },
 };
 use std::{
@@ -48,15 +47,16 @@ impl<'a> ForgeInstaller<'a> {
     ) -> Result<Self, HttpError> {
         let mc_version = &instance.game_metadata.version;
         let forge_versions = ForgeVersions::download::<HttpError>(async |url: &str| {
-            utils::download::download_bytes(
-                url,
-                &HTTP_CLIENT,
-                2,
-                std::time::Duration::from_secs(5),
-                None,
-            )
+            downloader()
+            .client(&HTTP_CLIENT)
+            .url(&url)
+            .call()
             .await
-            .map(|bytes| bytes.to_vec())
+            .map(|bytes| {
+                bytes
+                    .expect("Downloader expected to return Bytes!")
+                    .to_vec()
+            })
         })
         .await?;
 
@@ -159,15 +159,12 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn try_downloading_from_urls(&self, urls: &[&str], path: &Path) -> Result<(), HttpError> {
         for url in urls {
-            let downloaded = utils::download::download_file(
-                &HTTP_CLIENT,
-                url,
-                path,
-                3,
-                std::time::Duration::from_secs(5),
-                None,
-            )
-            .await;
+            let downloaded = downloader()
+                .client(&HTTP_CLIENT)
+                .url(&url)
+                .target(&path)
+                .call()
+                .await;
 
             match downloaded {
                 Ok(_) => {

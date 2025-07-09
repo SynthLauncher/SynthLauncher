@@ -3,23 +3,20 @@ use std::fs;
 use bytes::Bytes;
 use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::utils::{
-    self,
+    downloader::downloader,
     errors::{BackendError, InstanceError},
 };
 
 use crate::{HTTP_CLIENT, VERSION_MANIFEST, VERSION_MANIFEST_PATH};
 
 pub async fn fetch_version_manifest() {
-    let res = utils::download::download_bytes(
-        "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json",
-        &HTTP_CLIENT,
-        3,
-        std::time::Duration::from_secs(5),
-        None,
-    )
-    .await;
+    let res = downloader()
+        .client(&HTTP_CLIENT)
+        .url("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json")
+        .call()
+        .await;
 
-    if let Ok(res) = res {
+    if let Ok(Some(res)) = res {
         tokio::fs::write(&VERSION_MANIFEST_PATH.as_path(), res)
             .await
             .expect("Failed writing into the file: version_manifest.json");
@@ -40,13 +37,12 @@ pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
         ));
     };
 
-    let res = utils::download::download_bytes(
-        &version.url,
-        &HTTP_CLIENT,
-        3,
-        std::time::Duration::from_secs(5),
-        None,
-    )
-    .await?;
+    let res = downloader()
+        .client(&HTTP_CLIENT)
+        .url(&version.url)
+        .call()
+        .await?
+        .expect("Downloader expected return Bytes!");
+
     Ok(res)
 }

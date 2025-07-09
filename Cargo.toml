@@ -11,7 +11,6 @@ sl-meta = { path = "crates/sl-meta" }
 sl-utils = { path = "crates/sl-utils" }
 sl-core ={ path = "crates/sl-core"}
 sl-store = { path = "crates/sl-store" }
-
 tokio = "1.45.1"
 clap = { version = "4.5.39", features = ["derive"] } 
 synrinth = "0.1.8"

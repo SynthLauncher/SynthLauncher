@@ -6,7 +6,7 @@ use reqwest::Client;
 use serde::Deserialize;
 use sl_meta::minecraft::loaders::vanilla::JavaComponent;
 use sl_utils::utils::{
-    download::{download_bytes, download_file},
+    downloader::downloader,
     errors::BackendError,
 };
 
@@ -94,14 +94,12 @@ pub async fn download_jre_manifest_version(
                 }
 
                 if let Some(lzma) = downloads.lzma {
-                    let bytes = download_bytes(
-                        &lzma.url,
-                        &client,
-                        3,
-                        std::time::Duration::from_secs(5),
-                        None,
-                    )
-                    .await?;
+                    let bytes = downloader()
+                        .client(&client)
+                        .url(&lzma.url)
+                        .call()
+                        .await?
+                        .expect("Downloader expected to return Bytes!");
 
                     let mut decompressed = Vec::new();
                     lzma_decompress(&mut std::io::Cursor::new(&bytes), &mut decompressed)
@@ -109,15 +107,12 @@ pub async fn download_jre_manifest_version(
 
                     std::fs::write(&path, &decompressed)?;
                 } else if let Some(raw) = downloads.raw {
-                    download_file(
-                        &client,
-                        &raw.url,
-                        &path,
-                        3,
-                        std::time::Duration::from_secs(5),
-                        None,
-                    )
-                    .await?;
+                    let _ = downloader()
+                        .client(&client)
+                        .url(&raw.url)
+                        .target(&path)
+                        .call()
+                        .await?;
                 }
 
                 set_executable_unix(&path, executable)?;

@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-use crate::{minecraft::{version_manifest::VersionType, JavaClassName, Os, OsName}};
+use crate::minecraft::{version_manifest::VersionType, JavaClassName, Os, OsName};
 
 #[derive(Debug, Deserialize)]
 pub struct AssetObject {
