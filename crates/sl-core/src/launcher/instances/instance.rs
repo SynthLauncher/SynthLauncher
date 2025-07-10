@@ -233,6 +233,7 @@ impl LoadedInstance {
             .stdin(Stdio::inherit())
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
+            .current_dir(self.instance_path)
             .output()
             .await?;
 
