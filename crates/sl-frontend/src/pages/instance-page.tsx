@@ -5,7 +5,7 @@ import {
 } from '@/lib/commands/instances';
 import { openInstanceFolder } from '@/lib/commands/launcher';
 import { GameInfo, Instance } from '@/lib/types/instances';
-import { Blocks, Folder, Play, Settings } from 'lucide-react';
+import { Blocks, Folder, Loader2, Play, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -16,13 +16,16 @@ export const InstancePage = () => {
 		'content' | 'logs' | 'saves' | 'screenshots' | 'console'
 	>('content');
 	const [isRunning, setIsRunning] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 	const [gameInfo, setGameInfo] = useState<GameInfo>();
 
 	useEffect(() => {
 		const fetchAll = async () => {
+			setIsLoading(true);
 			let instances = await getInstances();
 			const match = instances?.find((inst) => inst.name === name);
 			setInstance(match);
+			setIsLoading(false);
 		};
 		fetchAll();
 	}, []);
@@ -35,6 +38,15 @@ export const InstancePage = () => {
 		};
 		fetchAll();
 	}, [instance]);
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center gap-2 text-muted-foreground mt-4">
+				<Loader2 className="animate-spin w-5 h-5" />
+				<span>Loading...</span>
+			</div>
+		);
+	}
 
 	if (!instance) {
 		return (

@@ -4176,6 +4176,7 @@ dependencies = [
  "sha2",
  "sl-java-manager",
  "sl-meta",
+ "sl-player",
  "sl-utils",
  "strum",
  "strum_macros",

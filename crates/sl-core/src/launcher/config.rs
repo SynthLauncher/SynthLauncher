@@ -32,8 +32,6 @@ const fn default_max_memory() -> usize {
 async fn default_java_path(component: &JavaComponent) -> Result<PathBuf, BackendError> {
     let java_path = JAVAS_DIR.join(component.to_string());
 
-    let java_binary = JAVA_BINARY;
-
     if !java_path.exists() {
         download_jre_manifest_version(
             &HTTP_CLIENT,
@@ -43,7 +41,7 @@ async fn default_java_path(component: &JavaComponent) -> Result<PathBuf, Backend
         ).await?;
     }
 
-    Ok(java_path.join("bin").join(java_binary))
+    Ok(java_path.join("bin").join(JAVA_BINARY))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
