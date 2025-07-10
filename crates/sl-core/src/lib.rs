@@ -1,11 +1,9 @@
-use std::path::PathBuf;
 use launcher::java::read_jre_manifest;
 use lazy_static::lazy_static;
 use minecraft::version_manifest::read_version_manifest;
 use sl_java_manager::jre_manifest::JreManifest;
-use sl_meta::{
-    minecraft::{version_manifest::VersionManifest, Arch, OsName},
-};
+use sl_meta::minecraft::{version_manifest::VersionManifest, Arch, OsName};
+use std::path::PathBuf;
 
 use crate::launcher::get_launcher_dir;
 
@@ -45,6 +43,7 @@ lazy_static! {
     pub static ref ASSETS_DIR: PathBuf = LAUNCHER_DIR.join("assets");
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
     pub static ref INSTANCES_DIR: PathBuf = LAUNCHER_DIR.join("instances");
+    pub static ref VERSIONS_DIR: PathBuf = LAUNCHER_DIR.join("versions");
     pub static ref JAVAS_DIR: PathBuf = LAUNCHER_DIR.join("javas");
     pub static ref ADDONS_DIR: PathBuf = LAUNCHER_DIR.join("addons");
 

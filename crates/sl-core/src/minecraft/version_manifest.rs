@@ -1,6 +1,5 @@
-use std::fs;
+use std::{fs, path::Path};
 
-use bytes::Bytes;
 use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::{
     downloader::downloader,
@@ -29,7 +28,8 @@ pub fn read_version_manifest() -> VersionManifest {
     serde_json::from_str(buffer.as_str()).expect("Failed to parse file: version_manifest.json")
 }
 
-pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
+/// Downloads the client.json of a given minecraft version
+pub async fn download_version_json(version: &str, to_path: &Path) -> Result<(), BackendError> {
     let Some(version) = VERSION_MANIFEST.versions().find(|x| x.id == version) else {
         // TODO: Use a different type for version instead of String
         return Err(BackendError::InstanceError(
@@ -37,12 +37,12 @@ pub async fn download_version(version: &str) -> Result<Bytes, BackendError> {
         ));
     };
 
-    let res = downloader()
+    downloader()
         .client(&HTTP_CLIENT)
         .url(&version.url)
+        .target(to_path)
         .call()
-        .await?
-        .expect("Downloader expected return Bytes!");
+        .await?;
 
-    Ok(res)
+    Ok(())
 }

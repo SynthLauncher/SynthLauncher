@@ -4,9 +4,7 @@ use std::{
     process::Command,
 };
 
-use sl_meta::minecraft::loaders::neoforge::{
-    NeoForgeLoaderProfile, NeoForgeReleases, NeoForgeVersion,
-};
+use sl_meta::minecraft::loaders::neoforge::{NeoForgeLoaderProfile, NeoForgeVersion};
 use sl_utils::{
     dlog, log,
     {
@@ -17,17 +15,14 @@ use sl_utils::{
 use tempfile::TempDir;
 use tokio::io::AsyncWriteExt;
 
-use crate::{
-    launcher::instances::metadata::{InstanceMetadata, ModLoader},
-    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
-};
+use crate::{HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR};
 
 pub const NEOFORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/NeoForgeInstaller.java");
 
 pub struct NeoForgeInstaller<'a> {
+    minecraft_version: &'a str,
     version: NeoForgeVersion,
-    instance: &'a InstanceMetadata,
 
     java_path: &'a Path,
     javac_path: &'a Path,
@@ -40,36 +35,13 @@ pub struct NeoForgeInstaller<'a> {
 
 impl<'a> NeoForgeInstaller<'a> {
     pub async fn new(
-        instance: &'a InstanceMetadata,
+        minecraft_version: &'a str,
+        neoforge_version: &str,
         java_path: &'a Path,
         javac_path: &'a Path,
         output_loader_json_path: &'a Path,
     ) -> Result<Self, HttpError> {
-        let version = &instance.game_metadata.version;
-        let mut version = version.split(".");
-        let _ = version.next();
-
-        let major = version.next().unwrap().parse::<u16>().unwrap();
-        let minor = version.next().unwrap().parse::<u16>().unwrap();
-
-        let neoforge_releases = NeoForgeReleases::download(async |url: &str| {
-            downloader()
-                .client(&HTTP_CLIENT)
-                .url(&url)
-                .call()
-                .await
-                .map(|bytes| {
-                    bytes
-                        .expect("Downloader expected to return Bytes!")
-                        .to_vec()
-                })
-        })
-        .await?;
-
-        let neoforge_version = neoforge_releases
-            .latest(major, minor)
-            .expect("no minecraft version found")
-            .clone();
+        let neoforge_version = NeoForgeVersion::from_str(neoforge_version);
 
         let mut cache_dir =
             TempDir::new().expect("failed to create cache dir for installing neoforge");
@@ -81,7 +53,7 @@ impl<'a> NeoForgeInstaller<'a> {
         tokio::fs::write(&java_forge_installer, NEOFORGE_JAVA_INSTALLER_SRC).await?;
 
         Ok(Self {
-            instance,
+            minecraft_version,
             version: neoforge_version,
             cache_dir,
             java_path,
@@ -197,9 +169,9 @@ impl<'a> NeoForgeInstaller<'a> {
 
     async fn install(self) -> Result<NeoForgeLoaderProfile, ForgeInstallerErr> {
         log!(
-            "NeoForge: installing neoforge for instance: '{}' ({})",
-            self.instance.name,
-            self.instance.game_metadata.version
+            "NeoForge: installing neoforge {} for minecraft version: '{}'",
+            self.version,
+            self.minecraft_version,
         );
 
         self.install_to_cache().await?;
@@ -246,17 +218,22 @@ impl<'a> NeoForgeInstaller<'a> {
 }
 
 pub async fn install_neoforge_loader(
-    instance: &InstanceMetadata,
+    minecraft_version: &str,
+    neoforge_version: &str,
     java_path: &Path,
     javac_path: &Path,
     output_loader_json_path: &Path,
 ) -> Result<NeoForgeLoaderProfile, BackendError> {
-    // it isn't the job of the installer to forge a working instance...
-    assert_eq!(instance.mod_loader, ModLoader::NeoForge);
-    NeoForgeInstaller::new(instance, java_path, javac_path, output_loader_json_path)
-        .await?
-        .install()
-        .await
-        .map_err(|e| Into::<InstanceError>::into(e))
-        .map_err(|e| e.into())
+    NeoForgeInstaller::new(
+        minecraft_version,
+        neoforge_version,
+        java_path,
+        javac_path,
+        output_loader_json_path,
+    )
+    .await?
+    .install()
+    .await
+    .map_err(|e| Into::<InstanceError>::into(e))
+    .map_err(|e| e.into())
 }

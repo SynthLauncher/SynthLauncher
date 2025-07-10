@@ -1,8 +1,9 @@
-use sl_meta::minecraft::loaders::forge::{ForgeLoaderProfile, ForgeVersions};
+use sl_meta::minecraft::loaders::forge::ForgeLoaderProfile;
 use sl_utils::{
     dlog, elog, log,
     {
-        downloader::downloader, errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError}
+        downloader::downloader,
+        errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
     },
 };
 use std::{
@@ -13,24 +14,21 @@ use std::{
 use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
-use crate::{
-    launcher::instances::metadata::{InstanceMetadata, ModLoader},
-    HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR,
-};
+use crate::{HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR};
 
 pub const FORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/ForgeInstaller.java");
 
 struct ForgeInstaller<'a> {
-    instance: &'a InstanceMetadata,
-
     java_path: &'a Path,
     javac_path: &'a Path,
     output_loader_json_path: &'a Path,
 
     short_version: String,
     norm_version: String,
+
     mc_version: &'a str,
+
     forge_version: String,
     major_version: u32,
     cache_dir: TempDir,
@@ -40,30 +38,12 @@ struct ForgeInstaller<'a> {
 
 impl<'a> ForgeInstaller<'a> {
     async fn new(
-        instance: &'a InstanceMetadata,
+        mc_version: &'a str,
+        forge_version: &'a str,
         java_path: &'a Path,
         javac_path: &'a Path,
         output_loader_json_path: &'a Path,
     ) -> Result<Self, HttpError> {
-        let mc_version = &instance.game_metadata.version;
-        let forge_versions = ForgeVersions::download::<HttpError>(async |url: &str| {
-            downloader()
-            .client(&HTTP_CLIENT)
-            .url(&url)
-            .call()
-            .await
-            .map(|bytes| {
-                bytes
-                    .expect("Downloader expected to return Bytes!")
-                    .to_vec()
-            })
-        })
-        .await?;
-
-        let forge_version = forge_versions
-            .get_forge_version(&mc_version)
-            .expect("no forge version found for version");
-
         dlog!("Forge: choose forge version {forge_version} for minecraft version: {mc_version}");
 
         let short_version = format!("{mc_version}-{forge_version}");
@@ -101,7 +81,6 @@ impl<'a> ForgeInstaller<'a> {
         tokio::fs::write(&java_forge_installer, FORGE_JAVA_INSTALLER_SRC).await?;
 
         Ok(Self {
-            instance,
             short_version,
             norm_version,
             cache_dir,
@@ -268,9 +247,9 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn install(self) -> Result<ForgeLoaderProfile, ForgeInstallerErr> {
         log!(
-            "Forge: installing forge for instance: '{}' ({})",
-            self.instance.name,
-            self.instance.game_metadata.version
+            "Forge: installing forge {} for minectaft: '{}'",
+            self.forge_version,
+            self.mc_version,
         );
 
         self.install_to_cache().await?;
@@ -317,17 +296,22 @@ impl<'a> ForgeInstaller<'a> {
 }
 
 pub async fn install_forge_loader(
-    instance: &InstanceMetadata,
+    mc_version: &str,
+    forge_version: &str,
     java_path: &Path,
     javac_path: &Path,
     output_loader_json_path: &Path,
 ) -> Result<ForgeLoaderProfile, BackendError> {
-    // it isn't the job of the installer to forge a working instance...
-    assert_eq!(instance.mod_loader, ModLoader::Forge);
-    ForgeInstaller::new(instance, java_path, javac_path, output_loader_json_path)
-        .await?
-        .install()
-        .await
-        .map_err(|e| Into::<InstanceError>::into(e))
-        .map_err(|e| e.into())
+    ForgeInstaller::new(
+        mc_version,
+        forge_version,
+        java_path,
+        javac_path,
+        output_loader_json_path,
+    )
+    .await?
+    .install()
+    .await
+    .map_err(|e| Into::<InstanceError>::into(e))
+    .map_err(|e| e.into())
 }

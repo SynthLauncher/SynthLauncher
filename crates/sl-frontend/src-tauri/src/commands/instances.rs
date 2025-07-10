@@ -1,22 +1,30 @@
-use sl_core::{
-    launcher::instances::{self, game::{get_game_info, GameInfo}, metadata::{InstanceMetadata, ModLoader}}
+use sl_core::launcher::instances::{
+    self,
+    game::{get_game_info, GameInfo},
+    metadata::{InstanceMetadata, ModLoader},
 };
-use sl_utils::{
-    {errors::BackendError},
-};
+use sl_utils::errors::BackendError;
 
 #[tauri::command]
 pub async fn get_instances() -> Result<Vec<InstanceMetadata>, String> {
     instances::get_all_instances().map_err(|e| e.to_string())
 }
 
-async fn create_instance_inner(name: String, version: String, mod_loader: ModLoader) -> Result<(), BackendError> {
-    InstanceMetadata::create(&name, &version, mod_loader, None, None)?;
+async fn create_instance_inner(
+    name: String,
+    version: String,
+    mod_loader: ModLoader,
+) -> Result<(), BackendError> {
+    InstanceMetadata::create(&name, &version, mod_loader, None, None).await?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn create_instance(name: String, version: String, mod_loader: ModLoader) -> Result<(), String> {
+pub async fn create_instance(
+    name: String,
+    version: String,
+    mod_loader: ModLoader,
+) -> Result<(), String> {
     create_instance_inner(name, version, mod_loader)
         .await
         .map_err(|e| e.to_string())
@@ -43,7 +51,6 @@ pub async fn launch_instance(name: &str) -> Result<(), String> {
 pub fn load_game_info(name: &str) -> Result<GameInfo, String> {
     get_game_info(name).map_err(|e| e.to_string())
 }
-
 
 // #[tauri::command]
 // pub async fn test_progress(app: AppHandle) -> Result<(), String> {

@@ -1,24 +1,25 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use sl_meta::minecraft::{loaders::vanilla::Client, version_manifest::VersionType};
+use sl_meta::minecraft::{
+    loaders::{
+        forge, neoforge,
+        quilt::{self},
+    },
+    version_manifest::VersionType,
+};
 use sl_utils::{
-    dlog,
-    errors::{BackendError, InstanceError},
+    downloader::downloader,
+    errors::{BackendError, HttpError, InstanceError},
 };
 use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::{
     launcher::{
-        config::{self, InstanceConfig},
         instances::{self, instance::LoadedInstance},
+        minecraft_version::MinecraftVersionID,
     },
-    loaders::{
-        fabric::install_fabric_loader, forge::install_forge_loader,
-        neoforge::install_neoforge_loader, quilt::install_quilt_loader, Loaders,
-    },
-    minecraft::version_manifest::download_version,
-    INSTANCES_DIR, VERSION_MANIFEST,
+    HTTP_CLIENT, INSTANCES_DIR, VERSION_MANIFEST,
 };
 
 #[derive(
@@ -44,6 +45,42 @@ pub enum ModLoader {
     NeoForge,
 }
 
+impl ModLoader {
+    pub async fn get_latest_version(&self, mc_version: &str) -> Result<String, HttpError> {
+        let do_request = async |url: &str| -> Result<_, HttpError> {
+            Ok(downloader()
+                .url(url)
+                .client(&*HTTP_CLIENT)
+                .call()
+                .await?
+                .expect("expected bytes")
+                .to_vec())
+        };
+
+        match self {
+            Self::Vanilla => Ok(String::new()),
+            Self::Quilt => quilt::versions::get_latest_loader_version(mc_version, do_request).await,
+            Self::Fabric => {
+                sl_meta::minecraft::loaders::fabric::versions::get_latest_loader_version(
+                    mc_version, do_request,
+                )
+                .await
+            }
+
+            Self::Forge => Ok(forge::ForgeVersions::download(do_request)
+                .await?
+                .get_latest_forge_version(mc_version)
+                .expect("no forge version were found for this minecraft version")
+                .to_string()),
+            Self::NeoForge => Ok(neoforge::NeoForgeReleases::download(do_request)
+                .await?
+                .latest_from_mc_version(mc_version)
+                .expect("no neoforge version were found for this minecraft version")
+                .to_string()),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct GameVersionMetadata {
@@ -58,26 +95,30 @@ pub struct InstanceMetadata {
     pub name: String,
     pub icon: Option<String>,
     pub game_metadata: GameVersionMetadata,
-    pub mod_loader_version: Option<String>,
+    pub mod_loader_version: String,
     pub mod_loader: ModLoader,
 }
 
 impl InstanceMetadata {
-    fn new(
+    async fn new(
         name: &str,
-        version: &str,
+        mc_version: &str,
         mod_loader: ModLoader,
         mod_loader_version: Option<String>,
         icon: Option<String>,
     ) -> Result<Self, BackendError> {
         let version = VERSION_MANIFEST
             .versions()
-            .find(|x| x.id == version)
+            .find(|x| x.id == mc_version)
             .ok_or(BackendError::InstanceError(
-                InstanceError::MinecraftVersionNotFound(version.to_string()),
+                InstanceError::MinecraftVersionNotFound(mc_version.to_string()),
             ))?;
 
         std::fs::create_dir_all(INSTANCES_DIR.join(name))?;
+        let mod_loader_version = match mod_loader_version {
+            Some(specific) => specific,
+            None => mod_loader.get_latest_version(mc_version).await?,
+        };
 
         Ok(Self {
             name: name.to_string(),
@@ -88,151 +129,44 @@ impl InstanceMetadata {
             },
             icon,
             mod_loader,
-            mod_loader_version: mod_loader_version,
+            mod_loader_version,
         })
     }
 
     /// Creates a new instance, and adds it to the instances list at once
-    pub fn create(
+    pub async fn create(
         name: &str,
         version: &str,
         mod_loader: ModLoader,
         mod_loader_version: Option<String>,
         icon: Option<String>,
     ) -> Result<Self, BackendError> {
-        let instance = Self::new(name, version, mod_loader, mod_loader_version, icon)?;
+        let instance = Self::new(name, version, mod_loader, mod_loader_version, icon).await?;
         instances::add_new(&instance)?;
         Ok(instance)
-    }
-
-    async fn reinit_vanilla_client(
-        &mut self,
-        dir_path: &Path,
-        client_json_path: &Path,
-    ) -> Result<Client, BackendError> {
-        dlog!("Re-initializing the instance");
-
-        let client_raw = download_version(&self.game_metadata.version).await?;
-        let client = serde_json::from_slice(&client_raw)?;
-
-        tokio::fs::create_dir_all(dir_path).await?;
-        tokio::fs::write(client_json_path, &client_raw).await?;
-        Ok(client)
-    }
-
-    async fn reinit_mod_mod_loader(
-        &self,
-        mod_loader_json_path: &Path,
-        java_path: &Path,
-        javac_path: &Path,
-    ) -> Result<Loaders, BackendError> {
-        match self.mod_loader {
-            ModLoader::Vanilla => Ok(Loaders::Vanilla),
-            ModLoader::NeoForge => {
-                install_neoforge_loader(self, java_path, javac_path, mod_loader_json_path)
-                    .await
-                    .map(|ok| Loaders::NeoForge(ok))
-            }
-            ModLoader::Fabric => install_fabric_loader(
-                self,
-                mod_loader_json_path,
-                self.mod_loader_version.as_deref(),
-            )
-            .await
-            .map(|ok| Loaders::Fabric(ok)),
-            ModLoader::Quilt => install_quilt_loader(
-                self,
-                mod_loader_json_path,
-                self.mod_loader_version.as_deref(),
-            )
-            .await
-            .map(|ok| Loaders::Quilt(ok)),
-            ModLoader::Forge => {
-                install_forge_loader(self, java_path, javac_path, mod_loader_json_path)
-                    .await
-                    .map(|ok| Loaders::Forge(ok))
-            }
-        }
-    }
-
-    async fn init_vanilla_client(&mut self, dir_path: &Path) -> Result<Client, BackendError> {
-        let client_json_path = dir_path.join("client.json");
-
-        if !client_json_path.exists() {
-            return self
-                .reinit_vanilla_client(dir_path, &client_json_path)
-                .await;
-        }
-
-        let client_json_file = std::fs::File::open(&client_json_path)?;
-        let reader = std::io::BufReader::new(client_json_file);
-        let client_json = serde_json::from_reader(reader)?;
-
-        Ok(client_json)
-    }
-
-    async fn init_mod_loader(
-        &mut self,
-        dir_path: &Path,
-        java_path: &Path,
-        javac_path: &Path,
-    ) -> Result<Loaders, BackendError> {
-        if self.mod_loader == ModLoader::Vanilla {
-            return Ok(Loaders::Vanilla);
-        }
-
-        let mod_loader_json_path = dir_path.join(format!("{}.json", self.mod_loader));
-        if !mod_loader_json_path.exists() {
-            return self
-                .reinit_mod_mod_loader(&mod_loader_json_path, java_path, javac_path)
-                .await;
-        }
-
-        let mod_loader_json = std::fs::File::open(mod_loader_json_path)?;
-        let mod_loader: Loaders = serde_json::from_reader(mod_loader_json)?;
-        Ok(mod_loader)
-    }
-
-    async fn load_config(
-        &self,
-        instance_dir: &Path,
-        vanilla_client: &Client,
-    ) -> Result<InstanceConfig, BackendError> {
-        config::read_instance_config(instance_dir, &vanilla_client.java_version.component).await
     }
 
     fn instance_dir(&self) -> PathBuf {
         INSTANCES_DIR.join(&self.name)
     }
 
-    fn minecraft_jar_path(&self) -> PathBuf {
-        self.instance_dir()
-            .join(format!("{}.jar", &self.game_metadata.version))
-    }
-
     /// Loads ('Upgrades' information to) an instance's in memory representation
-    pub async fn load_init(mut self) -> Result<LoadedInstance, BackendError> {
+    pub async fn load_init(self) -> Result<LoadedInstance, BackendError> {
         let instance_dir = self.instance_dir();
 
-        let vanilla_client = self.init_vanilla_client(&instance_dir).await?;
-        let config = self.load_config(&instance_dir, &vanilla_client).await?;
+        let version_id = MinecraftVersionID::new(
+            self.mod_loader,
+            self.mod_loader_version.clone(),
+            self.game_metadata.version.clone(),
+        );
 
-        let java_path = config.java.java();
-        let javac_path = &config.java.get_javac();
+        let (loaded_version, config) = version_id.load_init(&instance_dir).await?;
 
-        let mod_loader = self
-            .init_mod_loader(&instance_dir, java_path, javac_path)
-            .await?;
-        let client = mod_loader.concat(vanilla_client);
-
-        let minecraft_jar_path = self.minecraft_jar_path();
-
-        Ok(LoadedInstance {
-            instance_metadata: self,
+        Ok(LoadedInstance::new(
+            self,
+            instance_dir,
+            loaded_version,
             config,
-            client,
-            minecraft_jar_path,
-            instance_path: instance_dir,
-        })
+        ))
     }
 }

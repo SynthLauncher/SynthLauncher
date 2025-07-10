@@ -15,6 +15,7 @@ use crate::{
 pub mod config;
 pub mod instances;
 pub mod java;
+mod minecraft_version;
 pub mod player;
 
 pub fn get_launcher_dir() -> PathBuf {

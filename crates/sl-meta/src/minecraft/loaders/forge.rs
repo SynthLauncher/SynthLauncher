@@ -24,9 +24,9 @@ impl ForgeVersions {
         Ok(serde_json::from_slice(&bytes).map_err(|e| Into::<io::Error>::into(e))?)
     }
 
-    /// Returns the Forge version for the given Minecraft version.
+    /// Returns the latest Forge version for the given Minecraft version.
     #[must_use]
-    pub fn get_forge_version(&self, minecraft_version: &str) -> Option<&str> {
+    pub fn get_latest_forge_version(&self, minecraft_version: &str) -> Option<&str> {
         self.promos
             .iter()
             .find(|(version_mc, _)| *version_mc == &format!("{minecraft_version}-latest"))

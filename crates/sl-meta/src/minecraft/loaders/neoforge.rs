@@ -130,13 +130,9 @@ impl NeoForgeReleases {
 
     pub fn latest_beta(
         &self,
-        mc_major_version: u16,
-        mc_minor_version: u16,
+        mc_major_version: &str,
+        mc_minor_version: &str,
     ) -> Option<&NeoForgeVersion> {
-        // TODO: optimize instead of using String
-        let mc_major_version = mc_major_version.to_string();
-        let mc_minor_version = mc_minor_version.to_string();
-
         self.versions.iter().rev().find(|v| {
             v.mc_major_version == mc_major_version
                 && v.mc_minor_version == mc_minor_version
@@ -146,13 +142,9 @@ impl NeoForgeReleases {
 
     pub fn latest_stable(
         &self,
-        mc_major_version: u16,
-        mc_minor_version: u16,
+        mc_major_version: &str,
+        mc_minor_version: &str,
     ) -> Option<&NeoForgeVersion> {
-        // TODO: optimize instead of using String
-        let mc_major_version = mc_major_version.to_string();
-        let mc_minor_version = mc_minor_version.to_string();
-
         self.versions.iter().rev().find(|v| {
             v.mc_major_version == mc_major_version
                 && v.mc_minor_version == mc_minor_version
@@ -160,9 +152,24 @@ impl NeoForgeReleases {
         })
     }
 
-    pub fn latest(&self, mc_major_version: u16, mc_minor_version: u16) -> Option<&NeoForgeVersion> {
+    pub fn latest(
+        &self,
+        mc_major_version: &str,
+        mc_minor_version: &str,
+    ) -> Option<&NeoForgeVersion> {
         self.latest_stable(mc_major_version, mc_minor_version)
             .or_else(|| self.latest_beta(mc_major_version, mc_minor_version))
+    }
+
+    pub fn latest_from_mc_version(&self, mc_version: &str) -> Option<&NeoForgeVersion> {
+        let mut spilt = mc_version.split('.');
+        let _ = spilt.next().unwrap();
+
+        let major_version = spilt.next().unwrap();
+        let minor_version = spilt.next().unwrap();
+
+        let latest = self.latest(major_version, minor_version);
+        latest
     }
 }
 

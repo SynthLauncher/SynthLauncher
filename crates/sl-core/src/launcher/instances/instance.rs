@@ -5,9 +5,11 @@ use std::{
 };
 
 use chrono::DateTime;
-use sl_meta::minecraft::{loaders::vanilla::Client, version_manifest::VersionType};
+use sl_meta::{minecraft::loaders::vanilla::Client, minecraft::version_manifest::VersionType};
 use sl_utils::{
-    dlog, elog, log, errors::{BackendError, InstanceError}, wlog
+    dlog, elog,
+    errors::{BackendError, InstanceError},
+    log, wlog,
 };
 use tokio::process::Command;
 
@@ -15,6 +17,7 @@ use crate::{
     launcher::{
         config::InstanceConfig,
         instances::metadata::{GameVersionMetadata, InstanceMetadata},
+        minecraft_version::LoadedMinecraftVersion,
         player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles},
     },
     minecraft::install_client,
@@ -23,16 +26,36 @@ use crate::{
 
 // Represents a loaded instance of Minecraft with its configurations and things required for launching
 pub struct LoadedInstance {
-    pub instance_metadata: InstanceMetadata,
-    pub config: InstanceConfig,
-    pub client: Client,
-    pub minecraft_jar_path: PathBuf,
-    pub instance_path: PathBuf,
+    instance_metadata: InstanceMetadata,
+    config: InstanceConfig,
+    instance_path: PathBuf,
+    loaded_version: LoadedMinecraftVersion,
 }
 
 impl LoadedInstance {
+    pub(super) const fn new(
+        instance_metadata: InstanceMetadata,
+        instance_dir: PathBuf,
+        loaded_version: LoadedMinecraftVersion,
+        config: InstanceConfig,
+    ) -> Self {
+        Self {
+            instance_metadata,
+            config,
+            instance_path: instance_dir,
+            loaded_version,
+        }
+    }
     const fn game_metadata(&self) -> &GameVersionMetadata {
         &self.instance_metadata.game_metadata
+    }
+
+    const fn client_json(&self) -> &Client {
+        self.loaded_version.client_json()
+    }
+
+    fn minecraft_jar_path(&self) -> &Path {
+        self.loaded_version.client_jar_path()
     }
 
     fn instance_dir(&self) -> &Path {
@@ -45,13 +68,19 @@ impl LoadedInstance {
     /// so i think splitting them makes the code more maintainable
     async fn download_minecraft(&self) -> Result<(), BackendError> {
         // will automatically perform hash verification and only re install corrupted files
-        install_client(&self.client, &self.minecraft_jar_path, &self.instance_path).await?;
+        install_client(
+            &self.loaded_version.client_json(),
+            &self.loaded_version.client_jar_path(),
+            &self.instance_path,
+        )
+        .await?;
         Ok(())
     }
 
     /// Generates the classpath for executing minecraft for this instance
     fn generate_classpath(&self) -> String {
-        let libs = self.client.libraries();
+        let client = self.client_json();
+        let libs = client.libraries();
 
         let mut classpath = Vec::new();
         for lib in libs {
@@ -67,7 +96,7 @@ impl LoadedInstance {
             }
         }
 
-        let minecraft_jar = &self.minecraft_jar_path;
+        let minecraft_jar = self.minecraft_jar_path();
         classpath.push(minecraft_jar.to_string_lossy().into_owned());
         classpath.join(MULTI_PATH_SEPARATOR)
     }
@@ -114,7 +143,9 @@ impl LoadedInstance {
 
         let natives_dir = game_dir.join(".natives");
 
-        let raw_args = &self.client.arguments;
+        let client = self.client_json();
+
+        let raw_args = &client.arguments;
         let (mut jvm_args, mut game_args) = raw_args.clone().into_raw();
 
         let regex = regex::Regex::new(r"\$\{(\w+)\}").expect("Failed to compile regex!");
@@ -125,7 +156,7 @@ impl LoadedInstance {
             Some(match arg {
                 "game_directory" => game_dir.to_str()?,
                 "assets_root" | "game_assets" => ASSETS_DIR.to_str()?,
-                "assets_index_name" => &self.client.assets,
+                "assets_index_name" => &client.assets,
                 "version_name" => &self.game_metadata().version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str()?,
@@ -162,7 +193,7 @@ impl LoadedInstance {
         fmt_args(&mut game_args);
         fmt_args(&mut jvm_args);
 
-        jvm_args.push(self.client.main_class.clone());
+        jvm_args.push(client.main_class.clone());
 
         Ok([jvm_args, game_args].concat())
     }
@@ -186,10 +217,7 @@ impl LoadedInstance {
 
         let current_java_path = self.config.java.java();
 
-        log!(
-            "Using Java path: {}",
-            current_java_path.display()
-        );
+        log!("Using Java path: {}", current_java_path.display());
 
         let max_ram = self.config.java.max_ram;
         let min_ram = self.config.java.min_ram;

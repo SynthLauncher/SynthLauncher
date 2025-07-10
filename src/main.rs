@@ -1,12 +1,17 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::{launcher::{
-    init_launcher_dir, instances::{self, metadata::InstanceMetadata}, player::{
-        microsoft_auth::AuthFlow, player_profile::PlayerProfile, player_profiles::PlayerProfiles,
-    }
-}, VERSION_MANIFEST};
-use sl_utils::{dlog, elog, log, errors::BackendError};
-
+use sl_core::{
+    launcher::{
+        init_launcher_dir,
+        instances::{self, metadata::InstanceMetadata},
+        player::{
+            microsoft_auth::AuthFlow, player_profile::PlayerProfile,
+            player_profiles::PlayerProfiles,
+        },
+    },
+    VERSION_MANIFEST,
+};
+use sl_utils::{dlog, elog, errors::BackendError, log};
 
 mod cli;
 
@@ -26,7 +31,9 @@ async fn run_cli() -> Result<(), BackendError> {
             let loader = loader_info.loader.unwrap_or_default();
             let loader_version = loader_info.loader_version;
 
-            let _ = InstanceMetadata::create(&instance_name, &version, loader, loader_version, None)?;
+            let _ =
+                InstanceMetadata::create(&instance_name, &version, loader, loader_version, None)
+                    .await?;
         }
         Commands::Launch { instance_name } => {
             let (instance, _) = instances::get_existing(&instance_name)?;
@@ -77,7 +84,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let profiles = PlayerProfiles::load()?;
             let profile = profiles.current_profile();
             println!("{:#?}", profile.as_ref())
-        },
+        }
         Commands::ListMinecraftVersions => {
             for version in VERSION_MANIFEST.versions() {
                 println!("{}", version.id);

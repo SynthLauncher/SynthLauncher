@@ -83,40 +83,18 @@ impl FabricLoaderProfile {
     }
 }
 
-async fn get_latest_loader_version<E>(
-    game_version: &str,
-    do_request: impl AsyncFnOnce(&str) -> Result<Vec<u8>, E>,
-) -> Result<String, E>
-where
-    E: From<std::io::Error>,
-{
-    Ok(
-        super::versions::get_fabric_versions(game_version, do_request)
-            .await?
-            .into_iter()
-            .next()
-            .map(|version| version.loader.version)
-            .expect("FIXME: no loader version found for minecraft version"),
-    )
-}
-
 /// Get a FabricLoaderProfile from the Fabric Meta API.
 /// do_request is a function that takes a URL and returns a Vec<u8> or an error.
 /// if the response isn't valid JSON, it panics
 pub async fn get_loader_profile<F, E>(
     game_version: &str,
-    loader_version: Option<&str>,
+    loader_version: &str,
     do_request: F,
 ) -> Result<FabricLoaderProfile, E>
 where
     E: From<std::io::Error>,
     F: AsyncFn(&str) -> Result<Vec<u8>, E> + Copy,
 {
-    let loader_version = match loader_version {
-        Some(loader_version) => loader_version,
-        None => &get_latest_loader_version(game_version, do_request).await?,
-    };
-
     let url = format!(
         "https://meta.fabricmc.net/v2/versions/loader/{}/{}/profile/json",
         game_version, loader_version

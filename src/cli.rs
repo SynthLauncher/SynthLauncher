@@ -25,7 +25,7 @@ pub enum Commands {
         #[arg(required = true)]
         version: String,
         #[command(flatten)]
-        loader_info: LoaderInfo
+        loader_info: LoaderInfo,
     },
 
     /// Launches a Minecraft instance
@@ -33,7 +33,7 @@ pub enum Commands {
         #[arg(required = true)]
         instance_name: String,
     },
-    
+
     /// Adds an offline player profile
     AddOfflineProfile {
         #[arg(required = true)]
@@ -53,5 +53,5 @@ pub enum Commands {
     ListInstances,
     ListProfiles,
     CurrentProfile,
-    ListMinecraftVersions
+    ListMinecraftVersions,
 }
