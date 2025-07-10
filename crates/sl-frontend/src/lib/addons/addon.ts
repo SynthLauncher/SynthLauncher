@@ -7,7 +7,5 @@ export interface Addon {
     onLoad: () => void;
     onTick: (delta: number) => void;
     onUnload: () => void;
-
-    commands?: Record<string, (...args: any[]) => any>;
-    state?: Record<string, any>;
 }
+

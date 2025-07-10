@@ -54,6 +54,7 @@ export const CreateInstanceDialog = ({
 						Configure your new Minecraft instance.
 					</DialogDescription>
 				</DialogHeader>
+
 				<div className="grid gap-4 py-4">
 					<div className="grid gap-2">
 						<Label htmlFor="name" className="text-sm font-medium text-gray-200">
@@ -69,12 +70,12 @@ export const CreateInstanceDialog = ({
 					</div>
 
 					<div className="grid gap-2">
-						<label
+						<Label
 							htmlFor="version"
 							className="text-sm font-medium text-gray-200"
 						>
 							Minecraft Version
-						</label>
+						</Label>
 						<select
 							id="version"
 							className="appearance-none flex h-9 w-full rounded-md bg-[#2b3136] px-3 py-1 text-sm text-gray-200 justify-between outline-none"
@@ -88,12 +89,12 @@ export const CreateInstanceDialog = ({
 					</div>
 
 					<div className="grid gap-2">
-						<label
+						<Label
 							htmlFor="modloader"
 							className="text-sm font-medium text-gray-200"
 						>
 							Mod Loader
-						</label>
+						</Label>
 						<select
 							id="modloader"
 							className="appearance-none flex h-9 w-full rounded-md bg-[#2b3136] px-3 py-1 text-sm text-gray-200 outline-none"
@@ -109,9 +110,9 @@ export const CreateInstanceDialog = ({
 					</div>
 
 					<div className="grid gap-2">
-						<label htmlFor="icon" className="text-sm font-medium text-gray-200">
+						<Label htmlFor="icon" className="text-sm font-medium text-gray-200">
 							Instance Icon
-						</label>
+						</Label>
 						<div className="flex items-center gap-4">
 							<div className="w-22 h-22 bg-[#2b3136] rounded-lg flex items-center justify-center">
 								<Box className="text-neutral-300" width={68} height={68} />
@@ -129,6 +130,7 @@ export const CreateInstanceDialog = ({
 						</div>
 					</div>
 				</div>
+
 				<DialogFooter>
 					<Button
 						onClick={() => onOpenChange(false)}

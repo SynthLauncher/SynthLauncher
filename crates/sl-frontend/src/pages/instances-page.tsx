@@ -1,8 +1,8 @@
+import { CreateInstanceButton } from '@/components/create-instance-button';
 import { CreateInstanceDialog } from '@/components/create-instance-dialog';
 import { InstanceCard } from '@/components/instance-card';
 import { createInstance, getInstances } from '@/lib/commands/instances';
 import { Instance } from '@/lib/types/instances';
-import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export const InstancesPage = () => {
@@ -34,17 +34,7 @@ export const InstancesPage = () => {
 					<InstanceCard key={inst.name} {...inst} />
 				))}
 
-				<button
-					onClick={() => setCreateDialogOpen(true)}
-					className="bg-gray-800/50 hover:bg-sky-300/20 rounded-lg h-full p-4 border-2 border-dashed border-gray-700 hover:border-sky-600/50 transition-colors flex items-center justify-center"
-				>
-					<div className="flex-shrink-0 w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center transition-colors">
-						<Plus
-							size={24}
-							className="text-gray-400 group-hover:text-sky-400"
-						/>
-					</div>
-				</button>
+				<CreateInstanceButton setCreateDialogOpen={setCreateDialogOpen} />
 			</div>
 
 			<CreateInstanceDialog

@@ -16,9 +16,9 @@ export const StoreCategorySelector = ({
 }: StoreCategorySelectorProps) => {
 	return (
 		<CategorySelector {...props}>
-			<CategoryList className="bg-[#1B1D21]">
+			<CategoryList className="bg-[#262729]">
 				{values?.map((value: string) => (
-					<CategoryTrigger value={value.toLowerCase()}>{value}</CategoryTrigger>
+					<CategoryTrigger className='hover:cursor-pointer' value={value.toLowerCase()}>{value}</CategoryTrigger>
 				))}
 			</CategoryList>
 		</CategorySelector>

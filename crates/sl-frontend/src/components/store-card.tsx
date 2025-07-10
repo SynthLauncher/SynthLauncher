@@ -35,7 +35,7 @@ export const StoreCard = ({
 
 				<p className="text-gray-400 text-sm mt-1 line-clamp-2">{description}</p>
 
-				<div className="flex gap-4 text-gray-500 text-sm mt-2">
+				<div className="flex gap-4 text-gray-400 text-sm mt-2">
 					<div className="flex items-center gap-1">
 						<Download className="w-4 h-4" />
 						<span>{downloads.toLocaleString()} downloads</span>

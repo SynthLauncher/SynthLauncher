@@ -17,8 +17,8 @@ export const InstanceCard = ({ game_metadata, mod_loader, name }: Instance) => {
 	const navigate = useNavigate();
 
 	return (
-		<div 
-			className="bg-[#1D2026] hover:bg-[#202627] rounded-lg overflow-hidden p-5 flex gap-2 items-center group transition-all" 
+		<div
+			className="bg-[#1D2026] hover:bg-[#202627] hover:cursor-pointer rounded-lg overflow-hidden p-5 flex gap-2 items-center group transition-all"
 			onClick={() => {
 				navigate(`/instances/${name}`, { state: name })
 			}}

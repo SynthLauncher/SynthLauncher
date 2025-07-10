@@ -4239,6 +4239,12 @@ dependencies = [
 [[package]]
 name = "sl-player"
 version = "0.1.0"
+dependencies = [
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sl-utils",
+]
 
 [[package]]
 name = "sl-store"

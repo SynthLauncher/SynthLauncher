@@ -4,3 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sl-utils = { path = "../sl-utils" }
+
+reqwest = "0.12.22"
+serde = "1.0.219"
+serde_json = "1.0.140"

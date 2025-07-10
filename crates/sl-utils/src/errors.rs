@@ -54,12 +54,27 @@ pub enum ZipExtractionError {
 }
 
 #[derive(Debug, Error)]
+pub enum MicrosoftAuthServiceError {
+    #[error("The access token is invalid or was expired.")]
+    InvalidAccessToken,
+
+    #[error("An unexpected error has ocurred.")]
+    UnknownError,
+
+    #[error("{0}")]
+    Request(#[from] reqwest::Error),
+
+    #[error("{0}")]
+    Json(#[from] serde_json::Error),
+}
+
+#[derive(Debug, Error)]
 pub enum BackendError {
     #[error("Zip error: {0}")]
     ZipError(#[from] ZipError),
     #[error("Zip extraction error: {0}")]
     ZipExtractionError(#[from] ZipExtractionError),
-    
+
     #[error("Download error: {0}")]
     HttpError(#[from] HttpError),
     #[error("I/O error: {0}")]
@@ -76,6 +91,8 @@ pub enum BackendError {
     SynrinthError(#[from] SynrinthErr),
     #[error("Join error: {0}")]
     JoinError(#[from] JoinError),
+    #[error("Microsoft auth service error: {0}")]
+    MicrosoftAuthServiceError(#[from] MicrosoftAuthServiceError)
 }
 
 impl From<reqwest::Error> for HttpError {
