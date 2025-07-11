@@ -1,9 +1,9 @@
 use commands::{
     instances::{get_instances, create_instance, remove_instance, launch_instance, load_game_info}, 
-    store::search_store, 
     profiles::{get_current_profile, get_profiles, get_other_profiles}, 
     launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
+    store::search_modrinth_store
 };
 
 mod commands;
@@ -21,11 +21,11 @@ pub fn run() {
             get_profiles,
             get_other_profiles,
             open_synthlauncher_folder,
-            search_store,
             launch_instance,
             open_instance_folder,
             load_game_info,
-            get_minecraft_versions
+            get_minecraft_versions,
+            search_modrinth_store
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

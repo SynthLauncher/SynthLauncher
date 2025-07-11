@@ -37,6 +37,6 @@ interface Hit {
 	featured_gallery?: string;
 }
 
-export interface Search {
+export interface SearchResult {
 	hits: Hit[];
 }

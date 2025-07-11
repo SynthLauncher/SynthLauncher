@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { StoreCard } from '@/components/store-card';
 import { Input } from '@/components/ui/input';
 import { SearchIcon, WifiOff, Loader2, AlertCircle } from 'lucide-react';
-import { getStoreSearch } from '@/lib/commands/store';
 import { StoreCategorySelector } from '@/components/store-category-selector';
-import { Search } from '@/lib/types/store/modrinth';
+import { SearchResult } from '@/lib/types/store/modrinth';
+import { getModrinthStoreSearchResult } from '@/lib/commands/store';
 
 export const StorePage = () => {
-	const [search, setSearch] = useState<Search>();
+	const [searchResult, setSearchResult] = useState<SearchResult>();
 	const [searchQuery, setSearchQuery] = useState('');
 	const [category, setCategory] = useState('modpack');
 	const [loading, setLoading] = useState(false);
@@ -38,7 +38,8 @@ export const StorePage = () => {
 			setError(null);
 
 			try {
-				await getStoreSearch(searchQuery, category, setSearch);
+				let result = await getModrinthStoreSearchResult(searchQuery, category, 0);
+				setSearchResult(result);
 			} catch (err) {
 				setError('failed');
 			} finally {
@@ -91,7 +92,7 @@ export const StorePage = () => {
 				</div>
 			)}
 
-			{!loading && !error && search?.hits.length === 0 && (
+			{!loading && !error && searchResult?.hits.length === 0 && (
 				<div className="flex items-center justify-center text-muted-foreground mt-4">
 					<span>No results found.</span>
 				</div>
@@ -99,7 +100,7 @@ export const StorePage = () => {
 
 			{!loading &&
 				!error &&
-				search?.hits.map((hit) => (
+				searchResult?.hits.map((hit) => (
 					<StoreCard
 						author={hit.author}
 						description={hit.description}

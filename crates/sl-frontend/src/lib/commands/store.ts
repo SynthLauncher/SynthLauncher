@@ -1,19 +1,20 @@
 import { message } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
-import { Search } from '../types/store/modrinth';
+import { SearchResult } from '../types/store/modrinth';
 
-export const getStoreSearch = async (
+export const getModrinthStoreSearchResult = async (
 	query: string,
-	category: string,
-	setSearch: (search: Search) => void
+	projectType: string,
+	page: number,
 ) => {
 	try {
-		const search = await invoke<Search>('search_store', {
+		const search = await invoke<SearchResult>('search_modrinth_store', {
 			query: query,
-			category: category,
+			projectType: projectType,
+			page: page
 		});
 
-		setSearch(search);
+		return search
 	} catch (err) {
 		await message(`getStoreSearch error: ${err}`, {
 			title: 'SynthLauncher Error',

@@ -1,4 +1,3 @@
-use synrinth::errors::SynrinthErr;
 use thiserror::Error;
 use tokio::task::JoinError;
 use zip::result::ZipError;
@@ -87,8 +86,6 @@ pub enum BackendError {
     SerdeError(#[from] serde_json::Error),
     #[error("Installation error: {0}")]
     InstanceError(#[from] InstanceError),
-    #[error("Synrinth error: {0}")]
-    SynrinthError(#[from] SynrinthErr),
     #[error("Join error: {0}")]
     JoinError(#[from] JoinError),
     #[error("Microsoft auth service error: {0}")]
