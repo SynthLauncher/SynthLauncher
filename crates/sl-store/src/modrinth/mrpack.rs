@@ -3,14 +3,19 @@ use std::{
     fs::File,
     io::BufReader,
     path::{Path, PathBuf},
+    str::FromStr,
 };
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
-use reqwest::Client;
 use serde::Deserialize;
+use sl_core::{
+    launcher::instances::metadata::{InstanceMetadata, ModLoader},
+    HTTP_CLIENT, INSTANCES_DIR,
+};
 use sl_utils::{downloader::downloader, errors::BackendError};
-use tokio::io::AsyncWriteExt;
 use zip::ZipArchive;
+
+use crate::modrinth::api::project::query_project_version;
 
 const MODRINTH_INDEX_NAME: &'static str = "modrinth.index.json";
 
@@ -105,29 +110,25 @@ pub async fn read_modrinth_index(modpack_path: &Path) -> Result<ModrinthPack, Ba
 }
 
 async fn download_modpack_file(
-    client: &Client,
     path: &Path,
     modpack_file: &ModrinthIndex,
 ) -> Result<(), BackendError> {
-    let mut res = client.get(&modpack_file.downloads[0]).send().await?;
     let path = path.join(&modpack_file.path);
-
     if let Some(parent) = path.parent() {
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    let file = tokio::fs::File::create(&path).await?;
-    let mut writer = tokio::io::BufWriter::new(file);
-
-    while let Some(chunk) = res.chunk().await? {
-        writer.write_all(&chunk).await?;
-    }
+    downloader()
+        .client(&HTTP_CLIENT)
+        .target(&path)
+        .url(&modpack_file.downloads[0])
+        .call()
+        .await?;
 
     Ok(())
 }
 
 pub async fn download_modpack_files(
-    client: &Client,
     instance_path: &Path,
     modpack_files: &[ModrinthIndex],
 ) -> Result<(), BackendError> {
@@ -135,11 +136,10 @@ pub async fn download_modpack_files(
     let mut tasks = FuturesUnordered::new();
 
     for modpack_file in modpack_files {
-        let client = client.clone();
         let instance_path = instance_path.to_path_buf();
 
         tasks.push(tokio::spawn(async move {
-            download_modpack_file(&client, &instance_path, &modpack_file).await
+            download_modpack_file(&instance_path, &modpack_file).await
         }));
     }
 
@@ -150,12 +150,32 @@ pub async fn download_modpack_files(
     Ok(())
 }
 
-pub async fn install_modpack(
-    client: &Client,
-    slug: &str,
-    version: &str
-) -> Result<(), BackendError> {
+pub async fn install_modpack(slug: &str, version: &str) -> Result<(), BackendError> {
+    let project_version = query_project_version(&HTTP_CLIENT, slug, version).await?;
+    let instance_dir = INSTANCES_DIR.join(slug);
+    let mrpack_path = instance_dir.join(&project_version.files[0].filename);
     
-   
+    tokio::fs::create_dir_all(&instance_dir).await?;
+    downloader()
+        .client(&HTTP_CLIENT)
+        .target(&mrpack_path)
+        .url(&project_version.files[0].url)
+        .call()
+        .await?;
+
+    unzip_modpack(&mrpack_path, &instance_dir).await?;
+    let index = read_modrinth_index(&instance_dir).await?;
+    let mod_loader = ModLoader::from_str(project_version.loaders[0].as_str())?;
+    let mod_loader_id = DependencyID::from(project_version.loaders[0].as_str());
+    let mod_loader_version = index.dependencies.get(&mod_loader_id).cloned();
+    let mc_version = index.dependencies.get(&DependencyID::Minecraft).unwrap_or(&project_version.game_versions[0]);
+    
+    let instance = InstanceMetadata::create(slug, &mc_version, mod_loader, mod_loader_version, None).await?;
+    
+    download_modpack_files(&instance_dir, &index.files).await?;
+
+    let loaded_instance = instance.load_init().await?;
+    loaded_instance.execute().await?;
+
     Ok(())
 }

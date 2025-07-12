@@ -2,7 +2,7 @@ use std::fmt;
 
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use sl_utils::{dlog, errors::BackendError};
+use sl_utils::errors::BackendError;
 
 use crate::modrinth::api::{MonetizationStatus, SupportRequirement};
 

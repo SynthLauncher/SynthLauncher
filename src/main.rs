@@ -11,6 +11,7 @@ use sl_core::{
     },
     VERSION_MANIFEST,
 };
+use sl_store::modrinth::mrpack::install_modpack;
 use sl_utils::{dlog, elog, errors::BackendError, log};
 
 mod cli;
@@ -89,6 +90,9 @@ async fn run_cli() -> Result<(), BackendError> {
             for version in VERSION_MANIFEST.versions() {
                 println!("{}", version.id);
             }
+        },
+        Commands::Test => {
+            install_modpack("sodiumplus", 	"2.3.2-alpha.3").await?;
         }
     }
 

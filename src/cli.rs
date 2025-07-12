@@ -54,4 +54,5 @@ pub enum Commands {
     ListProfiles,
     CurrentProfile,
     ListMinecraftVersions,
+    Test
 }

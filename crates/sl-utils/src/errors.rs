@@ -88,6 +88,8 @@ pub enum BackendError {
     InstanceError(#[from] InstanceError),
     #[error("Join error: {0}")]
     JoinError(#[from] JoinError),
+    #[error("StrumParse error: {0}")]
+    StrumParseError(#[from] strum::ParseError),
     #[error("Microsoft auth service error: {0}")]
     MicrosoftAuthServiceError(#[from] MicrosoftAuthServiceError)
 }
