@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::{
@@ -8,10 +10,9 @@ use sl_core::{
             microsoft_auth::AuthFlow, player_profile::PlayerProfile,
             player_profiles::PlayerProfiles,
         },
-    },
-    VERSION_MANIFEST,
+    }, INSTANCES_DIR, VERSION_MANIFEST
 };
-use sl_store::modrinth::mrpack::install_modpack;
+use sl_store::modrinth::{install_mod, install_modpack};
 use sl_utils::{dlog, elog, errors::BackendError, log};
 
 mod cli;
@@ -92,7 +93,7 @@ async fn run_cli() -> Result<(), BackendError> {
             }
         },
         Commands::Test => {
-            install_modpack("sodiumplus", 	"2.3.2-alpha.3").await?;
+            install_mod("sodium", "mc1.21.5-0.6.13-fabric", &INSTANCES_DIR.join("fabric").to_path_buf()).await?;
         }
     }
 

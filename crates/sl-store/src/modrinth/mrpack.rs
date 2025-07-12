@@ -3,19 +3,13 @@ use std::{
     fs::File,
     io::BufReader,
     path::{Path, PathBuf},
-    str::FromStr,
 };
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
-use sl_core::{
-    launcher::instances::metadata::{InstanceMetadata, ModLoader},
-    HTTP_CLIENT, INSTANCES_DIR,
-};
+use sl_core::HTTP_CLIENT;
 use sl_utils::{downloader::downloader, errors::BackendError};
 use zip::ZipArchive;
-
-use crate::modrinth::api::project::query_project_version;
 
 const MODRINTH_INDEX_NAME: &'static str = "modrinth.index.json";
 
@@ -146,36 +140,6 @@ pub async fn download_modpack_files(
     while let Some(result) = tasks.next().await {
         result??;
     }
-
-    Ok(())
-}
-
-pub async fn install_modpack(slug: &str, version: &str) -> Result<(), BackendError> {
-    let project_version = query_project_version(&HTTP_CLIENT, slug, version).await?;
-    let instance_dir = INSTANCES_DIR.join(slug);
-    let mrpack_path = instance_dir.join(&project_version.files[0].filename);
-    
-    tokio::fs::create_dir_all(&instance_dir).await?;
-    downloader()
-        .client(&HTTP_CLIENT)
-        .target(&mrpack_path)
-        .url(&project_version.files[0].url)
-        .call()
-        .await?;
-
-    unzip_modpack(&mrpack_path, &instance_dir).await?;
-    let index = read_modrinth_index(&instance_dir).await?;
-    let mod_loader = ModLoader::from_str(project_version.loaders[0].as_str())?;
-    let mod_loader_id = DependencyID::from(project_version.loaders[0].as_str());
-    let mod_loader_version = index.dependencies.get(&mod_loader_id).cloned();
-    let mc_version = index.dependencies.get(&DependencyID::Minecraft).unwrap_or(&project_version.game_versions[0]);
-    
-    let instance = InstanceMetadata::create(slug, &mc_version, mod_loader, mod_loader_version, None).await?;
-    
-    download_modpack_files(&instance_dir, &index.files).await?;
-
-    let loaded_instance = instance.load_init().await?;
-    loaded_instance.execute().await?;
 
     Ok(())
 }
