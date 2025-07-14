@@ -57,7 +57,7 @@ pub enum MicrosoftAuthServiceError {
     #[error("The access token is invalid or was expired.")]
     InvalidAccessToken,
 
-    #[error("An unexpected error has ocurred.")]
+    #[error("An unexpected error has occurred.")]
     UnknownError,
 
     #[error("{0}")]
@@ -68,12 +68,27 @@ pub enum MicrosoftAuthServiceError {
 }
 
 #[derive(Debug, Error)]
+pub enum InstanceImportErr {
+    #[error("I/O Error: {0}")]
+    IoError(#[from] std::io::Error),
+    #[error("Zip Error: {0}")]
+    ZipError(#[from] ZipError),
+    #[error("Zip file doesn't contain an instance to import")]
+    NotAnInstance,
+    #[error("Attempt to import a corrupted Instance")]
+    Corrupted,
+    #[error("Fatal serde failure: {0}")]
+    SerializationError(#[from] serde_json::Error),
+}
+
+#[derive(Debug, Error)]
 pub enum BackendError {
+    #[error("Error while Importing instance '{0}'")]
+    InstanceImportError(#[from] InstanceImportErr),
     #[error("Zip error: {0}")]
     ZipError(#[from] ZipError),
     #[error("Zip extraction error: {0}")]
     ZipExtractionError(#[from] ZipExtractionError),
-
     #[error("Download error: {0}")]
     HttpError(#[from] HttpError),
     #[error("I/O error: {0}")]
@@ -91,7 +106,7 @@ pub enum BackendError {
     #[error("StrumParse error: {0}")]
     StrumParseError(#[from] strum::ParseError),
     #[error("Microsoft auth service error: {0}")]
-    MicrosoftAuthServiceError(#[from] MicrosoftAuthServiceError)
+    MicrosoftAuthServiceError(#[from] MicrosoftAuthServiceError),
 }
 
 impl From<reqwest::Error> for HttpError {
