@@ -20,6 +20,10 @@ pub struct LoaderInfo {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Imports an instance from a given path
+    Import {
+        path: PathBuf,
+    },
     /// Exports an instance to a given path
     Export {
         instance_name: String,

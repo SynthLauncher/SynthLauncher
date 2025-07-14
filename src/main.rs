@@ -107,6 +107,9 @@ async fn run_cli() -> Result<(), BackendError> {
             let exporter = instance.exporter_to_path(&output)?;
             exporter.export()?;
         }
+        Commands::Import { path } => {
+            instances::import_instance_from_path(&path)?;
+        }
     }
 
     Ok(())
