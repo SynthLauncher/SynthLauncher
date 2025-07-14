@@ -4,33 +4,20 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sl_utils::errors::BackendError;
 
-use crate::modrinth::api::{MonetizationStatus, SupportRequirement};
-
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Hit {
     pub slug: String,
     pub title: String,
     pub description: String,
-    pub categories: Vec<String>,
-    pub client_side: SupportRequirement,
-    pub server_side: SupportRequirement,
     pub project_type: String,
     pub downloads: u32,
     pub icon_url: Option<String>,
-    pub color: Option<i32>,
-    pub thread_id: Option<String>,
-    pub monetization_status: Option<MonetizationStatus>,
     pub project_id: String,
     pub author: String,
-    pub display_categories: Vec<String>,
     pub versions: Vec<String>,
     pub follows: u32,
-    pub date_created: String,
-    pub date_modified: String,
     pub latest_version: String,
-    pub license: String,
     pub gallery: Vec<String>,
-    pub featured_gallery: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -42,20 +29,12 @@ pub struct SearchResult {
 #[serde(rename_all = "snake_case")]
 pub enum FacetType {
     ProjectType,
-    Categories,
     Versions,
-    ClientSide,
-    ServerSide,
-    OpenSource,
     Title,
     Author,
     Follows,
     ProjectId,
-    License,
     Downloads,
-    Color,
-    CreatedTimestamp,
-    ModifiedTimestamp,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -108,20 +87,12 @@ impl fmt::Display for FacetType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = match self {
             FacetType::ProjectType => "project_type",
-            FacetType::Categories => "categories",
             FacetType::Versions => "versions",
-            FacetType::ClientSide => "client_side",
-            FacetType::ServerSide => "server_side",
-            FacetType::OpenSource => "open_source",
             FacetType::Title => "title",
             FacetType::Author => "author",
             FacetType::Follows => "follows",
             FacetType::ProjectId => "project_id",
-            FacetType::License => "license",
             FacetType::Downloads => "downloads",
-            FacetType::Color => "color",
-            FacetType::CreatedTimestamp => "created_timestamp",
-            FacetType::ModifiedTimestamp => "modified_timestamp",
         };
         write!(f, "{}", s)
     }

@@ -10,7 +10,7 @@ use sl_core::{
         },
     }, INSTANCES_DIR, VERSION_MANIFEST
 };
-use sl_store::modrinth::{install_mod, install_modpack};
+use sl_store::modrinth::install_mod;
 use sl_utils::{dlog, elog, errors::BackendError, log};
 
 mod cli;
