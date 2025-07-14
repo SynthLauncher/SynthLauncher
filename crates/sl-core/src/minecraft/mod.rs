@@ -1,4 +1,5 @@
 use std::{
+    io::Cursor,
     path::{Path, PathBuf},
     time::Instant,
 };
@@ -10,7 +11,9 @@ use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Down
 use sl_utils::{
     elog, log,
     {
-        downloader::downloader, errors::{BackendError, HttpError}, zip::ZipExtractor
+        downloader::downloader,
+        errors::{BackendError, HttpError},
+        zip::ZipExtractor,
     },
 };
 
@@ -187,6 +190,7 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
         }
 
         if let Some(native) = lib.native_from_platform() {
+            // FIXME: this is so terrible just download and return a reader at least
             let bytes = download_and_read_file(native, &LIBS_DIR).await?;
 
             if let Some(ref extract_rules) = lib.extract {
@@ -194,7 +198,9 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
 
                 let exclude = extract_rules.exclude.as_deref().unwrap_or_default();
                 let paths = exclude.iter().map(PathBuf::as_path).collect::<Vec<_>>();
-                let zip = ZipExtractor::new(&bytes).exclude(&paths);
+
+                let cursor = Cursor::new(bytes);
+                let zip = ZipExtractor::new(cursor).exclude(&paths);
 
                 zip.extract(&natives_dir)?;
             }

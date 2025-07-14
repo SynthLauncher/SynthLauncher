@@ -2,7 +2,7 @@
 use std::os::unix::fs::PermissionsExt;
 use std::{
     fs::{self, File},
-    io::{BufReader, Cursor, Seek, Write},
+    io::{BufReader, Read, Seek, Write},
     path::Path,
 };
 
@@ -108,15 +108,15 @@ impl<W: Write + Seek> ZipBuilder<W> {
     }
 }
 
-pub struct ZipExtractor<'a> {
-    bytes: &'a [u8],
+pub struct ZipExtractor<'a, R: Read + Seek> {
+    reader: R,
     exclude: Option<&'a [&'a Path]>,
 }
 
-impl<'a> ZipExtractor<'a> {
-    pub fn new(bytes: &'a [u8]) -> Self {
+impl<'a, R: Read + Seek> ZipExtractor<'a, R> {
+    pub fn new(reader: R) -> Self {
         Self {
-            bytes,
+            reader,
             exclude: None,
         }
     }
@@ -129,8 +129,7 @@ impl<'a> ZipExtractor<'a> {
     // TODO: make async with the help of tokio_utils
     pub fn extract(self, output: &Path) -> Result<(), ZipError> {
         let exclude = self.exclude.unwrap_or_default();
-        let reader = Cursor::new(self.bytes);
-        let mut archive = ZipArchive::new(reader)?;
+        let mut archive = ZipArchive::new(self.reader)?;
 
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)?;
@@ -147,7 +146,7 @@ impl<'a> ZipExtractor<'a> {
             }
 
             let output = output.join(&file_path);
-            if file_path.is_dir() {
+            if file.is_dir() {
                 fs::create_dir_all(output)?;
             } else {
                 if let Some(p) = output.parent() {
