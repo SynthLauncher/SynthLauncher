@@ -52,7 +52,7 @@ impl<W: Write + Seek> ZipBuilder<W> {
         Ok(())
     }
 
-    /// Recurisvely appends a direcotry to the archive
+    /// Recursively appends a directory to the archive
     pub fn append_directory_recursive<P: AsRef<Path>, PA: AsRef<Path>>(
         &mut self,
         path: P,
