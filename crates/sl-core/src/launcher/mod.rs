@@ -80,7 +80,5 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     let log_file_path = LAUNCHER_DIR.join("last_run.log");
     set_log_file(log_file_path);
 
-    std::env::set_current_dir(&*LAUNCHER_DIR)?;
-
     Ok(())
 }
