@@ -12,5 +12,5 @@ sl-utils = { path = "crates/sl-utils" }
 sl-core ={ path = "crates/sl-core"}
 sl-store = { path = "crates/sl-store" }
 
-tokio = "1.46.1"
+tokio = { version = "1.46.1", features = ["rt-multi-thread"]}
 clap = { version = "4.5.39", features = ["derive"] } 
