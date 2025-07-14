@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{ArgAction, Args, Parser, Subcommand};
 use sl_core::launcher::instances::metadata::ModLoader;
 
@@ -18,6 +20,13 @@ pub struct LoaderInfo {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Exports an instance to a given path
+    Export {
+        instance_name: String,
+        #[arg(short, long)]
+        output: PathBuf,
+    },
+
     /// Installs a Minecraft instance
     Create {
         #[arg(required = true)]
@@ -54,5 +63,5 @@ pub enum Commands {
     ListProfiles,
     CurrentProfile,
     ListMinecraftVersions,
-    Test
+    Test,
 }

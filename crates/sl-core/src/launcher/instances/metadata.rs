@@ -1,4 +1,8 @@
-use std::path::PathBuf;
+use std::{
+    fs::OpenOptions,
+    io::{Seek, Write},
+    path::{Path, PathBuf},
+};
 
 use serde::{Deserialize, Serialize};
 use sl_meta::minecraft::{
@@ -16,7 +20,10 @@ use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::{
     launcher::{
-        instances::{self, instance::LoadedInstance},
+        instances::{
+            self,
+            instance::{InstanceExporter, LoadedInstance},
+        },
         minecraft_version::MinecraftVersionID,
     },
     HTTP_CLIENT, INSTANCES_DIR, VERSION_MANIFEST,
@@ -142,6 +149,7 @@ impl InstanceMetadata {
         icon: Option<String>,
     ) -> Result<Self, BackendError> {
         let instance = Self::new(name, version, mod_loader, mod_loader_version, icon).await?;
+        // TODO: embed this into this struct for cleaner code
         instances::add_new(&instance)?;
         Ok(instance)
     }
@@ -168,5 +176,24 @@ impl InstanceMetadata {
             loaded_version,
             config,
         ))
+    }
+
+    /// Creates an instance exporter that will export the instance to a Writer in Zip format
+    pub fn exporter<'a, W: Write + Seek>(self, export_to: W) -> InstanceExporter<'a, W> {
+        InstanceExporter::new(export_to, self.instance_dir())
+    }
+
+    /// Creates an Instance Exporter that will export the instance to a given Path, the exported data would be in Zip format
+    pub fn exporter_to_path<'a>(
+        self,
+        path: &Path,
+    ) -> std::io::Result<InstanceExporter<'a, impl Write + Seek>> {
+        let export_to_file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .read(true)
+            .open(path)?;
+
+        Ok(Self::exporter(self, export_to_file))
     }
 }

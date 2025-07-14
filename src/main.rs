@@ -8,7 +8,8 @@ use sl_core::{
             microsoft_auth::AuthFlow, player_profile::PlayerProfile,
             player_profiles::PlayerProfiles,
         },
-    }, INSTANCES_DIR, VERSION_MANIFEST
+    },
+    INSTANCES_DIR, VERSION_MANIFEST,
 };
 use sl_store::modrinth::install_mod;
 use sl_utils::{dlog, elog, errors::BackendError, log};
@@ -89,9 +90,22 @@ async fn run_cli() -> Result<(), BackendError> {
             for version in VERSION_MANIFEST.versions() {
                 println!("{}", version.id);
             }
-        },
+        }
         Commands::Test => {
-            install_mod("sodium", "mc1.21.5-0.6.13-fabric", &INSTANCES_DIR.join("fabric").to_path_buf()).await?;
+            install_mod(
+                "sodium",
+                "mc1.21.5-0.6.13-fabric",
+                &INSTANCES_DIR.join("fabric").to_path_buf(),
+            )
+            .await?;
+        }
+        Commands::Export {
+            instance_name,
+            output,
+        } => {
+            let (instance, _) = instances::get_existing(&instance_name)?;
+            let exporter = instance.exporter_to_path(&output)?;
+            exporter.export()?;
         }
     }
 
