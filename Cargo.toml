@@ -11,9 +11,6 @@ sl-meta = { path = "crates/sl-meta" }
 sl-utils = { path = "crates/sl-utils" }
 sl-core ={ path = "crates/sl-core"}
 sl-store = { path = "crates/sl-store" }
-tokio = "1.45.1"
+
+tokio = "1.46.1"
 clap = { version = "4.5.39", features = ["derive"] } 
-reqwest = "0.12.20"
-indicatif = "0.17.11"
-lazy_static = "1.5.0"
-uuid = "1.17.0"

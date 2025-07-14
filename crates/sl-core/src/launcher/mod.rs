@@ -8,7 +8,7 @@ use sl_utils::log::set_log_file;
 use crate::launcher::java::fetch_jre_manifest;
 use crate::minecraft::version_manifest::fetch_version_manifest;
 use crate::{
-    ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, INSTANCES_PATH, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR,
+    ADDONS_DIR, ASSETS_DIR, INSTANCES_DIR, JAVAS_DIR, LAUNCHER_DIR, LIBS_DIR,
     PROFILES_PATH,
 };
 
@@ -60,7 +60,7 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
         tokio::fs::create_dir_all(dir).await?;
     }
 
-    for path in [&(*INSTANCES_PATH), &(*PROFILES_PATH)] {
+    for path in [&(*PROFILES_PATH)] {
         dlog!("{} path initialized!", path.display());
         OpenOptions::new()
             .write(true)

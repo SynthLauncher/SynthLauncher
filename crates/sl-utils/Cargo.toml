@@ -4,17 +4,20 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-reqwest = { version = "0.12.14", features = ["json", "stream"] }
+reqwest = { version = "0.12.22", features = ["json", "stream"] }
 serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
 
-zip = "4.0.0"
+tokio = "1.46.1"
+tokio-stream = "0.1.17"
+futures-util = "0.3.31"
+
+thiserror = "2.0.12"
 regex = "1.11.1"
 bytes = "1.10.1"
-serde_json = "1.0.140"
-thiserror = "2.0.12"
-tokio = "1.45.0"
-futures-util = "0.3.31"
-chrono = { version = "0.4.41", features = ["clock"] }
-tokio-stream = "0.1.17"
-bon = "3.6.4"
+
+bon = "3.6.4" 
 strum = "0.27.1"
+zip = "4.0.0"
+
+chrono = { version = "0.4.41", features = ["clock"] }

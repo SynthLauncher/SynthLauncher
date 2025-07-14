@@ -9,25 +9,28 @@ sl-player = { path = "../sl-player" }
 sl-utils = { path = "../sl-utils" }
 sl-java-manager = { path = "../sl-java-manager" }
 
+reqwest = "0.12.22"
 serde = { version = "1.0.219", features = ["derive"] }
-regex = "1.11.1"
-lazy_static = "1.5.0"
-bytes = "1.10.1"
-reqwest = { version = "0.12", features = ["blocking"] }
-tokio = { version = "1.44.1", features = ["full"] }
 serde_json = "1.0.140"
-sha1 = "0.10.6"
-futures = "0.3.31"
-velcro = "0.5.4"
-cfg-if = "1.0.0"
-chrono = "0.4.41"
-thiserror = "2.0.12"
-tempfile = "3.20.0"
 strum = "0.27.1"
 strum_macros = "0.27.1"
-lzma-rs = "0.3.0"
-config = "0.15.11"
-base64 = "0.22.1"
+
+tokio = { version = "1.46.1", features = ["process", "macros"] }
+futures = "0.3.31"
+velcro = "0.5.4"
+
+thiserror = "2.0.12"
+bytes = "1.10.1"
+regex = "1.11.1"
 zip = "4.0.0"
+
+lazy_static = "1.5.0"
+chrono = "0.4.41"
+config = "0.15.11"
+tempfile = "3.20.0"
+lzma-rs = "0.3.0"
+
+sha1 = "0.10.6"
 sha2 = "0.10.9"
 hex = "0.4.3"
+base64 = "0.22.1"
