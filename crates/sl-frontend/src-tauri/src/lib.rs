@@ -3,7 +3,7 @@ use commands::{
     profiles::{get_current_profile, get_profiles, get_other_profiles}, 
     launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
-    store::search_modrinth_store
+    store::{search_modrinth_store, search_curseforge_store}
 };
 
 mod commands;
@@ -25,7 +25,8 @@ pub fn run() {
             open_instance_folder,
             load_game_info,
             get_minecraft_versions,
-            search_modrinth_store
+            search_modrinth_store,
+            search_curseforge_store
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

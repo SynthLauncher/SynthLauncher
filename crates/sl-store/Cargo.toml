@@ -13,3 +13,4 @@ futures-util = "0.3.31"
 
 sl-core = { path = "../sl-core" }
 sl-utils = { path = "../sl-utils" }
+urlencoding = "2.1.3"

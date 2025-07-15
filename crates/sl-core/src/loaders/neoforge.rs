@@ -8,14 +8,13 @@ use sl_meta::minecraft::loaders::neoforge::{NeoForgeLoaderProfile, NeoForgeVersi
 use sl_utils::{
     dlog, log,
     {
-        downloader::downloader,
         errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
     },
 };
 use tempfile::TempDir;
 use tokio::io::AsyncWriteExt;
 
-use crate::{HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR};
+use crate::{LIBS_DIR, MULTI_PATH_SEPARATOR, REQUESTER};
 
 pub const NEOFORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/NeoForgeInstaller.java");
@@ -72,11 +71,9 @@ impl<'a> NeoForgeInstaller<'a> {
             installer_path.display()
         );
 
-        downloader()
-            .client(&HTTP_CLIENT)
-            .url(&url)
-            .target(&installer_path)
-            .call()
+        REQUESTER
+            .builder()
+            .download_to(&url, &installer_path)
             .await?;
 
         Ok(installer_path)

@@ -1,11 +1,10 @@
 use std::fmt;
 
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use sl_utils::errors::BackendError;
+use sl_utils::{errors::BackendError, requester::Requester};
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Hit {
+pub struct ModrinthSearchHit {
     pub slug: String,
     pub title: String,
     pub description: String,
@@ -22,7 +21,7 @@ pub struct Hit {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SearchResult {
-    pub hits: Vec<Hit>,
+    pub hits: Vec<ModrinthSearchHit>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -178,7 +177,7 @@ pub fn build_facets(facets: &Vec<Vec<FacetFilter>>) -> Result<Option<String>, Ba
     Ok(Some(serde_json::to_string(&json_facets)?))
 }
 
-pub async fn query_search(client: &Client, params: Params) -> Result<SearchResult, BackendError> {
+pub async fn query_search(params: Params) -> Result<SearchResult, BackendError> {
     let mut query_parts = Vec::new();
 
     if let Some(query) = params.query {
@@ -214,6 +213,6 @@ pub async fn query_search(client: &Client, params: Params) -> Result<SearchResul
         )
     };
 
-    let json = client.get(url).send().await?.json().await?;
+    let json = Requester::new().get_json(&url).await?;
     Ok(json)
 }

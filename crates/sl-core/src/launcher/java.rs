@@ -1,17 +1,17 @@
 use sl_java_manager::jre_manifest::JreManifest;
-use sl_utils::downloader::downloader;
 use std::fs::{self};
 
-use crate::{HTTP_CLIENT, JRE_MANIFEST_PATH};
+use crate::{JRE_MANIFEST_PATH, REQUESTER};
+
+pub const JRE_MANIFEST_DOWNLOAD_URL: &'static str = "https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json";
 
 pub async fn fetch_jre_manifest() {
-    let res = downloader()
-        .client(&HTTP_CLIENT)
-        .url("https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json")
-        .call()
+    let res = REQUESTER
+        .builder()
+        .download(JRE_MANIFEST_DOWNLOAD_URL)
         .await;
 
-    if let Ok(Some(res)) = res {
+    if let Ok(res) = res {
         tokio::fs::write(&JRE_MANIFEST_PATH.as_path(), res)
             .await
             .expect("Failed writing into the file: jre_manifest.json");

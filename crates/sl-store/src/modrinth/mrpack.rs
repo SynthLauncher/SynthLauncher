@@ -7,8 +7,8 @@ use std::{
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
-use sl_core::HTTP_CLIENT;
-use sl_utils::{downloader::downloader, errors::BackendError};
+use sl_core::REQUESTER;
+use sl_utils::errors::BackendError;
 use zip::ZipArchive;
 
 const MODRINTH_INDEX_NAME: &'static str = "modrinth.index.json";
@@ -112,11 +112,9 @@ async fn download_modpack_file(
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    downloader()
-        .client(&HTTP_CLIENT)
-        .target(&path)
-        .url(&modpack_file.downloads[0])
-        .call()
+    REQUESTER
+        .builder()
+        .download_to(&modpack_file.downloads[0], &path)
         .await?;
 
     Ok(())

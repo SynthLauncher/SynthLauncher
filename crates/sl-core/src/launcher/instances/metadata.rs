@@ -13,7 +13,6 @@ use sl_meta::minecraft::{
     version_manifest::VersionType,
 };
 use sl_utils::{
-    downloader::downloader,
     errors::{BackendError, HttpError, InstanceError},
 };
 use strum_macros::{AsRefStr, Display, EnumString};
@@ -25,8 +24,7 @@ use crate::{
             instance::{InstanceExporter, LoadedInstance},
         },
         minecraft_version::MinecraftVersionID,
-    },
-    HTTP_CLIENT, INSTANCES_DIR, VERSION_MANIFEST,
+    }, INSTANCES_DIR, REQUESTER, VERSION_MANIFEST
 };
 
 #[derive(
@@ -55,13 +53,12 @@ pub enum ModLoader {
 impl ModLoader {
     pub async fn get_latest_version(&self, mc_version: &str) -> Result<String, HttpError> {
         let do_request = async |url: &str| -> Result<_, HttpError> {
-            Ok(downloader()
-                .url(url)
-                .client(&*HTTP_CLIENT)
-                .call()
+            Ok(REQUESTER
+                .builder()
+                .download(url)
                 .await?
-                .expect("expected bytes")
-                .to_vec())
+                .to_vec()
+            )
         };
 
         match self {

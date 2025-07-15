@@ -2,12 +2,10 @@ use std::{collections::HashMap, path::Path, sync::Arc};
 
 use futures_util::{StreamExt, stream::FuturesUnordered};
 use lzma_rs::lzma_decompress;
-use reqwest::Client;
 use serde::Deserialize;
 use sl_meta::minecraft::loaders::vanilla::JavaComponent;
 use sl_utils::{
-    downloader::downloader,
-    errors::BackendError,
+    errors::BackendError, requester::Requester,
 };
 
 use crate::jre_manifest::JreManifest;
@@ -60,27 +58,26 @@ fn set_executable_unix(path: &Path, executable: bool) -> std::io::Result<()> {
 }
 
 pub async fn download_jre_manifest_version(
-    client: &Client,
+    requester: &Requester,
     jre_manifest: &JreManifest,
     dest: &Path,
     java_component: &JavaComponent,
 ) -> Result<(), BackendError> {
     let downloads = jre_manifest.get_component_downloads(java_component);
     let dir = Arc::new(dest.join(java_component.to_string()));
-    let client = Arc::new(client.clone());
+    let requester = Arc::new(requester.clone());
 
     let mut tasks = FuturesUnordered::new();
 
     for download in downloads {
-        let res = client.get(&download.manifest.url).send().await?;
-        let java_files: JavaFiles = res.json().await?;
-
+        let java_files: JavaFiles = requester.get_json(&download.manifest.url).await?;
+        
         for (file_name, java_file) in java_files.files {
             if java_file.downloads.is_none() {
                 continue;
             }
 
-            let client = Arc::clone(&client);
+            let requester = Arc::<Requester>::clone(&requester);
             let dir = Arc::clone(&dir);
             let downloads = java_file.downloads.clone().unwrap();
             let executable = java_file.executable.unwrap_or(false);
@@ -94,12 +91,10 @@ pub async fn download_jre_manifest_version(
                 }
 
                 if let Some(lzma) = downloads.lzma {
-                    let bytes = downloader()
-                        .client(&client)
-                        .url(&lzma.url)
-                        .call()
-                        .await?
-                        .expect("Downloader expected to return Bytes!");
+                    let bytes = requester
+                        .builder()
+                        .download(&lzma.url)
+                        .await?;
 
                     let mut decompressed = Vec::new();
                     lzma_decompress(&mut std::io::Cursor::new(&bytes), &mut decompressed)
@@ -107,11 +102,9 @@ pub async fn download_jre_manifest_version(
 
                     std::fs::write(&path, &decompressed)?;
                 } else if let Some(raw) = downloads.raw {
-                    let _ = downloader()
-                        .client(&client)
-                        .url(&raw.url)
-                        .target(&path)
-                        .call()
+                    requester
+                        .builder()
+                        .download_to(&raw.url, &path)
                         .await?;
                 }
 

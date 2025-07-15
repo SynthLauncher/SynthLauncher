@@ -7,8 +7,7 @@ use sl_utils::errors::BackendError;
 use sl_utils::wlog;
 
 use crate::{
-    // java::jre_manifest::download_jre_manifest_version,
-    HTTP_CLIENT, JAVAS_DIR, JRE_MANIFEST, LAUNCHER_DIR
+    JAVAS_DIR, JRE_MANIFEST, LAUNCHER_DIR, REQUESTER
 };
 
 /// Defines the config file name, relative to the launcher directory and the instance directory.
@@ -34,7 +33,7 @@ async fn default_java_path(component: &JavaComponent) -> Result<PathBuf, Backend
 
     if !java_path.exists() {
         download_jre_manifest_version(
-            &HTTP_CLIENT,
+            &REQUESTER,
             &JRE_MANIFEST,
             &JAVAS_DIR,
             component

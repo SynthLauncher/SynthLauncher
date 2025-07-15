@@ -3,11 +3,11 @@ import { StoreCard } from '@/components/store-card';
 import { Input } from '@/components/ui/input';
 import { SearchIcon, WifiOff, Loader2, AlertCircle } from 'lucide-react';
 import { StoreCategorySelector } from '@/components/store-category-selector';
-import { SearchResult } from '@/lib/types/store/modrinth';
-import { getModrinthStoreSearchResult } from '@/lib/commands/store';
+import { CurseforgeSearchResponse } from '@/lib/types/store/curseforge';
+import { getCurseforgeStoreSearch } from '@/lib/commands/store';
 
 export const StorePage = () => {
-	const [searchResult, setSearchResult] = useState<SearchResult>();
+	const [searchResult, setSearchResult] = useState<CurseforgeSearchResponse>();
 	const [searchQuery, setSearchQuery] = useState('');
 	const [category, setCategory] = useState('modpack');
 	const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ export const StorePage = () => {
 			setError(null);
 
 			try {
-				let result = await getModrinthStoreSearchResult(searchQuery, category, 0);
+				let result = await getCurseforgeStoreSearch(searchQuery, 4471, 0);
 				setSearchResult(result);
 			} catch (err) {
 				setError('failed');
@@ -92,7 +92,7 @@ export const StorePage = () => {
 				</div>
 			)}
 
-			{!loading && !error && searchResult?.hits.length === 0 && (
+			{!loading && !error && searchResult?.data.length === 0 && (
 				<div className="flex items-center justify-center text-muted-foreground mt-4">
 					<span>No results found.</span>
 				</div>
@@ -100,14 +100,14 @@ export const StorePage = () => {
 
 			{!loading &&
 				!error &&
-				searchResult?.hits.map((hit) => (
+				searchResult?.data.map((hit) => (
 					<StoreCard
-						author={hit.author}
-						description={hit.description}
-						downloads={hit.downloads}
-						followers={hit.follows}
-						imageUrl={hit.icon_url || ''}
-						name={hit.title}
+						author={hit.authors[0].name}
+						description={hit.summary}
+						downloads={hit.downloadCount}
+						followers={hit.thumbsUpCount}
+						imageUrl={hit.logo.url || ''}
+						name={hit.name}
 						slug={hit.slug}
 						key={hit.slug}
 					/>

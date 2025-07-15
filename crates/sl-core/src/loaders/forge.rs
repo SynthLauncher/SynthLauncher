@@ -2,7 +2,6 @@ use sl_meta::minecraft::loaders::forge::ForgeLoaderProfile;
 use sl_utils::{
     dlog, elog, log,
     {
-        downloader::downloader,
         errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
     },
 };
@@ -14,7 +13,7 @@ use std::{
 use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
-use crate::{HTTP_CLIENT, LIBS_DIR, MULTI_PATH_SEPARATOR};
+use crate::{LIBS_DIR, MULTI_PATH_SEPARATOR, REQUESTER};
 
 pub const FORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/ForgeInstaller.java");
@@ -138,11 +137,9 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn try_downloading_from_urls(&self, urls: &[&str], path: &Path) -> Result<(), HttpError> {
         for url in urls {
-            let downloaded = downloader()
-                .client(&HTTP_CLIENT)
-                .url(&url)
-                .target(&path)
-                .call()
+            let downloaded = REQUESTER
+                .builder()
+                .download_to(&url, &path)
                 .await;
 
             match downloaded {

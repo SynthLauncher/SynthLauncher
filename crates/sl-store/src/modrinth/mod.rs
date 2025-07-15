@@ -2,9 +2,9 @@ use std::{path::Path, str::FromStr};
 
 use sl_core::{
     launcher::instances::metadata::{InstanceMetadata, ModLoader},
-    HTTP_CLIENT, INSTANCES_DIR,
+    INSTANCES_DIR, REQUESTER,
 };
-use sl_utils::{downloader::downloader, errors::BackendError};
+use sl_utils::errors::BackendError;
 
 use crate::modrinth::{
     api::project::query_project_version,
@@ -15,16 +15,15 @@ pub mod api;
 pub mod mrpack;
 
 pub async fn install_modpack(slug: &str, version: &str) -> Result<(), BackendError> {
-    let project_version = query_project_version(&HTTP_CLIENT, slug, version).await?;
+    let project_version = query_project_version(slug, version).await?;
     let instance_dir = INSTANCES_DIR.join(slug);
     let mrpack_path = instance_dir.join(&project_version.files[0].filename);
 
     tokio::fs::create_dir_all(&instance_dir).await?;
-    downloader()
-        .client(&HTTP_CLIENT)
-        .target(&mrpack_path)
-        .url(&project_version.files[0].url)
-        .call()
+
+    REQUESTER
+        .builder()
+        .download_to(&project_version.files[0].url, &mrpack_path)
         .await?;
 
     unzip_modpack(&mrpack_path, &instance_dir).await?;
@@ -53,7 +52,7 @@ pub async fn install_mod(
     version: &str,
     instance_path: &Path,
 ) -> Result<(), BackendError> {
-    let project_version = query_project_version(&HTTP_CLIENT, slug, version).await?;
+    let project_version = query_project_version(slug, version).await?;
     let mod_path = instance_path
         .join("mods")
         .join(&project_version.files[0].filename);
@@ -61,11 +60,9 @@ pub async fn install_mod(
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    downloader()
-        .client(&HTTP_CLIENT)
-        .target(&mod_path)
-        .url(&project_version.files[0].url)
-        .call()
+    REQUESTER
+        .builder()
+        .download_to(&project_version.files[0].url, &mod_path)
         .await?;
 
     Ok(())

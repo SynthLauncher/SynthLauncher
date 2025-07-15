@@ -3,6 +3,7 @@ use lazy_static::lazy_static;
 use minecraft::version_manifest::read_version_manifest;
 use sl_java_manager::jre_manifest::JreManifest;
 use sl_meta::minecraft::{version_manifest::VersionManifest, Arch, OsName};
+use sl_utils::requester::Requester;
 use std::path::PathBuf;
 
 use crate::launcher::get_launcher_dir;
@@ -53,5 +54,5 @@ lazy_static! {
 
     pub static ref JRE_MANIFEST: JreManifest = read_jre_manifest();
     pub static ref VERSION_MANIFEST: VersionManifest = read_version_manifest();
-    pub static ref HTTP_CLIENT: reqwest::Client = reqwest::Client::new();
+    pub static ref REQUESTER: Requester = Requester::new();
 }

@@ -2,27 +2,23 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use sl_core::REQUESTER;
 use sl_utils::errors::BackendError;
-use tokio::io::{AsyncWriteExt, BufWriter};
 
 use crate::modrinth::api::{
     GalleryImage, ProjectType,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Project {
+pub struct ModrinthProject {
+    pub id: String,
     pub slug: String,
     pub title: String,
     pub description: String,
-    pub body: String,
     pub project_type: ProjectType,
     pub downloads: u32,
     pub icon_url: Option<String>,
-    pub id: String,
-    pub team: String,
-    pub body_url: Option<String>,
     pub followers: u32,
     pub versions: Vec<String>,
     pub game_versions: Vec<String>,
@@ -31,14 +27,14 @@ pub struct Project {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Hashes {
+pub struct ModrinthProjectFileHashes {
     pub sha1: String,
     pub sha512: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ProjectFile {
-    pub hashes: Hashes,
+pub struct ModrinthProjectFile {
+    pub hashes: ModrinthProjectFileHashes,
     pub url: String,
     pub filename: String,
     pub primary: bool,
@@ -47,64 +43,55 @@ pub struct ProjectFile {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ProjectVersion {
-    pub game_versions: Vec<String>,
-    pub loaders: Vec<String>,
+pub struct ModrinthProjectVersion {
     pub id: String,
     pub project_id: String,
-    pub author_id: String,
     pub name: String,
+    pub game_versions: Vec<String>,
+    pub loaders: Vec<String>,
     pub version_number: String,
     pub downloads: u32,
     pub version_type: String,
-    pub files: Vec<ProjectFile>,
+    pub files: Vec<ModrinthProjectFile>,
 }
 
 #[must_use]
-pub async fn query_project(client: &Client, slug: &str) -> Result<Project, BackendError> {
+pub async fn query_project(slug: &str) -> Result<ModrinthProject, BackendError> {
     let url = format!("https://api.modrinth.com/v2/project/{}", slug);
-    let json = client.get(url).send().await?.json().await?;
+    let json = REQUESTER.get_json(&url).await?;
     Ok(json)
 }
 
 #[must_use]
-pub async fn query_project_versions(
-    client: &Client,
-    slug: &str,
-) -> Result<Vec<ProjectVersion>, BackendError> {
+pub async fn query_project_versions(slug: &str) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
     let url = format!("https://api.modrinth.com/v2/project/{}/version", slug);
-    let json = client.get(url).send().await?.json().await?;
+    let json = REQUESTER.get_json(&url).await?;
     Ok(json)
 }
 
 #[must_use]
 pub async fn query_project_version(
-    client: &Client,
     slug: &str,
     version: &str,
-) -> Result<ProjectVersion, BackendError> {
+) -> Result<ModrinthProjectVersion, BackendError> {
     let url = format!(
         "https://api.modrinth.com/v2/project/{}/version/{}",
         slug, version
     );
-    let json = client.get(url).send().await?.json().await?;
+    let json = REQUESTER.get_json(&url).await?;
     Ok(json)
 }
 
 pub async fn download_project_file(
-    client: &Client,
-    project_file: &ProjectFile,
+    project_file: &ModrinthProjectFile,
     dest: &Path,
 ) -> Result<PathBuf, BackendError> {
-    let mut res = client.get(&project_file.url).send().await?;
     let path = dest.join(&project_file.filename);
-
-    let file = tokio::fs::File::create(&path).await?;
-    let mut writer = BufWriter::new(file);
-
-    while let Some(chunk) = res.chunk().await? {
-        writer.write_all(&chunk).await?;
-    }
+    
+    REQUESTER
+        .builder()
+        .download_to(&project_file.url, &path)
+        .await?;
 
     Ok(path)
 }

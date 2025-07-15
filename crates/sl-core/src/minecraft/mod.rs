@@ -9,15 +9,10 @@ use futures::{stream::FuturesUnordered, StreamExt};
 
 use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
 use sl_utils::{
-    elog, log,
-    {
-        downloader::downloader,
-        errors::{BackendError, HttpError},
-        zip::ZipExtractor,
-    },
+    elog, errors::{BackendError, HttpError}, log, zip::ZipExtractor
 };
 
-use crate::{ASSETS_DIR, HTTP_CLIENT, LIBS_DIR};
+use crate::{ASSETS_DIR, LIBS_DIR, REQUESTER};
 
 pub mod version_manifest;
 
@@ -60,11 +55,9 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Htt
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    downloader()
-        .client(&HTTP_CLIENT)
-        .url(&download.url)
-        .target(&path)
-        .call()
+    REQUESTER
+        .builder()
+        .download_to(&download.url, &path)
         .await?;
 
     Ok(())
@@ -153,14 +146,12 @@ async fn install_assets(client: &Client) -> Result<(), BackendError> {
 
         tokio::fs::create_dir_all(&dir).await?;
 
-        downloader()
-            .client(&HTTP_CLIENT)
-            .url(&format!(
+        REQUESTER
+            .builder()
+            .download_to(&format!(
                 "https://resources.download.minecraft.net/{dir_name}/{}",
                 object.hash
-            ))
-            .target(&path)
-            .call()
+            ), &path)
             .await?;
 
         Ok(())

@@ -2,20 +2,18 @@ use std::{fs, path::Path};
 
 use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::{
-    downloader::downloader,
     errors::{BackendError, InstanceError},
 };
 
-use crate::{HTTP_CLIENT, VERSION_MANIFEST, VERSION_MANIFEST_PATH};
+use crate::{REQUESTER, VERSION_MANIFEST, VERSION_MANIFEST_PATH};
 
 pub async fn fetch_version_manifest() {
-    let res = downloader()
-        .client(&HTTP_CLIENT)
-        .url("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json")
-        .call()
+    let res = REQUESTER
+        .builder()
+        .download("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json")
         .await;
 
-    if let Ok(Some(res)) = res {
+    if let Ok(res) = res {
         tokio::fs::write(&VERSION_MANIFEST_PATH.as_path(), res)
             .await
             .expect("Failed writing into the file: version_manifest.json");
@@ -37,11 +35,9 @@ pub async fn download_version_json(version: &str, to_path: &Path) -> Result<(), 
         ));
     };
 
-    downloader()
-        .client(&HTTP_CLIENT)
-        .url(&version.url)
-        .target(to_path)
-        .call()
+    REQUESTER
+        .builder()
+        .download_to(&version.url, to_path)
         .await?;
 
     Ok(())

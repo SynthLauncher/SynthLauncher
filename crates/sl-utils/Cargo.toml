@@ -21,3 +21,4 @@ strum = "0.27.1"
 zip = "4.0.0"
 
 chrono = { version = "0.4.41", features = ["clock"] }
+url = "2.5.4"

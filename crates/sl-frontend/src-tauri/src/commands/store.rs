@@ -1,5 +1,5 @@
-use sl_core::HTTP_CLIENT;
 use sl_store::{
+    curseforge::api::search::{query_curseforge_search, CurseforgeSearchResponse},
     facet_filters,
     modrinth::api::search::{query_search, Params, SearchResult},
 };
@@ -12,9 +12,19 @@ pub async fn search_modrinth_store(
 ) -> Result<SearchResult, String> {
     let filter = facet_filters!([ProjectType == project_type]);
     let params = Params::new(Some(query), Some(filter), None, Some(16), Some(16 * page));
-    let search_result = query_search(&HTTP_CLIENT, params)
-        .await
-        .map_err(|e| e.to_string())?;
+    let search_result = query_search(params).await.map_err(|e| e.to_string())?;
 
+    Ok(search_result)
+}
+
+#[tauri::command]
+pub async fn search_curseforge_store(
+    query: &str,
+    offset: u32,
+    class_id: u32,
+) -> Result<CurseforgeSearchResponse, String> {
+    let search_result = query_curseforge_search(query, class_id, offset)
+        .await
+        .map_err(|x| x.to_string())?;
     Ok(search_result)
 }

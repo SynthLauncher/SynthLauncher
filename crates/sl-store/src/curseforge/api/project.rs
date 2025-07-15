@@ -1,37 +1,37 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProjectAsset {
+pub struct CurseforgeProjectAsset {
     pub url: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProjectAuthor {
+pub struct CurseforgeProjectAuthor {
     pub name: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct File {
+pub struct CurseforgeFile {
     pub file_name: Option<String>,
     pub download_url: Option<String>,
     pub game_versions: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Project {
+pub struct CurseforgeProject {
     pub id: u32,
     pub game_id: u32,
     pub name: String,
     pub slug: String,
     pub summary: String,
     pub download_count: u64,
-    pub logo: ProjectAsset,
-    pub screenshots: Vec<ProjectAsset>,
-    pub authors: Vec<ProjectAuthor>,
+    pub logo: CurseforgeProjectAsset,
+    pub screenshots: Vec<CurseforgeProjectAsset>,
+    pub authors: Vec<CurseforgeProjectAuthor>,
     pub thumbs_up_count: u32,
-    pub latest_files: Vec<File>,
+    pub latest_files: Vec<CurseforgeFile>,
 }
