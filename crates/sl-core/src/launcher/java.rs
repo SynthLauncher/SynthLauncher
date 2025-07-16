@@ -3,9 +3,9 @@ use std::fs::{self};
 
 use crate::{JRE_MANIFEST_PATH, REQUESTER};
 
-pub const JRE_MANIFEST_DOWNLOAD_URL: &'static str = "https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json";
+const JRE_MANIFEST_DOWNLOAD_URL: &str = "https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json";
 
-pub async fn fetch_jre_manifest() {
+pub(crate) async fn fetch_jre_manifest() {
     let res = REQUESTER
         .builder()
         .download(JRE_MANIFEST_DOWNLOAD_URL)

@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use sl_meta::minecraft::loaders::quilt::profiles::{get_quilt_loader_profile, QuiltLoaderProfile};
 use sl_utils::errors::{BackendError, HttpError};
 
-pub async fn install_quilt_loader(
+pub(crate) async fn install_quilt_loader(
     minecraft_version: &str,
     output_loader_json_path: &Path,
     loader_version: &str,

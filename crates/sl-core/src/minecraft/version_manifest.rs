@@ -7,10 +7,12 @@ use sl_utils::{
 
 use crate::{REQUESTER, VERSION_MANIFEST, VERSION_MANIFEST_PATH};
 
-pub async fn fetch_version_manifest() {
+const VERSION_MANIFEST_DOWNLOAD_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
+
+pub(crate) async fn fetch_version_manifest() {
     let res = REQUESTER
         .builder()
-        .download("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json")
+        .download(VERSION_MANIFEST_DOWNLOAD_URL)
         .await;
 
     if let Ok(res) = res {
@@ -20,14 +22,14 @@ pub async fn fetch_version_manifest() {
     }
 }
 
-pub fn read_version_manifest() -> VersionManifest {
+pub(crate) fn read_version_manifest() -> VersionManifest {
     let buffer = fs::read_to_string(VERSION_MANIFEST_PATH.as_path())
         .expect("Failed reading the file: version_manifest.json");
     serde_json::from_str(buffer.as_str()).expect("Failed to parse file: version_manifest.json")
 }
 
 /// Downloads the client.json of a given minecraft version
-pub async fn download_version_json(version: &str, to_path: &Path) -> Result<(), BackendError> {
+pub(crate) async fn download_version_json(version: &str, to_path: &Path) -> Result<(), BackendError> {
     let Some(version) = VERSION_MANIFEST.versions().find(|x| x.id == version) else {
         // TODO: Use a different type for version instead of String
         return Err(BackendError::InstanceError(

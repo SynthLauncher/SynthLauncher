@@ -6,7 +6,7 @@ interface CurseforgeProjectAuthor {
     name: string
 }
 
-interface CurseforgeFile {
+export interface CurseforgeFile {
     fileName?: string,
     downloadUrl?: string,
     gameVersions: string[]
@@ -22,10 +22,9 @@ export interface CurseforgeProject {
     logo: CurseforgeProjectAsset,
     screenshots: CurseforgeProjectAsset[],
     authors: CurseforgeProjectAuthor[],
-    thumbsUpCount: number,
     latestFiles: CurseforgeFile[]
 }
 
-export interface CurseforgeSearchResponse {
+export interface CurseforgeSearchResult {
     data: CurseforgeProject[]
 }

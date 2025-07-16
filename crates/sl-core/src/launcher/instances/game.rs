@@ -6,7 +6,7 @@ use sl_utils::{errors::BackendError};
 use std::{fs::File, io::Read, path::Path};
 use zip::ZipArchive;
 
-use crate::{launcher::instances::metadata::ModLoader, INSTANCES_DIR};
+use crate::{launcher::instances::instance_metadata::ModLoader, INSTANCES_DIR};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModMetadata {

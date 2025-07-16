@@ -1,14 +1,11 @@
 use crate::{
-    launcher::config::InstanceConfig,
-    loaders::{
+    launcher::instances::instance_config::{read_instance_config, InstanceConfig}, loaders::{
         fabric::install_fabric_loader, forge::install_forge_loader,
         neoforge::install_neoforge_loader, quilt::install_quilt_loader, Loaders,
-    },
-    minecraft::version_manifest::download_version_json,
-    VERSIONS_DIR,
+    }, minecraft::version_manifest::download_version_json, VERSIONS_DIR
 };
 
-use super::instances::metadata::ModLoader;
+use super::instances::instance_metadata::ModLoader;
 use sl_meta::minecraft::loaders::vanilla::Client;
 use sl_utils::{dlog, errors::BackendError};
 use std::{
@@ -85,7 +82,7 @@ impl MinecraftVersionID {
         instance_dir: &Path,
         vanilla_client: &Client,
     ) -> Result<InstanceConfig, BackendError> {
-        super::config::read_instance_config(instance_dir, &vanilla_client.java_version.component)
+        read_instance_config(instance_dir, &vanilla_client.java_version.component)
             .await
     }
 

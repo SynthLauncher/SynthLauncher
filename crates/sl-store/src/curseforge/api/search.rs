@@ -25,7 +25,7 @@ pub async fn query_curseforge_search(
         "desc"  
     );
 
-    let res = Requester::new().get_json(&url).await?;
+    let res: CurseforgeSearchResponse = Requester::new().get_json(&url).await?;
 
     Ok(res)
 }

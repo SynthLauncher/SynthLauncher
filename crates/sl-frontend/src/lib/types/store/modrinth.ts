@@ -1,4 +1,4 @@
-interface ModrinthSearchHit {
+export interface ModrinthSearchHit {
 	slug: string;
 	title: string;
 	description: string;

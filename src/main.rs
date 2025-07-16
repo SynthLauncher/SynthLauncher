@@ -3,7 +3,7 @@ use cli::{Cli, Commands};
 use sl_core::{
     launcher::{
         init_launcher_dir,
-        instances::{self, metadata::InstanceMetadata},
+        instances::{self, instance_importer::import_instance_from_path, instance_metadata::InstanceMetadata},
         player::{
             microsoft_auth::AuthFlow, player_profile::PlayerProfile,
             player_profiles::PlayerProfiles,
@@ -108,7 +108,7 @@ async fn run_cli() -> Result<(), BackendError> {
             exporter.export()?;
         }
         Commands::Import { path } => {
-            instances::import_instance_from_path(&path)?;
+            import_instance_from_path(&path)?;
         }
     }
 

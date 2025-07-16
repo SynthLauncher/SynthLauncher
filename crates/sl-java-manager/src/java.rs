@@ -7,7 +7,7 @@ use regex::Regex;
 use sl_utils::errors::BackendError;
 use which::which;
 
-use crate::{JAVA_BINARY, SEPARATOR};
+use crate::{JAVA_BINARY, MULTI_PATH_SEPARATOR};
 
 #[derive(Debug)]
 pub struct JavaInstallation {
@@ -16,7 +16,7 @@ pub struct JavaInstallation {
 }
 
 impl JavaInstallation {
-    pub fn extract_java_version(java_path: &Path) -> Result<Option<String>, BackendError> {
+    fn extract_java_version(java_path: &Path) -> Result<Option<String>, BackendError> {
         let output = Command::new(java_path).arg("-version").output()?;
         let stderr = String::from_utf8_lossy(&output.stderr);
         let re = Regex::new(r#"version\s+"([^"]+)""#)?;
@@ -40,7 +40,7 @@ impl JavaInstallation {
     fn get_installation_paths_from_path() -> Vec<PathBuf> {
         if let Ok(path) = std::env::var("PATH") {
             return path
-                .split(SEPARATOR)
+                .split(MULTI_PATH_SEPARATOR)
                 .map(PathBuf::from)
                 .filter_map(|dir| {
                     let file = dir.join(JAVA_BINARY);

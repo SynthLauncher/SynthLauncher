@@ -1,18 +1,30 @@
 import { useEffect, useState } from 'react';
-import { StoreCard } from '@/components/store-card';
+import { CurseforgeStoreCard, ModrinthStoreCard } from '@/components/store-card';
 import { Input } from '@/components/ui/input';
 import { SearchIcon, WifiOff, Loader2, AlertCircle } from 'lucide-react';
 import { StoreCategorySelector } from '@/components/store-category-selector';
-import { CurseforgeSearchResponse } from '@/lib/types/store/curseforge';
-import { getCurseforgeStoreSearch } from '@/lib/commands/store';
+import { getCurseforgeStoreSearch, getModrinthStoreSearch } from '@/lib/commands/store';
+import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
+import { ModrinthSearchResult } from '@/lib/types/store/modrinth';
 
 export const StorePage = () => {
-	const [searchResult, setSearchResult] = useState<CurseforgeSearchResponse>();
+	const [store, setStore] = useState<'modrinth' | 'curseforge'>('modrinth');
+	const [modrinthResult, setModrinthResult] = useState<ModrinthSearchResult>();
+	const [curseforgeResult, setCurseforgeResult] = useState<CurseforgeSearchResult>();
+
 	const [searchQuery, setSearchQuery] = useState('');
 	const [category, setCategory] = useState('modpack');
+
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isOnline, setIsOnline] = useState(true);
+
+	const CURSEFORGE_CLASS_IDS: Record<string, number> = {
+		modpack: 4471,
+		mod: 6,
+		resourcepack: 12,
+		shader: 6552,
+	};
 
 	useEffect(() => {
 		const checkOnline = () => setIsOnline(navigator.onLine);
@@ -38,8 +50,14 @@ export const StorePage = () => {
 			setError(null);
 
 			try {
-				let result = await getCurseforgeStoreSearch(searchQuery, 4471, 0);
-				setSearchResult(result);
+				if (store === 'curseforge') {
+					const classId = CURSEFORGE_CLASS_IDS[category] ?? 4471;
+					const result = await getCurseforgeStoreSearch(searchQuery, classId, 0);
+					setCurseforgeResult(result);
+				} else {
+					const result = await getModrinthStoreSearch(searchQuery, category, 0);
+					setModrinthResult(result);
+				}
 			} catch (err) {
 				setError('failed');
 			} finally {
@@ -48,17 +66,18 @@ export const StorePage = () => {
 		};
 
 		fetch();
-	}, [searchQuery, category, isOnline]);
-
+	}, [searchQuery, category, isOnline, store]);
 	return (
 		<div className="flex flex-col gap-3">
 			<StoreCategorySelector
 				values={['Modrinth', 'Curseforge']}
 				defaultValue="modrinth"
+				onValueChange={(v) => setStore(v.toLowerCase() as 'modrinth' | 'curseforge')}
 			/>
 
 			<StoreCategorySelector
-				values={['Modpack', 'Mod', 'Shader', 'Resourcepack', 'Datapack']}
+				// Add Data packs later
+				values={['Modpack', 'Mod', 'Shader', 'Resourcepack']}
 				defaultValue="modpack"
 				onValueChange={(value: string) => setCategory(value.toLowerCase())}
 			/>
@@ -92,26 +111,17 @@ export const StorePage = () => {
 				</div>
 			)}
 
-			{!loading && !error && searchResult?.data.length === 0 && (
-				<div className="flex items-center justify-center text-muted-foreground mt-4">
-					<span>No results found.</span>
-				</div>
-			)}
+			{!loading && !error && store === 'curseforge' && curseforgeResult?.data.map((hit) => (
+				<CurseforgeStoreCard
+					hit={hit}
+				/>
+			))}
 
-			{!loading &&
-				!error &&
-				searchResult?.data.map((hit) => (
-					<StoreCard
-						author={hit.authors[0].name}
-						description={hit.summary}
-						downloads={hit.downloadCount}
-						followers={hit.thumbsUpCount}
-						imageUrl={hit.logo.url || ''}
-						name={hit.name}
-						slug={hit.slug}
-						key={hit.slug}
-					/>
-				))}
+			{!loading && !error && store === 'modrinth' && modrinthResult?.hits.map((hit) => (
+				<ModrinthStoreCard 
+					hit={hit}
+				/>
+			))}
 		</div>
 	);
 };

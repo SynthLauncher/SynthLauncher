@@ -21,7 +21,7 @@ use crate::{
     launcher::{
         instances::{
             self,
-            instance::{InstanceExporter, LoadedInstance},
+            loaded_instance::LoadedInstance, instance_exporter::InstanceExporter,
         },
         minecraft_version::MinecraftVersionID,
     }, INSTANCES_DIR, REQUESTER, VERSION_MANIFEST

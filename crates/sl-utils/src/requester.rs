@@ -20,7 +20,7 @@ impl<'a> RequestBuilder<'a> {
         Self {
             requester,
             retries: 3,
-            retry_timeout: Duration::from_secs(5),
+            retry_timeout: Duration::from_secs(1),
             progress_tx: None,
         }
     }

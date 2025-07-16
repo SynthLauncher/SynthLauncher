@@ -40,7 +40,7 @@ impl PlayerProfiles {
         if !self
             .profiles
             .iter()
-            .any(|existing| existing.name == profile.name)
+            .any(|existing| existing.data.name == profile.data.name)
         {
             self.profiles.push(profile);
         }

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{ArgAction, Args, Parser, Subcommand};
-use sl_core::launcher::instances::metadata::ModLoader;
+use sl_core::launcher::instances::instance_metadata::ModLoader;
 
 #[derive(Parser)]
 #[command(about, long_about = None)]

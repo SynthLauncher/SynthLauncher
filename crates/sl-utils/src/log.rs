@@ -1,5 +1,7 @@
 use std::{fs::File, io::Write, path::PathBuf, sync::Mutex};
 
+pub use chrono;
+
 static LOG_FILE: Mutex<Option<File>> = Mutex::new(Option::None);
 
 pub fn set_log_file(path: PathBuf) {
@@ -29,8 +31,9 @@ macro_rules! write_to_log_file {
 #[macro_export]
 macro_rules! log_generic {
     ($level:expr, $($arg:tt)*) => {{
-        // FIXME:
-        let now = $crate::__chrono_reexport::Local::now().format("%Y-%m-%d %H:%M:%S");
+        let now = $crate::log::chrono::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string();
         println!("[{}] [{}] [{}:{}] {}", $level, now, file!(), line!(), format!($($arg)*));
         $crate::write_to_log_file!("[{}] [{}] [{}:{}] {}\n", $level, now, file!(), line!(), format!($($arg)*));
     }};

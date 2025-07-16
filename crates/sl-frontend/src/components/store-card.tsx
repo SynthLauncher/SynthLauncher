@@ -1,24 +1,51 @@
-import { Download, Heart } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Button } from './ui/button';
+import { CurseforgeProject } from '@/lib/types/store/curseforge';
+import { ModrinthSearchHit } from '@/lib/types/store/modrinth';
+
+export const CurseforgeStoreCard = ({ hit }: { hit: CurseforgeProject }) => {
+	return (
+		<StoreCard
+			name={hit.name}
+			slug={hit.slug}
+			author={hit.authors[0].name}
+			description={hit.summary}
+			downloads={hit.downloadCount}
+			imageUrl={hit.logo.url || ''}
+		/>
+	);
+}
+
+export const ModrinthStoreCard = ({ hit }: { hit: ModrinthSearchHit }) => {
+	return (
+		<StoreCard
+			name={hit.title}
+			slug={hit.slug}
+			author={hit.author}
+			description={hit.description}
+			downloads={hit.downloads}
+			imageUrl={hit.icon_url || ''}
+		/>
+	);
+}
 
 export const StoreCard = ({
 	name,
+	slug,
 	author,
 	description,
 	downloads,
-	followers,
 	imageUrl,
 }: {
 	name: string;
 	author: string;
 	description: string;
 	downloads: number;
-	followers: number;
 	imageUrl: string;
 	slug: string;
 }) => {
 	return (
-		<div className="bg-[#1D2026] rounded-lg p-5 flex gap-4 max-w-full">
+		<div className="bg-[#1D2026] rounded-lg p-5 flex gap-4 max-w-full" key={slug}>
 			<img
 				src={imageUrl}
 				alt={`${name} icon`}
@@ -40,10 +67,7 @@ export const StoreCard = ({
 						<Download className="w-4 h-4" />
 						<span>{downloads.toLocaleString()} downloads</span>
 					</div>
-					<div className="flex items-center gap-1">
-						<Heart className="w-4 h-4" />
-						<span>{followers.toLocaleString()} followers</span>
-					</div>
+
 				</div>
 			</div>
 

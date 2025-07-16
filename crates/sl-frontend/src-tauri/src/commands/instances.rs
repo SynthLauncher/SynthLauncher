@@ -1,7 +1,7 @@
 use sl_core::launcher::instances::{
     self,
     game::{get_game_info, GameInfo},
-    metadata::{InstanceMetadata, ModLoader},
+    instance_metadata::{InstanceMetadata, ModLoader},
 };
 use sl_utils::errors::BackendError;
 

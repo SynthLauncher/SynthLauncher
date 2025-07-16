@@ -2,7 +2,7 @@ pub mod java;
 pub mod jre_manifest;
 
 #[derive(Debug)]
-pub enum Platform {
+enum Platform {
     Linux,
     LinuxI386,
     MacOs,
@@ -13,7 +13,7 @@ pub enum Platform {
 }
 
 impl Platform {
-    pub fn detect() -> Self {
+    fn detect() -> Self {
         use Platform::*;
 
         match (std::env::consts::OS, std::env::consts::ARCH) {
@@ -29,13 +29,14 @@ impl Platform {
     }
 }
 
-#[cfg(windows)]
-pub const JAVA_BINARY: &'static str = "java.exe";
-#[cfg(not(windows))]
-pub const JAVA_BINARY: &'static str = "java";
+pub const JAVA_BINARY: &str = if cfg!(target_os = "windows") {
+    "java.exe"
+} else {
+    "java"
+};
 
-#[cfg(windows)]
-const SEPARATOR: &str = ";";
-#[cfg(not(windows))]
-const SEPARATOR: &str = ":";
-
+pub const MULTI_PATH_SEPARATOR: &str = if cfg!(target_os = "windows") {
+    ";"
+} else {
+    ":"
+};

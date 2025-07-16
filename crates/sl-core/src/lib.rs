@@ -12,12 +12,6 @@ pub mod launcher;
 pub mod loaders;
 pub mod minecraft;
 
-pub const MULTI_PATH_SEPARATOR: &'static str = if cfg!(target_os = "windows") {
-    ";"
-} else {
-    ":"
-};
-
 pub const OS: OsName = if cfg!(target_os = "windows") {
     OsName::Windows
 } else if cfg!(target_os = "linux") {
@@ -39,7 +33,6 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
 };
 
 lazy_static! {
-    #[derive(Debug)]
     pub static ref LAUNCHER_DIR: PathBuf = get_launcher_dir();
     pub static ref ASSETS_DIR: PathBuf = LAUNCHER_DIR.join("assets");
     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");

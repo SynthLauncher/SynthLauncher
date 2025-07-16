@@ -1,3 +1,4 @@
+use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::minecraft::loaders::forge::ForgeLoaderProfile;
 use sl_utils::{
     dlog, elog, log,
@@ -13,7 +14,7 @@ use std::{
 use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
-use crate::{LIBS_DIR, MULTI_PATH_SEPARATOR, REQUESTER};
+use crate::{LIBS_DIR, REQUESTER};
 
 pub const FORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/ForgeInstaller.java");

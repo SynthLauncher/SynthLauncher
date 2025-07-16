@@ -12,14 +12,13 @@ use crate::{
     PROFILES_PATH,
 };
 
-pub mod config;
 pub mod instances;
 pub mod java;
 pub mod player;
 pub mod player_profiles;
-mod minecraft_version;
+pub mod minecraft_version;
 
-pub fn get_launcher_dir() -> PathBuf {
+pub(crate) fn get_launcher_dir() -> PathBuf {
     #[cfg(target_os = "windows")]
     {
         return env::var("APPDATA")

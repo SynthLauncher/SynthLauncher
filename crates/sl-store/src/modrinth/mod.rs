@@ -1,7 +1,7 @@
 use std::{path::Path, str::FromStr};
 
 use sl_core::{
-    launcher::instances::metadata::{InstanceMetadata, ModLoader},
+    launcher::instances::instance_metadata::{InstanceMetadata, ModLoader},
     INSTANCES_DIR, REQUESTER,
 };
 use sl_utils::errors::BackendError;

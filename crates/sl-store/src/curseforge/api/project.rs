@@ -30,8 +30,6 @@ pub struct CurseforgeProject {
     pub summary: String,
     pub download_count: u64,
     pub logo: CurseforgeProjectAsset,
-    pub screenshots: Vec<CurseforgeProjectAsset>,
     pub authors: Vec<CurseforgeProjectAuthor>,
-    pub thumbs_up_count: u32,
     pub latest_files: Vec<CurseforgeFile>,
 }
