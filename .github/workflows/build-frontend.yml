@@ -65,4 +65,5 @@ jobs:
           releaseDraft: true
           prerelease: false
           tauriScript: "pnpm tauri"
+          projectPath: ./crates/sl-frontend
           args: ${{ matrix.args }}
