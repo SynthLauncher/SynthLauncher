@@ -7,7 +7,7 @@ import {
 } from '@/lib/commands/instances';
 import { openInstanceFolder } from '@/lib/commands/launcher';
 import { GameInfo, Instance } from '@/lib/types/instances';
-import { Blocks, Folder, Loader2, Play, Settings } from 'lucide-react';
+import { Blocks, Folder, Loader2, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
