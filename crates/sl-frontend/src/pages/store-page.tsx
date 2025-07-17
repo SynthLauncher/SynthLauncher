@@ -6,6 +6,7 @@ import { StoreCategorySelector } from '@/components/store-category-selector';
 import { getCurseforgeStoreSearch, getModrinthStoreSearch } from '@/lib/commands/store';
 import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
 import { ModrinthSearchResult } from '@/lib/types/store/modrinth';
+import PaginationWithFirstAndLastPageNavigation from '@/components/customized/pagination/pagination-06';
 
 export const StorePage = () => {
 	const [store, setStore] = useState<'modrinth' | 'curseforge'>('modrinth');
@@ -18,6 +19,8 @@ export const StorePage = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isOnline, setIsOnline] = useState(true);
+
+	const [page, setPage] = useState(1);
 
 	const CURSEFORGE_CLASS_IDS: Record<string, number> = {
 		modpack: 4471,
@@ -52,10 +55,10 @@ export const StorePage = () => {
 			try {
 				if (store === 'curseforge') {
 					const classId = CURSEFORGE_CLASS_IDS[category] ?? 4471;
-					const result = await getCurseforgeStoreSearch(searchQuery, classId, 0);
+					const result = await getCurseforgeStoreSearch(searchQuery, classId, page);
 					setCurseforgeResult(result);
 				} else {
-					const result = await getModrinthStoreSearch(searchQuery, category, 0);
+					const result = await getModrinthStoreSearch(searchQuery, category, page);
 					setModrinthResult(result);
 				}
 			} catch (err) {
@@ -66,20 +69,27 @@ export const StorePage = () => {
 		};
 
 		fetch();
-	}, [searchQuery, category, isOnline, store]);
+	}, [searchQuery, category, isOnline, store, page]);
+
 	return (
 		<div className="flex flex-col gap-3">
 			<StoreCategorySelector
 				values={['Modrinth', 'Curseforge']}
 				defaultValue="modrinth"
-				onValueChange={(v) => setStore(v.toLowerCase() as 'modrinth' | 'curseforge')}
+				onValueChange={(v) => {
+					setPage(1);
+					setStore(v.toLowerCase() as 'modrinth' | 'curseforge');
+				}}
 			/>
 
 			<StoreCategorySelector
 				// Add Data packs later
 				values={['Modpack', 'Mod', 'Shader', 'Resourcepack']}
 				defaultValue="modpack"
-				onValueChange={(value: string) => setCategory(value.toLowerCase())}
+				onValueChange={(value: string) => {
+					setPage(1);
+					setCategory(value.toLowerCase())
+				}}
 			/>
 
 			<Input
@@ -118,10 +128,29 @@ export const StorePage = () => {
 			))}
 
 			{!loading && !error && store === 'modrinth' && modrinthResult?.hits.map((hit) => (
-				<ModrinthStoreCard 
+				<ModrinthStoreCard
 					hit={hit}
 				/>
 			))}
-		</div>
+
+			{!loading && !error && (
+				// <Pagination className='text-gray-200'>
+				// 	<PaginationContent>
+				// 		{page > 1 ?
+				// 			<PaginationItem onClick={() => setPage(page - 1)}>
+				// 				<PaginationPrevious className='hover:bg-sky-600 hover:text-gray-200' />
+				// 			</PaginationItem>
+				// 			: <></>
+				// 		}
+				// 		<PaginationItem onClick={() => setPage(page + 1)}>
+				// 			<PaginationNext className='hover:bg-sky-600 hover:text-gray-200' />
+				// 		</PaginationItem>
+				// 	</PaginationContent>
+				// </Pagination>
+				<PaginationWithFirstAndLastPageNavigation />
+			)
+			}
+
+		</div >
 	);
 };

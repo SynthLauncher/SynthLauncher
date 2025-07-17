@@ -1,3 +1,5 @@
+import DropdownMenuWithSubMenu from '@/components/customized/dropdown-menu/dropdown-menu-05';
+import { PopoverDeleteFileDemo } from '@/components/customized/popover-delete-file';
 import {
 	getGameInfo,
 	getInstances,
@@ -8,6 +10,7 @@ import { GameInfo, Instance } from '@/lib/types/instances';
 import { Blocks, Folder, Loader2, Play, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export const InstancePage = () => {
 	const { name } = useParams<{ name: string }>();
@@ -76,10 +79,18 @@ export const InstancePage = () => {
 
 				<div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
 					<button
-						className="bg-green-500 hover:bg-green-600 text-black font-semibold px-5 h-10 rounded-md flex items-center gap-2 shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
+						className="bg-green-500 hover:bg-green-600 text-white font-semibold px-5 h-10 rounded-md flex items-center gap-2 shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
 						onClick={async () => {
 							setIsRunning(true);
 							try {
+								toast.info('Launching...', {
+									style: {
+										'--normal-bg':
+											'color-mix(in oklab, light-dark(var(--color-sky-600), var(--color-sky-400)) 10%, var(--background))',
+										'--normal-text': 'light-dark(var(--color-sky-600), var(--color-sky-400))',
+										'--normal-border': 'light-dark(var(--color-sky-600), var(--color-sky-400))'
+									} as React.CSSProperties
+								})
 								await launchInstance(instance.name);
 							} finally {
 								setIsRunning(false);
@@ -91,9 +102,9 @@ export const InstancePage = () => {
 						<span>{isRunning ? 'Running...' : 'Play'}</span>
 					</button>
 
-					<button className="w-10 h-10 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded-md shadow transition">
-						<Settings className="w-5 h-5 text-white" />
-					</button>
+					<DropdownMenuWithSubMenu />
+
+					<PopoverDeleteFileDemo />
 
 					<button
 						className="w-10 h-10 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded-md shadow transition"
@@ -112,11 +123,10 @@ export const InstancePage = () => {
 						<button
 							key={t}
 							onClick={() => setTab(t)}
-							className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${
-								tab === t
+							className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${tab === t
 									? 'text-blue-400 border-blue-400'
 									: 'text-neutral-400 border-transparent hover:text-white'
-							} transition`}
+								} transition`}
 						>
 							{t}
 						</button>

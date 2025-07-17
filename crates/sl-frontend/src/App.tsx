@@ -9,6 +9,7 @@ import { Navbar } from './components/layout/navbar';
 import { Sidebar } from './components/layout/sidebar';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { InstancePage } from './pages/instance-page';
+import { Toaster } from './components/ui/sonner';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -51,6 +52,7 @@ function App() {
 	return (
 		<AppLayout>
 			<MainContent />
+			<Toaster />
 		</AppLayout>
 	);
 }

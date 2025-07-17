@@ -1,6 +1,7 @@
 import { message } from '@tauri-apps/plugin-dialog';
 import { GameInfo, Instance } from '../types/instances';
 import { invoke } from '@tauri-apps/api/core';
+import { toast } from 'sonner';
 
 export const getInstances = async () => {
 	try {
@@ -42,13 +43,13 @@ export const launchInstance = async (name: string) => {
 	try {
 		await invoke('launch_instance', { name: name });
 	} catch (error) {
-		await message(
-			`Launching the instance failed!\n launchInstance error: ${error}`,
-			{
-				title: 'SynthLauncher Error',
-				kind: 'error',
-			}
-		);
+		toast.error(`Oops, there was an error during launching: ${error}`, {
+			style: {
+				'--normal-bg': 'color-mix(in oklab, var(--destructive) 10%, var(--background))',
+				'--normal-text': 'var(--destructive)',
+				'--normal-border': 'var(--destructive)'
+			} as React.CSSProperties
+		})
 	}
 };
 

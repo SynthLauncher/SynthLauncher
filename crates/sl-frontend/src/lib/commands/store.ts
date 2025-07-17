@@ -1,7 +1,7 @@
 import { message } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { ModrinthSearchResult } from '../types/store/modrinth';
-import { CurseforgeSearchResponse } from '../types/store/curseforge';
+import { CurseforgeSearchResult } from '../types/store/curseforge';
 
 export const getModrinthStoreSearch = async (
 	query: string,
@@ -30,7 +30,7 @@ export const getCurseforgeStoreSearch = async (
 	offset: number,
 ) => {
 	try {
-		const search = await invoke<CurseforgeSearchResponse>('search_curseforge_store', {
+		const search = await invoke<CurseforgeSearchResult>('search_curseforge_store', {
 			query: query,
 			classId: class_id,
 			offset: offset,
