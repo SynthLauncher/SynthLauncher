@@ -13,9 +13,9 @@
     "windows": [
       {
         "title": "SynthLauncher",
-        "width": 800,
+        "width": 960,
         "height": 600,
-        "minWidth": 800,
+        "minWidth": 960,
         "minHeight": 600,
         "minimizable": true,
         "maximizable": true,

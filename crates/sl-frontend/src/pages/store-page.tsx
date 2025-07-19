@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { CurseforgeStoreCard, ModrinthStoreCard } from '@/components/store-card';
+import { CurseforgeStoreCard, ModrinthStoreCard } from '@/components/layout/pages/store/store-card';
 import { Input } from '@/components/ui/input';
 import { SearchIcon, WifiOff, Loader2, AlertCircle } from 'lucide-react';
-import { StoreCategorySelector } from '@/components/store-category-selector';
+import { StoreCategorySelector } from '@/components/layout/pages/store/store-category-selector';
 import { getCurseforgeStoreSearch, getModrinthStoreSearch } from '@/lib/commands/store';
 import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
 import { ModrinthSearchResult } from '@/lib/types/store/modrinth';
-import PaginationWithFirstAndLastPageNavigation from '@/components/customized/pagination/pagination-06';
 
 export const StorePage = () => {
 	const [store, setStore] = useState<'modrinth' | 'curseforge'>('modrinth');
@@ -74,7 +73,8 @@ export const StorePage = () => {
 	return (
 		<div className="flex flex-col gap-3">
 			<StoreCategorySelector
-				values={['Modrinth', 'Curseforge']}
+				values={['modrinth', 'curseforge']}
+				displayValues={['Modrinth', 'Curseforge']}
 				defaultValue="modrinth"
 				onValueChange={(v) => {
 					setPage(1);
@@ -84,7 +84,8 @@ export const StorePage = () => {
 
 			<StoreCategorySelector
 				// Add Data packs later
-				values={['Modpack', 'Mod', 'Shader', 'Resourcepack']}
+				values={['modpack', 'mod', 'shader', 'resourcepack']}
+				displayValues={['Modpacks', 'Mods', 'Shaders', 'Resource packs']}
 				defaultValue="modpack"
 				onValueChange={(value: string) => {
 					setPage(1);
@@ -133,24 +134,9 @@ export const StorePage = () => {
 				/>
 			))}
 
-			{!loading && !error && (
-				// <Pagination className='text-gray-200'>
-				// 	<PaginationContent>
-				// 		{page > 1 ?
-				// 			<PaginationItem onClick={() => setPage(page - 1)}>
-				// 				<PaginationPrevious className='hover:bg-sky-600 hover:text-gray-200' />
-				// 			</PaginationItem>
-				// 			: <></>
-				// 		}
-				// 		<PaginationItem onClick={() => setPage(page + 1)}>
-				// 			<PaginationNext className='hover:bg-sky-600 hover:text-gray-200' />
-				// 		</PaginationItem>
-				// 	</PaginationContent>
-				// </Pagination>
-				<PaginationWithFirstAndLastPageNavigation />
-			)
-			}
-
+			{/* 
+				Add pagination
+			*/}
 		</div >
 	);
 };

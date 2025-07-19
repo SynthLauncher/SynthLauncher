@@ -1,7 +1,7 @@
 import { message } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
-import { ModrinthSearchResult } from '../types/store/modrinth';
-import { CurseforgeSearchResult } from '../types/store/curseforge';
+import { ModrinthSearchResult } from '@/lib/types/store/modrinth';
+import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
 
 export const getModrinthStoreSearch = async (
 	query: string,

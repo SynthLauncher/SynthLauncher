@@ -23,12 +23,15 @@ const buttonVariants = cva(
 					'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
 				link: 'text-primary underline-offset-4 hover:underline',
 				error: 'text-white bg-[#2D2F32] hover:bg-[#3b3d42]',
+				'instance-option': 'hover:cursor-pointer w-12 h-12 bg-neutral-700 hover:bg-neutral-600 rounded-md shadow flex items-center justify-center transition-colors',
+				'instance-play': 'bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md flex items-center gap-3 shadow transition disabled:opacity-50 disabled:cursor-not-allowed',
 			},
 			size: {
 				default: 'h-9 px-4 py-2 has-[>svg]:px-3',
 				sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
 				lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
-				icon: 'size-14',
+				icon: 'size-12',
+				'instance-play': 'px-5 py-2'
 			},
 		},
 		defaultVariants: {

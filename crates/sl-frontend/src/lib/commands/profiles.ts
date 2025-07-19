@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { PlayerProfile } from '../types/profiles';
+import { PlayerProfile } from '@/lib/types/profiles';
 import { message } from '@tauri-apps/plugin-dialog';
 
 export const getCurrentProfile = async () => {

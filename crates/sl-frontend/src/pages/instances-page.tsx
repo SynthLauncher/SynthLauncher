@@ -1,6 +1,6 @@
-import { CreateInstanceButton } from '@/components/create-instance-button';
-import { CreateInstanceDialog } from '@/components/create-instance-dialog';
-import { InstanceCard } from '@/components/instance-card';
+import { CreateInstanceButton } from '@/components/layout/pages/instances/create-instance-button';
+import { CreateInstanceDialog } from '@/components/layout/pages/instances/create-instance-dialog';
+import { InstanceCard } from '@/components/layout/pages/instances/instance-card';
 import { createInstance, getInstances } from '@/lib/commands/instances';
 import { Instance } from '@/lib/types/instances';
 import { useEffect, useState } from 'react';

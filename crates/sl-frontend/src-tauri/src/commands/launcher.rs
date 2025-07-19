@@ -27,7 +27,7 @@ pub async fn open_synthlauncher_folder() {
 }
 
 #[tauri::command]
-pub async fn open_instance_folder(name: String) {
+pub fn open_instance_folder(name: String) {
     let folder_path = &*INSTANCES_DIR.join(name);
     open_folder(&folder_path);
 }

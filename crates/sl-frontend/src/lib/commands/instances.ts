@@ -1,5 +1,5 @@
 import { message } from '@tauri-apps/plugin-dialog';
-import { GameInfo, Instance } from '../types/instances';
+import { GameInfo, Instance } from '@/lib/types/instances';
 import { invoke } from '@tauri-apps/api/core';
 import { toast } from 'sonner';
 
@@ -29,13 +29,13 @@ export const createInstance = async (
 			modLoader: modLoader,
 		});
 	} catch (error) {
-		await message(
-			`Creating the instance failed!\n createInstance error: ${error}`,
-			{
-				title: 'SynthLauncher Error',
-				kind: 'error',
-			}
-		);
+		toast.error(`Creating the instance failed: ${error}`, {
+			style: {
+				'--normal-bg': 'color-mix(in oklab, var(--destructive) 10%, var(--background))',
+				'--normal-text': 'var(--destructive)',
+				'--normal-border': 'var(--destructive)'
+			} as React.CSSProperties
+		})
 	}
 };
 

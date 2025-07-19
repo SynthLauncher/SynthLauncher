@@ -6,12 +6,12 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '../components/ui/dialog';
-import { Input } from './ui/input';
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { getMinecraftVersions } from '@/lib/commands/minecraft';
 import { ArrowUpNarrowWide, Box, Plus, Upload, X } from 'lucide-react';
-import { Button } from './ui/button';
-import { Label } from './ui/label';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 // TODO: Improve this
 export const CreateInstanceDialog = ({
@@ -83,7 +83,7 @@ export const CreateInstanceDialog = ({
 							value={version}
 						>
 							{minecraftVersions.map((version) => (
-								<option value={version}>{version}</option>
+								<option key={version} value={version}>{version}</option>
 							))}
 						</select>
 					</div>

@@ -1,12 +1,11 @@
 import { Maximize, Minus, X } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import {
 	handleWindowClose,
 	handleWindowMinimize,
 	handleWindowMaximize,
 } from '@/lib/commands/window';
 import { cn } from '@/lib/utils';
-import BreadcrumbsWithIconAndLabel from '../customized/breadcrumb/breadcrumb-07';
 
 const WindowControl = ({
 	onClick,
@@ -37,13 +36,9 @@ const WindowControl = ({
 export const Navbar = () => {
 	return (
 		<nav
-			className="w-full flex h-[3.3rem] justify-between items-center p-1 bg-layout"
+			className="w-full flex h-[3.3rem] justify-end items-center p-1 bg-layout"
 			data-tauri-drag-region
 		>	
-			<div className='ml-[200px]'>
-				<BreadcrumbsWithIconAndLabel />
-			</div>
-
 			<div className="flex gap-[0.1rem]">
 				<WindowControl
 					onClick={handleWindowMinimize}

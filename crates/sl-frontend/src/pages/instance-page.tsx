@@ -1,5 +1,3 @@
-import DropdownMenuWithSubMenu from '@/components/customized/dropdown-menu/dropdown-menu-05';
-import { PopoverDeleteFileDemo } from '@/components/customized/popover-delete-file';
 import {
 	getGameInfo,
 	getInstances,
@@ -7,12 +5,19 @@ import {
 } from '@/lib/commands/instances';
 import { openInstanceFolder } from '@/lib/commands/launcher';
 import { GameInfo, Instance } from '@/lib/types/instances';
-import { Blocks, Folder, Loader2, Play } from 'lucide-react';
+import { Blocks, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { toast } from 'sonner';
+import { InstanceFolderButton } from '@/components/layout/pages/instance/instance-folder-button';
+import { InstancePlayButton } from '@/components/layout/pages/instance/instance-play-button';
+import { ToastInfo, ToastSuccess } from '@/components/toasters';
+import InstanceEllipsisMenu from '@/components/layout/pages/instance/instance-ellipsis-menu';
+import { useTranslation } from 'react-i18next';
 
 export const InstancePage = () => {
+	const { t: tr } = useTranslation("instance-page");
+	const tabs = ['content', 'logs', 'saves', 'screenshots', 'console'] as const;
+
 	const { name } = useParams<{ name: string }>();
 	const [instance, setInstance] = useState<Instance>();
 	const [tab, setTab] = useState<
@@ -78,57 +83,39 @@ export const InstancePage = () => {
 				</div>
 
 				<div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
-					<button
-						className="bg-green-500 hover:bg-green-600 text-white font-semibold px-5 h-10 rounded-md flex items-center gap-2 shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
+					<InstancePlayButton
 						onClick={async () => {
 							setIsRunning(true);
 							try {
-								toast.info('Launching...', {
-									style: {
-										'--normal-bg':
-											'color-mix(in oklab, light-dark(var(--color-sky-600), var(--color-sky-400)) 10%, var(--background))',
-										'--normal-text': 'light-dark(var(--color-sky-600), var(--color-sky-400))',
-										'--normal-border': 'light-dark(var(--color-sky-600), var(--color-sky-400))'
-									} as React.CSSProperties
-								})
+								ToastInfo("Instance has begun launching...");
+
 								await launchInstance(instance.name);
+
+								ToastSuccess("Instance has been closed successfully.");
 							} finally {
 								setIsRunning(false);
 							}
 						}}
-						disabled={isRunning}
-					>
-						<Play className="w-5 h-5" />
-						<span>{isRunning ? 'Running...' : 'Play'}</span>
-					</button>
+						isRunning={isRunning}
+					/>
 
-					<DropdownMenuWithSubMenu />
-
-					<PopoverDeleteFileDemo />
-
-					<button
-						className="w-10 h-10 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded-md shadow transition"
-						onClick={async () => {
-							await openInstanceFolder(instance.name);
-						}}
-					>
-						<Folder className="w-5 h-5 text-white" />
-					</button>
+					<InstanceEllipsisMenu />
+					<InstanceFolderButton onClick={async () => openInstanceFolder(instance.name)} />
 				</div>
 			</div>
 
 			<div className="mt-6 border-b border-neutral-700 flex gap-2 sm:gap-4 flex-wrap">
-				{(['content', 'logs', 'saves', 'screenshots', 'console'] as const).map(
+				{tabs.map(
 					(t) => (
 						<button
 							key={t}
 							onClick={() => setTab(t)}
 							className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${tab === t
-									? 'text-blue-400 border-blue-400'
-									: 'text-neutral-400 border-transparent hover:text-white'
+								? 'text-blue-400 border-blue-400'
+								: 'text-neutral-400 border-transparent hover:text-white'
 								} transition`}
 						>
-							{t}
+							{tr(`tabs.${t}`)}
 						</button>
 					)
 				)}
