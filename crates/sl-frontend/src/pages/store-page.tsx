@@ -211,6 +211,7 @@ export const StorePage = () => {
 					)}
 				</PaginationContent>
 			</Pagination>
+			
 		</div>
 	);
 };
