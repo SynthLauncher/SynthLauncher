@@ -1,18 +1,20 @@
 import {
 	getGameInfo,
 	getInstances,
+	killInstance,
 	launchInstance,
 } from '@/lib/commands/instances';
 import { openInstanceFolder } from '@/lib/commands/launcher';
 import { GameInfo, Instance } from '@/lib/types/instances';
-import { Blocks, Loader2 } from 'lucide-react';
+import { Blocks, Ellipsis, FolderUp, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { InstanceFolderButton } from '@/components/layout/pages/instance/instance-folder-button';
 import { InstancePlayButton } from '@/components/layout/pages/instance/instance-play-button';
 import { ToastInfo, ToastSuccess } from '@/components/toasters';
-import InstanceEllipsisMenu from '@/components/layout/pages/instance/instance-ellipsis-menu';
 import { useTranslation } from 'react-i18next';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 export const InstancePage = () => {
 	const { t: tr } = useTranslation('instance-page');
@@ -99,7 +101,20 @@ export const InstancePage = () => {
 						isRunning={isRunning}
 					/>
 
-					<InstanceEllipsisMenu />
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button size="icon" variant="instance-option">
+								<Ellipsis className="w-6 h-6 text-white" />
+							</Button>
+						</DropdownMenuTrigger>
+
+						<DropdownMenuContent className="mt-2">
+							<DropdownMenuItem onClick={async () => killInstance(instance.name)}>
+								<FolderUp className="mr-1" /> Kill Instance
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+
 					<InstanceFolderButton
 						onClick={async () => openInstanceFolder(instance.name)}
 					/>
@@ -111,11 +126,10 @@ export const InstancePage = () => {
 					<button
 						key={t}
 						onClick={() => setTab(t)}
-						className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${
-							tab === t
+						className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${tab === t
 								? 'text-blue-400 border-blue-400'
 								: 'text-neutral-400 border-transparent hover:text-white'
-						} transition`}
+							} transition`}
 					>
 						{tr(`tabs.${t}`)}
 					</button>
@@ -183,7 +197,9 @@ export const InstancePage = () => {
 				)}
 
 				{tab === 'console' && (
-					<div className="text-neutral-500">Console tab coming soon...</div>
+					<div>
+
+					</div>
 				)}
 			</div>
 		</div>

@@ -1,4 +1,4 @@
-import { CheckCheckIcon, InfoIcon } from 'lucide-react';
+import { CheckCheckIcon, InfoIcon, XCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const ToastSuccess = (description: string) => {
@@ -48,6 +48,33 @@ export const ToastInfo = (description: string) => {
 				borderRadius: '0.5rem',
 				backgroundColor:
 					'color-mix(in oklab, light-dark(var(--color-sky-600), var(--color-sky-400)) 10%, var(--background))',
+			} as React.CSSProperties,
+		}
+	);
+};
+
+
+export const ToastError = (error: string) => {
+	toast.error(
+		<div className="flex flex-col gap-1">
+			<span className="font-semibold leading-tight">
+				Oops, there was an error!
+			</span>
+			<span className="text-sm leading-snug">{error}</span>
+		</div>,
+		{
+			icon: <XCircleIcon size={20} className="text-red-600" />,
+			style: {
+				border: '2px solid rgba(220, 38, 38)',
+				color: 'rgb(220, 38, 38)',
+				fontSize: '0.875rem',
+				fontWeight: 400,
+				padding: '12px 16px',
+				display: 'flex',
+				alignItems: 'center',
+				gap: '12px',
+				borderRadius: '0.5rem',
+				backgroundColor: 'color-mix(in oklab, light-dark(var(--color-red-400), var(--color-red-600)) 10%, var(--background))'
 			} as React.CSSProperties,
 		}
 	);

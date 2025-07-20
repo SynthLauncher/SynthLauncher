@@ -106,7 +106,7 @@ pub enum BackendError {
     #[error("StrumParse error: {0}")]
     StrumParseError(#[from] strum::ParseError),
     #[error("Microsoft auth service error: {0}")]
-    MicrosoftAuthServiceError(#[from] MicrosoftAuthServiceError),
+    MicrosoftAuthServiceError(#[from] MicrosoftAuthServiceError)
 }
 
 impl From<reqwest::Error> for HttpError {

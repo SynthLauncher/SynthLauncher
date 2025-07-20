@@ -4174,6 +4174,7 @@ dependencies = [
 name = "sl-frontend"
 version = "0.1.0"
 dependencies = [
+ "lazy_static",
  "serde",
  "serde_json",
  "sl-core",
@@ -4457,6 +4458,7 @@ name = "synthlauncher"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "lazy_static",
  "serde",
  "serde_json",
  "sl-core",

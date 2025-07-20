@@ -1,12 +1,20 @@
 use commands::{
-    instances::{get_instances, create_instance, remove_instance, launch_instance, load_game_info}, 
+    instances::{get_instances, create_instance, remove_instance, launch_instance, load_game_info, kill_instance}, 
     profiles::{get_current_profile, get_profiles, get_other_profiles}, 
     launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
     store::{search_modrinth_store, search_curseforge_store}
 };
+use lazy_static::lazy_static;
+
+use crate::running_instances::RunningInstances;
 
 mod commands;
+mod running_instances;
+
+lazy_static! {
+    pub static ref RUNNING_INSTANCES: RunningInstances = RunningInstances::new();
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -26,7 +34,8 @@ pub fn run() {
             load_game_info,
             get_minecraft_versions,
             search_modrinth_store,
-            search_curseforge_store
+            search_curseforge_store,
+            kill_instance
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

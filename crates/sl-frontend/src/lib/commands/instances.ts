@@ -2,6 +2,7 @@ import { message } from '@tauri-apps/plugin-dialog';
 import { GameInfo, Instance } from '@/lib/types/instances';
 import { invoke } from '@tauri-apps/api/core';
 import { toast } from 'sonner';
+import { ToastError } from '@/components/toasters';
 
 export const getInstances = async () => {
 	try {
@@ -69,3 +70,13 @@ export const getGameInfo = async (name: string) => {
 		);
 	}
 };
+
+export const killInstance = async (name: string) => {
+	try {
+		await invoke('kill_instance', { name: name });
+
+		ToastError(`Tre`)
+	} catch (error) {
+		ToastError(`${error}`)
+	}
+}
