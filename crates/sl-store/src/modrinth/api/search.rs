@@ -22,6 +22,7 @@ pub struct ModrinthSearchHit {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SearchResult {
     pub hits: Vec<ModrinthSearchHit>,
+    pub total_hits: u32
 }
 
 #[derive(Debug, Deserialize, Serialize)]

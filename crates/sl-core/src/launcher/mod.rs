@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::{env, fs::OpenOptions};
 
-use sl_utils::dlog;
+use sl_utils::{dlog, log};
 use sl_utils::errors::BackendError;
 use sl_utils::log::set_log_file;
 
@@ -47,6 +47,7 @@ pub(crate) fn get_launcher_dir() -> PathBuf {
 }
 
 pub async fn init_launcher_dir() -> Result<(), BackendError> {
+    log!("Initializing the launcher dir!");
     for dir in [
         &(*LAUNCHER_DIR),
         &(*LIBS_DIR),
@@ -79,5 +80,6 @@ pub async fn init_launcher_dir() -> Result<(), BackendError> {
     let log_file_path = LAUNCHER_DIR.join("last_run.log");
     set_log_file(log_file_path);
 
+    log!("Launcher dir initialized!");
     Ok(())
 }

@@ -24,7 +24,7 @@ export const ModrinthStoreCard = ({ hit }: { hit: ModrinthSearchHit }) => {
 			author={hit.author}
 			description={hit.description}
 			downloads={hit.downloads}
-			imageUrl={hit.icon_url || ''}
+			imageUrl={hit.icon_url || 'https://cdn.modrinth.com/placeholder.svg'}
 		/>
 	);
 };

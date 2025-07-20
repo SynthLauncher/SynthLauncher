@@ -4,7 +4,7 @@ import {
 	ModrinthStoreCard,
 } from '@/components/layout/pages/store/store-card';
 import { Input } from '@/components/ui/input';
-import { SearchIcon, WifiOff, Loader2, AlertCircle } from 'lucide-react';
+import { SearchIcon, WifiOff, Loader2, AlertCircle, ChevronFirst, ChevronLeft, ChevronRight, ChevronLast } from 'lucide-react';
 import { StoreCategorySelector } from '@/components/layout/pages/store/store-category-selector';
 import {
 	getCurseforgeStoreSearch,
@@ -12,6 +12,7 @@ import {
 } from '@/lib/commands/store';
 import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
 import { ModrinthSearchResult } from '@/lib/types/store/modrinth';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 
 export const StorePage = () => {
 	const [store, setStore] = useState<'modrinth' | 'curseforge'>('modrinth');
@@ -85,6 +86,14 @@ export const StorePage = () => {
 		fetch();
 	}, [searchQuery, category, isOnline, store, page]);
 
+	const lastPage = store === 'modrinth'
+		? modrinthResult?.total_hits
+			? Math.ceil(modrinthResult.total_hits / 16)
+			: null
+		: curseforgeResult?.pagination?.totalCount
+			? Math.ceil(curseforgeResult.pagination.totalCount / 16)
+			: null;
+
 	return (
 		<div className="flex flex-col gap-3">
 			<StoreCategorySelector
@@ -147,9 +156,63 @@ export const StorePage = () => {
 				store === 'modrinth' &&
 				modrinthResult?.hits.map((hit) => <ModrinthStoreCard hit={hit} />)}
 
-			{/* 
-				Add pagination
-			*/}
+			<Pagination>
+				<PaginationContent>
+					{page > 1 && (
+						<>
+							<PaginationItem>
+								<PaginationLink onClick={() => setPage(1)} aria-label="Go to first page" size="icon">
+									<ChevronFirst className="h-4 w-4" />
+								</PaginationLink>
+							</PaginationItem>
+							<PaginationItem>
+								<PaginationLink onClick={() => setPage(page - 1)} aria-label="Go to previous page" size="icon">
+									<ChevronLeft className="h-4 w-4" />
+								</PaginationLink>
+							</PaginationItem>
+						</>
+					)}
+
+					<PaginationItem>
+						<PaginationLink onClick={() => setPage(page)} isActive>
+							{page}
+						</PaginationLink>
+					</PaginationItem>
+
+					{lastPage && page + 1 <= lastPage && (
+						<PaginationItem>
+							<PaginationLink onClick={() => setPage(page + 1)}>
+								{page + 1}
+							</PaginationLink>
+						</PaginationItem>
+					)}
+
+					{lastPage && page + 2 <= lastPage && (
+						<PaginationItem>
+							<PaginationLink onClick={() => setPage(page + 2)}>
+								{page + 2}
+							</PaginationLink>
+						</PaginationItem>
+					)}
+
+					{lastPage && page < lastPage && (
+						<>
+							<PaginationItem>
+								<PaginationLink onClick={() => setPage(page + 1)} aria-label="Go to next page" size="icon">
+									<ChevronRight className="h-4 w-4" />
+								</PaginationLink>
+							</PaginationItem>
+							<PaginationItem>
+								<PaginationLink onClick={() => setPage(lastPage)} aria-label="Go to last page" size="icon">
+									<ChevronLast className="h-4 w-4" />
+								</PaginationLink>
+							</PaginationItem>
+						</>
+					)}
+				</PaginationContent>
+			</Pagination>
+
+
 		</div>
 	);
 };

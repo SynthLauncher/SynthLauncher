@@ -5,8 +5,15 @@ use crate::curseforge::api::{project::CurseforgeProject, MINECRAFT_GAME_ID, PAGE
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct CurseforgePagination {
+    pub total_count: u32
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CurseforgeSearchResponse {
     pub data: Vec<CurseforgeProject>,
+    pub pagination: CurseforgePagination
 }
 
 pub async fn query_curseforge_search(

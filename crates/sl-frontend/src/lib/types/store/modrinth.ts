@@ -15,4 +15,5 @@ export interface ModrinthSearchHit {
 
 export interface ModrinthSearchResult {
 	hits: ModrinthSearchHit[];
+	total_hits: number
 }

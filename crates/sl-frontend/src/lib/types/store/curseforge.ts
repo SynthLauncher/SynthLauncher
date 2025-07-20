@@ -25,6 +25,11 @@ export interface CurseforgeProject {
 	latestFiles: CurseforgeFile[];
 }
 
+export interface CurseforgePagination {
+	totalCount: number
+}
+
 export interface CurseforgeSearchResult {
 	data: CurseforgeProject[];
+	pagination: CurseforgePagination
 }

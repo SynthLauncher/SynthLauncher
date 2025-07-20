@@ -6,6 +6,8 @@ use sl_utils::errors::BackendError;
 use tokio::runtime::Runtime;
 
 fn main() -> Result<(), BackendError> {
+    std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1");
+
     let rt = Runtime::new()?;
     rt.block_on(async {
         init_launcher_dir().await?;
