@@ -9,22 +9,17 @@ import {
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
 
-const SidebarItem = React.forwardRef<
-	HTMLButtonElement,
-	{
-		icon: React.ReactNode;
-		active?: boolean;
-		onClick?: () => void;
-	}
->(({ icon, active, onClick }, ref) => {
+const SidebarItem = ({ icon, active, onClick }: {
+	icon: React.ReactNode;
+	active?: boolean;
+	onClick?: () => void;
+}) => {
 	return (
 		<Button
-			ref={ref}
-			className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${
-				active
+			className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${active
 					? 'bg-layout-accent/20 hover:bg-layout-accent/30 text-layout-accent-foreground'
 					: 'bg-transparent text-layout-foreground hover:bg-layout-primary/20 hover:text-layout-primary-foreground'
-			}`}
+				}`}
 			size="icon"
 			onClick={onClick}
 		>
@@ -93,7 +88,7 @@ export const Sidebar = ({ activeTab }: { activeTab: string }) => {
 
 				return (
 					<Tooltip key={item.id}>
-						<TooltipTrigger asChild>
+						<TooltipTrigger>
 							<SidebarItem
 								icon={item.icon}
 								active={isActive}

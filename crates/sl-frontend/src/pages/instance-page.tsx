@@ -66,9 +66,9 @@ export const InstancePage = () => {
 
 	return (
 		<div className="w-full px-4 md:px-8 py-6 min-h-screen text-white">
-			<div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-neutral-800 rounded-2xl p-6 gap-6 shadow-lg">
+			<div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-[#2d303f] rounded-2xl p-6 gap-6 shadow-lg">
 				<div className="flex gap-6 items-center w-full lg:w-auto">
-					<div className="w-20 h-20 sm:w-24 sm:h-24 bg-neutral-700 rounded-xl flex justify-center items-center shrink-0">
+					<div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#424555] rounded-xl flex justify-center items-center shrink-0">
 						<Blocks className="w-10 h-10 sm:w-14 sm:h-14 text-blue-400" />
 					</div>
 

@@ -87,7 +87,7 @@
 	--layout-primary-foreground: oklch(0.8353 0.0115 224.87);
 
 	--layout-secondary: oklch(0.3368 0.0181 264.71);
-	--layout-secondary-foreground: oklch(0.8769 0.0258 264.71);
+	--layout-secondary-foreground: oklch(1 0.02 264);
 
 	--layout-accent: oklch(0.7588 0.149 231.88);
 	--layout-accent-foreground: oklch(0.7617 0.1335 241.57);
