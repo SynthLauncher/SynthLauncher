@@ -26,7 +26,7 @@ const SidebarItem = ({ icon, active, onClick }: {
 			<h1 className="text-xl">{icon}</h1>
 		</Button>
 	);
-});
+};
 
 export const Sidebar = ({ activeTab }: { activeTab: string }) => {
 	const navigate = useNavigate();
