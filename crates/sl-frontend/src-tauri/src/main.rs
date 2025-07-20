@@ -20,8 +20,9 @@ fn config_display_env() {
 }
 
 fn main() -> Result<(), BackendError> {
+    // TEst
     config_display_env();
-    
+
     let rt = Runtime::new()?;
     rt.block_on(async {
         init_launcher_dir().await?;
