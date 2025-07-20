@@ -1,6 +1,9 @@
 use crate::{
     launcher::{
-        instances::{instance_config::InstanceConfig, instance_metadata::{GameVersionMetadata, InstanceMetadata}},
+        instances::{
+            instance_config::InstanceConfig,
+            instance_metadata::{GameVersionMetadata, InstanceMetadata},
+        },
         minecraft_version::LoadedMinecraftVersion,
         player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles},
     },
@@ -9,18 +12,14 @@ use crate::{
 };
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::{minecraft::loaders::vanilla::Client, minecraft::version_manifest::VersionType};
-use sl_utils::{
-    dlog, elog,
-    errors::{BackendError, InstanceError},
-    log, wlog,
-};
+use sl_utils::{dlog, errors::BackendError, log, wlog};
 
+use chrono::DateTime;
 use std::{
     borrow::Cow,
+    io::PipeReader,
     path::{Path, PathBuf},
-    process::Stdio,
 };
-use chrono::DateTime;
 use tokio::process::Command;
 
 // Represents a loaded instance of Minecraft with its configurations and things required for launching
@@ -197,8 +196,13 @@ impl LoadedInstance {
         Ok([jvm_args, game_args].concat())
     }
 
+    #[must_use = "must wait on child to exit"]
     /// Performs the execution of the instance.
-    pub async fn execute(self) -> Result<(), BackendError> {
+    ///
+    /// # Returns
+    /// - Ok((child, reader)) reader is a pipe reader that can be used to read the output of the instance (stderr and stdout)
+    /// - Err(BackendError) if the instance could not be executed
+    pub async fn execute(self) -> Result<(tokio::process::Child, PipeReader), BackendError> {
         // the reason why the download operation is done here is to ensure that the files are available before executing the instance.
         // AND THE REASON WHY YOU DON'T LEAVE CALLING THIS TO THE CALLER OF THE EXECUTE METHOD is because it is just better and cleaner,
         // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
@@ -224,27 +228,17 @@ impl LoadedInstance {
         let args = self.generate_arguments(&profile).await?;
 
         dlog!("Launching with args: {:?}", &args);
+        let (reader, writer) = std::io::pipe()?;
 
-        let output = Command::new(current_java_path)
+        let child = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))
             .arg(format!("-Xms{}M", min_ram))
             .args(args)
-            .stdin(Stdio::inherit())
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
+            .stdin(writer.try_clone()?)
+            .stderr(writer)
             .current_dir(self.instance_path)
-            .output()
-            .await?;
+            .spawn()?;
 
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            elog!("stderr:\n{}\nstdout:\n{}", stderr, stdout);
-            return Err(BackendError::InstanceError(InstanceError::FailedToExecute(
-                self.instance_metadata.name.clone(),
-            )));
-        }
-
-        Ok(())
+        Ok((child, reader))
     }
 }

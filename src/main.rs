@@ -3,7 +3,9 @@ use cli::{Cli, Commands};
 use sl_core::{
     launcher::{
         init_launcher_dir,
-        instances::{self, instance_importer::import_instance_from_path, instance_metadata::InstanceMetadata},
+        instances::{
+            self, instance_importer::import_instance_from_path, instance_metadata::InstanceMetadata,
+        },
         player::{
             microsoft_auth::AuthFlow, player_profile::PlayerProfile,
             player_profiles::PlayerProfiles,
@@ -40,7 +42,21 @@ async fn run_cli() -> Result<(), BackendError> {
             let (instance, _) = instances::get_existing(&instance_name)?;
             dlog!("Instance found!");
             let loaded_instance = instance.load_init().await?;
-            loaded_instance.execute().await?;
+            let (mut child, mut reader) = loaded_instance.execute().await?;
+            let mut stdout = std::io::stdout();
+
+            loop {
+                std::io::copy(&mut reader, &mut stdout)?;
+
+                if let Some(status) = child.try_wait()? {
+                    if status.success() {
+                        dlog!("Instance exited successfully");
+                    } else {
+                        dlog!("Instance exited with error code {:?}", status.code());
+                    }
+                    break;
+                }
+            }
         }
         Commands::AddOfflineProfile { name } => {
             let mut profiles = PlayerProfiles::load()?;
