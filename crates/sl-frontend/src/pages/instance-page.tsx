@@ -15,7 +15,7 @@ import InstanceEllipsisMenu from '@/components/layout/pages/instance/instance-el
 import { useTranslation } from 'react-i18next';
 
 export const InstancePage = () => {
-	const { t: tr } = useTranslation("instance-page");
+	const { t: tr } = useTranslation('instance-page');
 	const tabs = ['content', 'logs', 'saves', 'screenshots', 'console'] as const;
 
 	const { name } = useParams<{ name: string }>();
@@ -87,11 +87,11 @@ export const InstancePage = () => {
 						onClick={async () => {
 							setIsRunning(true);
 							try {
-								ToastInfo("Instance has begun launching...");
+								ToastInfo('Instance has begun launching...');
 
 								await launchInstance(instance.name);
 
-								ToastSuccess("Instance has been closed successfully.");
+								ToastSuccess('Instance has been closed successfully.');
 							} finally {
 								setIsRunning(false);
 							}
@@ -100,25 +100,26 @@ export const InstancePage = () => {
 					/>
 
 					<InstanceEllipsisMenu />
-					<InstanceFolderButton onClick={async () => openInstanceFolder(instance.name)} />
+					<InstanceFolderButton
+						onClick={async () => openInstanceFolder(instance.name)}
+					/>
 				</div>
 			</div>
 
 			<div className="mt-6 border-b border-neutral-700 flex gap-2 sm:gap-4 flex-wrap">
-				{tabs.map(
-					(t) => (
-						<button
-							key={t}
-							onClick={() => setTab(t)}
-							className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${tab === t
+				{tabs.map((t) => (
+					<button
+						key={t}
+						onClick={() => setTab(t)}
+						className={`capitalize px-3 py-2 font-medium border-b-2 text-sm sm:text-base ${
+							tab === t
 								? 'text-blue-400 border-blue-400'
 								: 'text-neutral-400 border-transparent hover:text-white'
-								} transition`}
-						>
-							{tr(`tabs.${t}`)}
-						</button>
-					)
-				)}
+						} transition`}
+					>
+						{tr(`tabs.${t}`)}
+					</button>
+				))}
 			</div>
 
 			<div className="mt-6 p-4 sm:p-6 bg-neutral-800 rounded-xl text-neutral-300 text-base min-h-[200px] flex items-center justify-center">

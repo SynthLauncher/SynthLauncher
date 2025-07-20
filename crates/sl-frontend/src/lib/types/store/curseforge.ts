@@ -1,30 +1,30 @@
 interface CurseforgeProjectAsset {
-    url?: string
+	url?: string;
 }
 
 interface CurseforgeProjectAuthor {
-    name: string
+	name: string;
 }
 
 export interface CurseforgeFile {
-    fileName?: string,
-    downloadUrl?: string,
-    gameVersions: string[]
+	fileName?: string;
+	downloadUrl?: string;
+	gameVersions: string[];
 }
 
 export interface CurseforgeProject {
-    id: number,
-    gameId: number,
-    name: string,
-    slug: string,
-    summary: string,
-    downloadCount: number,
-    logo: CurseforgeProjectAsset,
-    screenshots: CurseforgeProjectAsset[],
-    authors: CurseforgeProjectAuthor[],
-    latestFiles: CurseforgeFile[]
+	id: number;
+	gameId: number;
+	name: string;
+	slug: string;
+	summary: string;
+	downloadCount: number;
+	logo: CurseforgeProjectAsset;
+	screenshots: CurseforgeProjectAsset[];
+	authors: CurseforgeProjectAuthor[];
+	latestFiles: CurseforgeFile[];
 }
 
 export interface CurseforgeSearchResult {
-    data: CurseforgeProject[]
+	data: CurseforgeProject[];
 }

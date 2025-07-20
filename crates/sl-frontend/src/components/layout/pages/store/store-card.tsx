@@ -14,7 +14,7 @@ export const CurseforgeStoreCard = ({ hit }: { hit: CurseforgeProject }) => {
 			imageUrl={hit.logo.url || ''}
 		/>
 	);
-}
+};
 
 export const ModrinthStoreCard = ({ hit }: { hit: ModrinthSearchHit }) => {
 	return (
@@ -27,7 +27,7 @@ export const ModrinthStoreCard = ({ hit }: { hit: ModrinthSearchHit }) => {
 			imageUrl={hit.icon_url || ''}
 		/>
 	);
-}
+};
 
 export const StoreCard = ({
 	name,
@@ -45,7 +45,10 @@ export const StoreCard = ({
 	slug: string;
 }) => {
 	return (
-		<div className="bg-[#1D2026] rounded-lg p-5 flex gap-4 max-w-full" key={slug}>
+		<div
+			className="bg-[#1D2026] rounded-lg p-5 flex gap-4 max-w-full"
+			key={slug}
+		>
 			<img
 				src={imageUrl}
 				alt={`${name} icon`}
@@ -67,7 +70,6 @@ export const StoreCard = ({
 						<Download className="w-4 h-4" />
 						<span>{downloads.toLocaleString()} downloads</span>
 					</div>
-
 				</div>
 			</div>
 

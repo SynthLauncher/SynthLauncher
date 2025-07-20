@@ -6,16 +6,16 @@ import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
 export const getModrinthStoreSearch = async (
 	query: string,
 	projectType: string,
-	page: number,
+	page: number
 ) => {
 	try {
 		const search = await invoke<ModrinthSearchResult>('search_modrinth_store', {
 			query: query,
 			projectType: projectType,
-			page: page
+			page: page,
 		});
 
-		return search
+		return search;
 	} catch (err) {
 		await message(`getStoreSearch error: ${err}`, {
 			title: 'SynthLauncher Error',
@@ -27,16 +27,19 @@ export const getModrinthStoreSearch = async (
 export const getCurseforgeStoreSearch = async (
 	query: string,
 	class_id: number,
-	offset: number,
+	offset: number
 ) => {
 	try {
-		const search = await invoke<CurseforgeSearchResult>('search_curseforge_store', {
-			query: query,
-			classId: class_id,
-			offset: offset,
-		});
+		const search = await invoke<CurseforgeSearchResult>(
+			'search_curseforge_store',
+			{
+				query: query,
+				classId: class_id,
+				offset: offset,
+			}
+		);
 
-		return search
+		return search;
 	} catch (err) {
 		await message(`getStoreSearch error: ${err}`, {
 			title: 'SynthLauncher Error',

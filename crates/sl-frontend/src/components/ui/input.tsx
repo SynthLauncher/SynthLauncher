@@ -8,7 +8,7 @@ function Input({ className, icon, type, ...props }: InputProps) {
 	return (
 		<div
 			className={cn(
-				'flex h-9 w-full items-center gap-3 rounded-md bg-[#1D2026] px-3 py-5 text-white shadow-xs transition-colors focus-within:ring-2 focus-within:ring-blue-500',
+				'flex h-9 w-full items-center gap-3 rounded-md bg-[#252930] px-3 py-5 text-white shadow-xs transition-colors focus-within:ring-2 focus-within:ring-blue-500',
 				'has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50',
 				className
 			)}

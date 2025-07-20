@@ -21,13 +21,13 @@ export async function minecraftLogin(
 	twofa?: string
 ): Promise<any> {
 	try {
-		const result = await invoke("minecraft_login", {
+		const result = await invoke('minecraft_login', {
 			username,
 			password,
 			twofa,
 		});
 		return result;
 	} catch (err: any) {
-		return { error: "network", errorMessage: err?.toString() };
+		return { error: 'network', errorMessage: err?.toString() };
 	}
 }

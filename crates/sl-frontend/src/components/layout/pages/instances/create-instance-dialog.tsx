@@ -83,7 +83,9 @@ export const CreateInstanceDialog = ({
 							value={version}
 						>
 							{minecraftVersions.map((version) => (
-								<option key={version} value={version}>{version}</option>
+								<option key={version} value={version}>
+									{version}
+								</option>
 							))}
 						</select>
 					</div>

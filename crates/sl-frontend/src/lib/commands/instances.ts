@@ -31,11 +31,12 @@ export const createInstance = async (
 	} catch (error) {
 		toast.error(`Creating the instance failed: ${error}`, {
 			style: {
-				'--normal-bg': 'color-mix(in oklab, var(--destructive) 10%, var(--background))',
+				'--normal-bg':
+					'color-mix(in oklab, var(--destructive) 10%, var(--background))',
 				'--normal-text': 'var(--destructive)',
-				'--normal-border': 'var(--destructive)'
-			} as React.CSSProperties
-		})
+				'--normal-border': 'var(--destructive)',
+			} as React.CSSProperties,
+		});
 	}
 };
 
@@ -45,11 +46,12 @@ export const launchInstance = async (name: string) => {
 	} catch (error) {
 		toast.error(`Oops, there was an error during launching: ${error}`, {
 			style: {
-				'--normal-bg': 'color-mix(in oklab, var(--destructive) 10%, var(--background))',
+				'--normal-bg':
+					'color-mix(in oklab, var(--destructive) 10%, var(--background))',
 				'--normal-text': 'var(--destructive)',
-				'--normal-border': 'var(--destructive)'
-			} as React.CSSProperties
-		})
+				'--normal-border': 'var(--destructive)',
+			} as React.CSSProperties,
+		});
 	}
 };
 

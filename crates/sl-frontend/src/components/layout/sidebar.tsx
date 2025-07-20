@@ -1,32 +1,36 @@
 import { Home, Settings, Library, Store, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { openSynthLauncherFolder } from '@/lib/commands/launcher';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
 
 const SidebarItem = React.forwardRef<
-  HTMLButtonElement,
-  {
-    icon: React.ReactNode;
-    active?: boolean;
-    onClick?: () => void;
-  }
+	HTMLButtonElement,
+	{
+		icon: React.ReactNode;
+		active?: boolean;
+		onClick?: () => void;
+	}
 >(({ icon, active, onClick }, ref) => {
-  return (
-    <Button
-      ref={ref}
-      className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${
-        active
-          ? 'bg-layout-accent/20 hover:bg-layout-accent/30 text-layout-accent-foreground'
-          : 'bg-transparent text-layout-foreground hover:bg-layout-primary/20 hover:text-layout-primary-foreground'
-      }`}
-      size="icon"
-      onClick={onClick}
-    >
-      <h1 className="text-xl">{icon}</h1>
-    </Button>
-  );
+	return (
+		<Button
+			ref={ref}
+			className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition-colors ${
+				active
+					? 'bg-layout-accent/20 hover:bg-layout-accent/30 text-layout-accent-foreground'
+					: 'bg-transparent text-layout-foreground hover:bg-layout-primary/20 hover:text-layout-primary-foreground'
+			}`}
+			size="icon"
+			onClick={onClick}
+		>
+			<h1 className="text-xl">{icon}</h1>
+		</Button>
+	);
 });
 
 export const Sidebar = ({ activeTab }: { activeTab: string }) => {

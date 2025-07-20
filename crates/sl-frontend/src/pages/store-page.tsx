@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
-import { CurseforgeStoreCard, ModrinthStoreCard } from '@/components/layout/pages/store/store-card';
+import {
+	CurseforgeStoreCard,
+	ModrinthStoreCard,
+} from '@/components/layout/pages/store/store-card';
 import { Input } from '@/components/ui/input';
 import { SearchIcon, WifiOff, Loader2, AlertCircle } from 'lucide-react';
 import { StoreCategorySelector } from '@/components/layout/pages/store/store-category-selector';
-import { getCurseforgeStoreSearch, getModrinthStoreSearch } from '@/lib/commands/store';
+import {
+	getCurseforgeStoreSearch,
+	getModrinthStoreSearch,
+} from '@/lib/commands/store';
 import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
 import { ModrinthSearchResult } from '@/lib/types/store/modrinth';
 
 export const StorePage = () => {
 	const [store, setStore] = useState<'modrinth' | 'curseforge'>('modrinth');
 	const [modrinthResult, setModrinthResult] = useState<ModrinthSearchResult>();
-	const [curseforgeResult, setCurseforgeResult] = useState<CurseforgeSearchResult>();
+	const [curseforgeResult, setCurseforgeResult] =
+		useState<CurseforgeSearchResult>();
 
 	const [searchQuery, setSearchQuery] = useState('');
 	const [category, setCategory] = useState('modpack');
@@ -54,10 +61,18 @@ export const StorePage = () => {
 			try {
 				if (store === 'curseforge') {
 					const classId = CURSEFORGE_CLASS_IDS[category] ?? 4471;
-					const result = await getCurseforgeStoreSearch(searchQuery, classId, page);
+					const result = await getCurseforgeStoreSearch(
+						searchQuery,
+						classId,
+						page
+					);
 					setCurseforgeResult(result);
 				} else {
-					const result = await getModrinthStoreSearch(searchQuery, category, page);
+					const result = await getModrinthStoreSearch(
+						searchQuery,
+						category,
+						page
+					);
 					setModrinthResult(result);
 				}
 			} catch (err) {
@@ -85,11 +100,11 @@ export const StorePage = () => {
 			<StoreCategorySelector
 				// Add Data packs later
 				values={['modpack', 'mod', 'shader', 'resourcepack']}
-				displayValues={['Modpacks', 'Mods', 'Shaders', 'Resource packs']}
+				displayValues={['Modpacks', 'Mods', 'Shaders', 'Resource Packs']}
 				defaultValue="modpack"
 				onValueChange={(value: string) => {
 					setPage(1);
-					setCategory(value.toLowerCase())
+					setCategory(value.toLowerCase());
 				}}
 			/>
 
@@ -122,21 +137,19 @@ export const StorePage = () => {
 				</div>
 			)}
 
-			{!loading && !error && store === 'curseforge' && curseforgeResult?.data.map((hit) => (
-				<CurseforgeStoreCard
-					hit={hit}
-				/>
-			))}
+			{!loading &&
+				!error &&
+				store === 'curseforge' &&
+				curseforgeResult?.data.map((hit) => <CurseforgeStoreCard hit={hit} />)}
 
-			{!loading && !error && store === 'modrinth' && modrinthResult?.hits.map((hit) => (
-				<ModrinthStoreCard
-					hit={hit}
-				/>
-			))}
+			{!loading &&
+				!error &&
+				store === 'modrinth' &&
+				modrinthResult?.hits.map((hit) => <ModrinthStoreCard hit={hit} />)}
 
 			{/* 
 				Add pagination
 			*/}
-		</div >
+		</div>
 	);
 };

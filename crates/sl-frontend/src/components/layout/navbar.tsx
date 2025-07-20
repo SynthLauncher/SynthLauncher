@@ -38,7 +38,7 @@ export const Navbar = () => {
 		<nav
 			className="w-full flex h-[3.3rem] justify-end items-center p-1 bg-layout"
 			data-tauri-drag-region
-		>	
+		>
 			<div className="flex gap-[0.1rem]">
 				<WindowControl
 					onClick={handleWindowMinimize}

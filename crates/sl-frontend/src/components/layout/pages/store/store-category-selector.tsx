@@ -8,7 +8,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 interface StoreCategorySelectorProps
 	extends React.ComponentProps<typeof TabsPrimitive.Root> {
 	values: string[];
-	displayValues: string[]
+	displayValues: string[];
 }
 
 export const StoreCategorySelector = ({
@@ -20,7 +20,9 @@ export const StoreCategorySelector = ({
 		<CategorySelector {...props}>
 			<CategoryList className="bg-[#262729]">
 				{values?.map((value, index) => (
-					<CategoryTrigger className='hover:cursor-pointer' value={value}>{displayValues[index]}</CategoryTrigger>
+					<CategoryTrigger className="hover:cursor-pointer" value={value}>
+						{displayValues[index]}
+					</CategoryTrigger>
 				))}
 			</CategoryList>
 		</CategorySelector>

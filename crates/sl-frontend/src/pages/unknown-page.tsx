@@ -18,7 +18,7 @@ export const UnknownPage = () => {
 				</p>
 
 				<Button
-					onClick={() => navigate("/home")}
+					onClick={() => navigate('/home')}
 					variant="error"
 					className="inline-flex items-center gap-2"
 				>
