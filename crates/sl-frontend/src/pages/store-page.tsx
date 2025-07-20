@@ -90,9 +90,7 @@ export const StorePage = () => {
 		? modrinthResult?.total_hits
 			? Math.ceil(modrinthResult.total_hits / 16)
 			: null
-		: curseforgeResult?.pagination?.totalCount
-			? Math.ceil(curseforgeResult.pagination.totalCount / 16)
-			: null;
+		: 625;
 
 	return (
 		<div className="flex flex-col gap-3">
@@ -211,7 +209,7 @@ export const StorePage = () => {
 					)}
 				</PaginationContent>
 			</Pagination>
-			
+
 		</div>
 	);
 };

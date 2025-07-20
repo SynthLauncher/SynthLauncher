@@ -23,7 +23,7 @@ pub async fn search_curseforge_store(
     offset: u32,
     class_id: u32,
 ) -> Result<CurseforgeSearchResponse, String> {
-    let search_result = query_curseforge_search(query, class_id, (offset * 16) - 1)
+    let search_result = query_curseforge_search(query, class_id, (offset - 1) * 16)
         .await
         .map_err(|x| x.to_string())?;
     Ok(search_result)

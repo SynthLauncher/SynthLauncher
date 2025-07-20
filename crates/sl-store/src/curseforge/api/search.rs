@@ -6,7 +6,7 @@ use crate::curseforge::api::{project::CurseforgeProject, MINECRAFT_GAME_ID, PAGE
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CurseforgePagination {
-    pub total_count: u32
+    pub total_count: u32,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
