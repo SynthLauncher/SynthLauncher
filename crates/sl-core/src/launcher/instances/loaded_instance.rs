@@ -4,14 +4,14 @@ use crate::{
             instance_config::InstanceConfig,
             instance_metadata::{GameVersionMetadata, InstanceMetadata},
         },
-        minecraft_version::LoadedMinecraftVersion,
-        player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles},
+        minecraft_version::LoadedMinecraftVersion, player_profiles::PlayerProfiles,
     },
     minecraft::install_client,
     ASSETS_DIR, LIBS_DIR,
 };
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::{minecraft::loaders::vanilla::Client, minecraft::version_manifest::VersionType};
+use sl_player::profile::PlayerProfile;
 use sl_utils::{dlog, errors::BackendError, log, wlog};
 
 use chrono::DateTime;
@@ -158,9 +158,9 @@ impl LoadedInstance {
                 "version_name" => &self.game_metadata().version,
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str()?,
-                "auth_uuid" => &profile.data.uuid,
+                "auth_uuid" => &profile.data.id,
                 "auth_access_token" => &profile.access_token,
-                "auth_player_name" => &profile.data.username,
+                "auth_player_name" => &profile.data.name,
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
                 "version_type" => "SL",
                 "library_directory" => LIBS_DIR.to_str()?,
@@ -215,7 +215,7 @@ impl LoadedInstance {
             "Executing instance '{}' with type '{:?}', using profile '{}'",
             self.instance_metadata.name,
             self.instance_metadata.mod_loader,
-            profile.data.username
+            profile.data.name
         );
 
         let current_java_path = self.config.java.java();

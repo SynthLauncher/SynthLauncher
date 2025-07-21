@@ -1,7 +1,7 @@
-import { message } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { ModrinthSearchResult } from '@/lib/types/store/modrinth';
 import { CurseforgeSearchResult } from '@/lib/types/store/curseforge';
+import { ToastError } from '@/components/toasters';
 
 export const getModrinthStoreSearch = async (
 	query: string,
@@ -16,11 +16,8 @@ export const getModrinthStoreSearch = async (
 		});
 
 		return search;
-	} catch (err) {
-		await message(`getStoreSearch error: ${err}`, {
-			title: 'SynthLauncher Error',
-			kind: 'error',
-		});
+	} catch (error) {
+		ToastError(`${error}`)
 	}
 };
 
@@ -41,9 +38,6 @@ export const getCurseforgeStoreSearch = async (
 
 		return search;
 	} catch (err) {
-		await message(`getStoreSearch error: ${err}`, {
-			title: 'SynthLauncher Error',
-			kind: 'error',
-		});
+		ToastError(`${err}`)
 	}
 };

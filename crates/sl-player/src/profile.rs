@@ -15,6 +15,7 @@ pub struct PlayerProfileData {
 pub struct PlayerProfile {
     pub data: PlayerProfileData,
     pub access_token: String,
+    pub premium: bool
 }
 
 impl PlayerProfile {
@@ -25,6 +26,7 @@ impl PlayerProfile {
                 name: "synther".to_string(),
                 id: "8667ba71-b85a-4004-af54-457a9734eed7".to_string(),
             },
+            premium: false
         }
     }
 
@@ -47,7 +49,7 @@ impl PlayerProfile {
 
         let data: PlayerProfileData = response.json().await?;
 
-        Ok(PlayerProfile { data, access_token })
+        Ok(PlayerProfile { data, access_token, premium: true })
     }
 
     pub fn offline_account(name: impl Into<String>) -> Result<PlayerProfile, BackendError> {
@@ -57,6 +59,7 @@ impl PlayerProfile {
                 name: name.into(),
                 id: "8667ba71-b85a-4004-af54-457a9734eed7".to_string(),
             },
+            premium: false
         })
     }
 }

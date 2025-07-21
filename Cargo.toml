@@ -11,6 +11,7 @@ sl-meta = { path = "crates/sl-meta" }
 sl-utils = { path = "crates/sl-utils" }
 sl-core ={ path = "crates/sl-core"}
 sl-store = { path = "crates/sl-store" }
+sl-player = { path = "crates/sl-player" }
 
 tokio = { version = "1.46.1", features = ["rt-multi-thread"]}
 clap = { version = "4.5.39", features = ["derive"] } 

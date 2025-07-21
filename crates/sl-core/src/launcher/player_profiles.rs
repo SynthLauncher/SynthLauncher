@@ -1,4 +1,4 @@
-use std::fs::OpenOptions;
+use std::{borrow::Cow, fs::OpenOptions};
 
 use serde::{Deserialize, Serialize};
 use sl_player::profile::PlayerProfile;
@@ -48,6 +48,27 @@ impl PlayerProfiles {
         Self::overwrite(&self)?;
 
         Ok(())
+    }
+
+    pub fn find(
+        &self,
+        name: &str,
+        premium: bool,
+    ) -> Result<(Option<&PlayerProfile>, usize), BackendError> {
+        if let Some((index, profile)) = self.profiles.iter().enumerate().find(|(_, profile)| {
+            profile.data.name.eq_ignore_ascii_case(name) && profile.premium == premium
+        }) {
+            return Ok((Some(profile), index));
+        }
+
+        Ok((None, usize::MAX))
+    }
+
+    pub fn current_profile(&self) -> Cow<'_, PlayerProfile> {
+        self.profiles
+            .get(self.current_profile_index)
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(PlayerProfile::default_profile()))
     }
 
     pub fn set_current_profile(&mut self, index: usize) -> Result<(), BackendError> {

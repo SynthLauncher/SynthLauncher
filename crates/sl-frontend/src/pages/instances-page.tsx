@@ -13,7 +13,7 @@ export const InstancesPage = () => {
 
 	const fetchInstances = async () => {
 		const all = await getInstances();
-		setInstances(all);
+		setInstances(all ?? []);
 	};
 
 	useEffect(() => {

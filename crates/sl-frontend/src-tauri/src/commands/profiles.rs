@@ -1,4 +1,5 @@
-use sl_core::launcher::player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles};
+use sl_core::launcher::player_profiles::PlayerProfiles;
+use sl_player::profile::PlayerProfile;
 
 #[tauri::command]
 pub fn get_profiles() -> Result<PlayerProfiles, String> {
@@ -6,14 +7,18 @@ pub fn get_profiles() -> Result<PlayerProfiles, String> {
 }
 
 #[tauri::command]
-pub async fn get_current_profile() -> Result<PlayerProfile, String> {
-    let profiles = get_profiles()?;
-    let profile = profiles.current_profile();
-    Ok(profile.into_owned())
+pub fn set_current_profile(index: usize) -> Result<(), String> {
+    let mut prfls = PlayerProfiles::load().map_err(|err| err.to_string())?;
+    prfls.set_current_profile(index).map_err(|err| err.to_string())?;
+
+    Ok(())
 }
 
+
 #[tauri::command]
-pub async fn get_other_profiles() -> Result<Vec<PlayerProfile>, String> {
-    let profiles = get_profiles()?;
-    Ok(profiles.load_other_profiles())
+pub fn create_offline_profile(name: &str) -> Result<(), String> {
+    let mut prfls = PlayerProfiles::load().map_err(|err| err.to_string())?;
+    let prfl = PlayerProfile::offline_account(name).map_err(|err| err.to_string())?;
+    prfls.add(prfl).map_err(|err| err.to_string())?;
+    Ok(())
 }

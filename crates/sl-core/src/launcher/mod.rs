@@ -14,7 +14,6 @@ use crate::{
 
 pub mod instances;
 pub mod java;
-pub mod player;
 pub mod player_profiles;
 pub mod minecraft_version;
 

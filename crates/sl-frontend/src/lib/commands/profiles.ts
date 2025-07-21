@@ -1,15 +1,27 @@
 import { invoke } from '@tauri-apps/api/core';
-import { PlayerProfile } from '@/lib/types/profiles';
-import { message } from '@tauri-apps/plugin-dialog';
+import { PlayerProfiles } from '@/lib/types/profiles';
+import { ToastError } from '@/components/toasters';
 
-export const getCurrentProfile = async () => {
+export const getAllProfiles = async () => {
 	try {
-		const profile: PlayerProfile = await invoke('get_current_profile');
-		return profile;
-	} catch (err) {
-		await message(`getCurrentProfile error: ${err}`, {
-			title: 'SynthLauncher Error',
-			kind: 'error',
-		});
+		return await invoke<PlayerProfiles>('get_profiles');
+	} catch (error) {
+		ToastError(`${error}`);
 	}
-};
+}
+
+export const setCurrentProfile = async (index: number) => {
+	try {
+		await invoke('set_current_profile', { index: index });
+	} catch (error) {
+		ToastError(`${error}`);
+	}
+}
+
+export const createOfflineAccount = async (name: string) => {
+	try {
+		await invoke('create_offline_profile', { name: name })
+	} catch (error) {
+		ToastError(`${error}`);
+	}
+}

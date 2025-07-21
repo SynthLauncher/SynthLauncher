@@ -53,14 +53,15 @@ export const ToastInfo = (description: string) => {
 	);
 };
 
-
 export const ToastError = (error: string) => {
 	toast.error(
-		<div className="flex flex-col gap-1">
+		<div className="flex flex-col gap-1 max-h-20 pr-1">
 			<span className="font-semibold leading-tight">
 				Oops, there was an error!
 			</span>
-			<span className="text-sm leading-snug">{error}</span>
+			<span className="text-sm leading-snug whitespace-pre-wrap break-words overflow-y-auto ">
+				{error}
+			</span>
 		</div>,
 		{
 			icon: <XCircleIcon size={20} className="text-red-600" />,

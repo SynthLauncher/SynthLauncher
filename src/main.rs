@@ -5,14 +5,11 @@ use sl_core::{
         init_launcher_dir,
         instances::{
             self, instance_importer::import_instance_from_path, instance_metadata::InstanceMetadata,
-        },
-        player::{
-            microsoft_auth::AuthFlow, player_profile::PlayerProfile,
-            player_profiles::PlayerProfiles,
-        },
+        }, player_profiles::PlayerProfiles,
     },
     INSTANCES_DIR, VERSION_MANIFEST,
 };
+use sl_player::{api::auth::AuthFlow, profile::PlayerProfile};
 use sl_store::modrinth::install_mod;
 use sl_utils::{dlog, elog, errors::BackendError, log};
 
@@ -60,7 +57,7 @@ async fn run_cli() -> Result<(), BackendError> {
         }
         Commands::AddOfflineProfile { name } => {
             let mut profiles = PlayerProfiles::load()?;
-            let profile = PlayerProfile::offline_account(name).await?;
+            let profile = PlayerProfile::offline_account(name)?;
             profiles.add(profile)?;
         }
         Commands::AddPremiumProfile => {

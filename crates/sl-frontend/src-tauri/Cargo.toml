@@ -20,7 +20,7 @@ tauri-build = { version = "2.3.0", features = [] }
 sl-core = { path = "../../sl-core" }
 sl-store = { path = "../../sl-store"}
 sl-utils = { path = "../../sl-utils" }
-
+sl-player = { path = "../../sl-player" }
 tokio = "1.46.1"
 
 tauri = { version = "2.6.2", features = [] }

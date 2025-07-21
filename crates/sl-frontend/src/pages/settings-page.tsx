@@ -1,3 +1,3 @@
-export default function SettingsPage() {
+export const SettingsPage = () => {
 	return <div></div>;
 }

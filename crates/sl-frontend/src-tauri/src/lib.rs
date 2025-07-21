@@ -1,6 +1,6 @@
 use commands::{
     instances::{get_instances, create_instance, remove_instance, launch_instance, load_game_info, kill_instance}, 
-    profiles::{get_current_profile, get_profiles, get_other_profiles}, 
+    profiles::{get_profiles, set_current_profile, create_offline_profile}, 
     launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
     store::{search_modrinth_store, search_curseforge_store}
@@ -25,9 +25,7 @@ pub fn run() {
             get_instances,
             create_instance,
             remove_instance,
-            get_current_profile,
             get_profiles,
-            get_other_profiles,
             open_synthlauncher_folder,
             launch_instance,
             open_instance_folder,
@@ -35,7 +33,9 @@ pub fn run() {
             get_minecraft_versions,
             search_modrinth_store,
             search_curseforge_store,
-            kill_instance
+            kill_instance,
+            set_current_profile,
+            create_offline_profile
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

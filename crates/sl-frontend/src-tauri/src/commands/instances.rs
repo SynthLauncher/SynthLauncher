@@ -5,7 +5,7 @@ use sl_core::launcher::instances::{
     game::{get_game_info, GameInfo},
     instance_metadata::{InstanceMetadata, ModLoader},
 };
-use sl_utils::{dlog, elog, errors::BackendError};
+use sl_utils::{elog, errors::BackendError};
 use tauri::{AppHandle, Emitter};
 
 use crate::RUNNING_INSTANCES;
@@ -58,8 +58,6 @@ async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<(), 
             continue;
         }
 
-        dlog!("read: {bytes_read}bytes");
-        // ignore emit for now
         if let Err(e) = app_handle.emit("stdout", &line) {
             elog!("Error emitting stdio to frontend: {}", e);
         }

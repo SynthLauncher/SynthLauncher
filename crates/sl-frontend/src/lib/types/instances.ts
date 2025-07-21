@@ -30,10 +30,7 @@ export type InstanceCardProps = {
 	title: string;
 	version: string;
 	modLoader?: string;
-	modCount?: number;
-	lastPlayed: string;
 	image: string;
-	favorite?: boolean;
 };
 
 export interface MinecraftWorldMetadata {
