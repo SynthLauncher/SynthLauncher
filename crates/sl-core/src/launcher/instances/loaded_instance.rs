@@ -234,7 +234,7 @@ impl LoadedInstance {
             .arg(format!("-Xmx{}M", max_ram))
             .arg(format!("-Xms{}M", min_ram))
             .args(args)
-            .stdin(writer.try_clone()?)
+            .stdout(writer.try_clone()?)
             .stderr(writer)
             .current_dir(self.instance_path)
             .spawn()?;
