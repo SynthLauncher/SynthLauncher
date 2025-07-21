@@ -6,6 +6,7 @@ use sl_utils::errors::BackendError;
 use tokio::runtime::Runtime;
 
 fn main() -> Result<(), BackendError> {
+    // Wayland Nvidia temporary workaround: https://bugs.webkit.org/show_bug.cgi?id=259644
     std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1");
 
     let rt = Runtime::new()?;
@@ -17,4 +18,3 @@ fn main() -> Result<(), BackendError> {
     sl_frontend_lib::run();
     Ok(())
 }
-

@@ -44,23 +44,25 @@ async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<(), 
     let (instance, _) = instances::get_existing(name)?;
     let loaded_instance = instance.load_init().await?;
     let (child, reader) = loaded_instance.execute().await?;
+    let mut reader = BufReader::new(reader);
 
     RUNNING_INSTANCES.add(name.to_string(), child).await;
-
-    let mut reader = BufReader::new(reader);
     let mut line = String::new();
+
+    app_handle
+        .emit("stdout", "Starting instance...")
+        .expect("failed to emit the initial data to instance's Console");
 
     while let Ok(bytes_read) = reader.read_line(&mut line) {
         if bytes_read == 0 {
-            break;
+            continue;
         }
 
-        dlog!("LINE: {}", line);
-
+        dlog!("read: {bytes_read}bytes");
         // ignore emit for now
-        // if let Err(e) = app_handle.emit("stdout", line.clone()) {
-        //     elog!("Error emitting stdout to frontend: {}", e);
-        // }
+        if let Err(e) = app_handle.emit("stdout", &line) {
+            elog!("Error emitting stdio to frontend: {}", e);
+        }
 
         line.clear();
     }
