@@ -1,9 +1,6 @@
 use crate::{
     launcher::{
-        instances::{
-            instance_config::InstanceConfig,
-            instance_metadata::{GameVersionMetadata, InstanceMetadata},
-        },
+        instances::{instance_config::InstanceConfig, instance_metadata::InstanceMetadata},
         minecraft_version::LoadedMinecraftVersion,
         player::{player_profile::PlayerProfile, player_profiles::PlayerProfiles},
     },
@@ -44,8 +41,17 @@ impl LoadedInstance {
             loaded_version,
         }
     }
-    const fn game_metadata(&self) -> &GameVersionMetadata {
-        &self.instance_metadata.game_metadata
+
+    const fn mc_version(&self) -> &str {
+        self.instance_metadata.mc_version.as_str()
+    }
+
+    const fn mc_release_time(&self) -> &str {
+        self.instance_metadata.mc_release_time.as_str()
+    }
+
+    const fn mc_type(&self) -> VersionType {
+        self.instance_metadata.mc_type
     }
 
     const fn client_json(&self) -> &Client {
@@ -101,15 +107,13 @@ impl LoadedInstance {
 
     // Thanks MrMayMan
     fn generate_sound_arguments(&self, jvm_args: &mut Vec<String>) {
-        if self.game_metadata().r#type == VersionType::OldBeta
-            || self.game_metadata().r#type == VersionType::OldAlpha
-        {
+        if self.mc_type() == VersionType::OldBeta || self.mc_type() == VersionType::OldAlpha {
             jvm_args.push("-Dhttp.proxyHost=betacraft.uk".to_owned());
 
-            if self.game_metadata().version.starts_with("c0.") {
+            if self.mc_version().starts_with("c0.") {
                 // Classic
                 jvm_args.push("-Dhttp.proxyPort=11701".to_owned());
-            } else if self.game_metadata().r#type == VersionType::OldAlpha {
+            } else if self.mc_type() == VersionType::OldAlpha {
                 // Indev, Infdev and Alpha (mostly same)
                 jvm_args.push("-Dhttp.proxyPort=11702".to_owned());
             } else {
@@ -122,7 +126,7 @@ impl LoadedInstance {
         } else {
             // 1.5.2 release date
             let v1_5_2 = DateTime::parse_from_rfc3339("2013-04-25T15:45:00+00:00").unwrap();
-            let release = DateTime::parse_from_rfc3339(&self.game_metadata().release_time).unwrap();
+            let release = DateTime::parse_from_rfc3339(&self.mc_release_time()).unwrap();
 
             if release <= v1_5_2 {
                 // 1.0 - 1.5.2
@@ -155,7 +159,7 @@ impl LoadedInstance {
                 "game_directory" => game_dir.to_str()?,
                 "assets_root" | "game_assets" => ASSETS_DIR.to_str()?,
                 "assets_index_name" => &client.assets,
-                "version_name" => &self.game_metadata().version,
+                "version_name" => self.mc_version(),
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str()?,
                 "auth_uuid" => &profile.data.uuid,
