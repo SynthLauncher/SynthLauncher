@@ -12,19 +12,15 @@ use sl_meta::minecraft::{
     },
     version_manifest::VersionType,
 };
-use sl_utils::{
-    errors::{BackendError, HttpError, InstanceError},
-};
+use sl_utils::errors::{BackendError, HttpError, InstanceError};
 use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::{
     launcher::{
-        instances::{
-            self,
-            loaded_instance::LoadedInstance, instance_exporter::InstanceExporter,
-        },
+        instances::{self, instance_exporter::InstanceExporter, loaded_instance::LoadedInstance},
         minecraft_version::MinecraftVersionID,
-    }, INSTANCES_DIR, REQUESTER, VERSION_MANIFEST
+    },
+    INSTANCES_DIR, REQUESTER, VERSION_MANIFEST,
 };
 
 #[derive(
@@ -53,12 +49,7 @@ pub enum ModLoader {
 impl ModLoader {
     pub async fn get_latest_version(&self, mc_version: &str) -> Result<String, HttpError> {
         let do_request = async |url: &str| -> Result<_, HttpError> {
-            Ok(REQUESTER
-                .builder()
-                .download(url)
-                .await?
-                .to_vec()
-            )
+            Ok(REQUESTER.builder().download(url).await?.to_vec())
         };
 
         match self {
@@ -98,7 +89,9 @@ pub struct GameVersionMetadata {
 pub struct InstanceMetadata {
     pub name: String,
     pub icon: Option<String>,
-    pub game_metadata: GameVersionMetadata,
+    pub mc_version: String,
+    pub mc_release_time: String,
+    pub mc_type: VersionType,
     pub mod_loader_version: String,
     pub mod_loader: ModLoader,
 }
@@ -126,11 +119,9 @@ impl InstanceMetadata {
 
         Ok(Self {
             name: name.to_string(),
-            game_metadata: GameVersionMetadata {
-                version: version.id.clone(),
-                release_time: version.release_time.clone(),
-                r#type: version.r#type.clone(),
-            },
+            mc_type: version.r#type.clone(),
+            mc_version: version.id.clone(),
+            mc_release_time: version.release_time.clone(),
             icon,
             mod_loader,
             mod_loader_version,
@@ -162,7 +153,7 @@ impl InstanceMetadata {
         let version_id = MinecraftVersionID::new(
             self.mod_loader,
             self.mod_loader_version.clone(),
-            self.game_metadata.version.clone(),
+            self.mc_version.clone(),
         );
 
         let (loaded_version, config) = version_id.load_init(&instance_dir).await?;
