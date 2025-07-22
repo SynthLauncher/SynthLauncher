@@ -29,8 +29,8 @@ pub struct Version {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct VersionManifest {
-    pub latest: Latest,
-    pub versions: Vec<Version>,
+    latest: Latest,
+    versions: Vec<Version>,
 }
 
 impl VersionManifest {
@@ -39,6 +39,17 @@ impl VersionManifest {
         self.versions.iter().filter(move |v| v.r#type == kind)
     }
 
+    #[inline]
+    pub const fn latest(&self) -> &Latest {
+        &self.latest
+    }
+
+    #[inline]
+    pub fn get_version_by_id(&self, id: &str) -> Option<&Version> {
+        self.versions().find(|v| v.id == id)
+    }
+
+    #[inline]
     /// Returns all Minecraft versions
     pub fn versions(&self) -> impl Iterator<Item = &Version> {
         self.versions.iter()

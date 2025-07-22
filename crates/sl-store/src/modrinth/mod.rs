@@ -36,8 +36,14 @@ pub async fn install_modpack(slug: &str, version: &str) -> Result<(), BackendErr
         .get(&DependencyID::Minecraft)
         .unwrap_or(&project_version.game_versions[0]);
 
-    let instance =
-        InstanceMetadata::create(slug, &mc_version, mod_loader, mod_loader_version, None).await?;
+    let instance = InstanceMetadata::create(
+        slug.to_string(),
+        &mc_version,
+        mod_loader,
+        mod_loader_version,
+        None,
+    )
+    .await?;
 
     download_modpack_files(&instance_dir, &index.files).await?;
 

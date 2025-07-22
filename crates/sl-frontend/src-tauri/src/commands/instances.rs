@@ -20,7 +20,7 @@ async fn create_instance_inner(
     version: String,
     mod_loader: ModLoader,
 ) -> Result<(), BackendError> {
-    InstanceMetadata::create(&name, &version, mod_loader, None, None).await?;
+    InstanceMetadata::create(name, &version, mod_loader, None, None).await?;
     Ok(())
 }
 

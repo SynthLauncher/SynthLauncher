@@ -1,24 +1,102 @@
 use std::{
-    fs::{self, File},
+    fs::{self, File, OpenOptions},
     io::{self, BufReader},
     path::PathBuf,
 };
 
 use sl_utils::{
     elog,
-    errors::{BackendError, InstanceError}
+    errors::{BackendError, InstanceError},
 };
 
-use crate::{launcher::instances::instance_metadata::InstanceMetadata, INSTANCES_DIR};
+use crate::{
+    launcher::instances::instance_metadata::InstanceMetadata, INSTANCES_DIR, VERSION_MANIFEST,
+};
 
 pub mod game;
 pub mod instance_config;
-pub mod loaded_instance;
-pub mod instance_metadata;
 pub mod instance_exporter;
 pub mod instance_importer;
+pub mod instance_metadata;
+pub mod loaded_instance;
 
 const INSTANCE_FILE_NAME: &str = "instance.json";
+
+fn overwrite_instance(instance_name: &str, metadata: InstanceMetadata) -> std::io::Result<()> {
+    let instance_path = INSTANCES_DIR.join(instance_name);
+    let instance_file_path = instance_path.join(INSTANCE_FILE_NAME);
+    let instance_file = OpenOptions::new().write(true).open(&instance_file_path)?;
+    serde_json::to_writer_pretty(instance_file, &metadata)?;
+    Ok(())
+}
+
+pub async fn edit_instance(
+    instance_name: &str,
+    new_mc_version: Option<&str>,
+    new_modloader_version: Option<&str>,
+) -> Result<(), BackendError> {
+    let (instance_metadata, _) = self::get_existing(instance_name)?;
+    let (mc_version, mc_release_time, mc_release_type) = match new_mc_version {
+        Some(new_version) => {
+            let version_info = VERSION_MANIFEST
+                .get_version_by_id(new_version)
+                .ok_or(InstanceError::MinecraftVersionNotFound(new_version.into()))?;
+
+            (
+                &version_info.id,
+                &version_info.release_time,
+                version_info.r#type,
+            )
+        }
+        None => (
+            &instance_metadata.mc_version,
+            &instance_metadata.mc_release_time,
+            instance_metadata.mc_type,
+        ),
+    };
+
+    let mod_loader = instance_metadata.mod_loader;
+    let mod_loader_version = new_modloader_version.unwrap_or(&instance_metadata.mod_loader_version);
+
+    if !mod_loader
+        .validate_version(mc_version, mod_loader_version)
+        .await?
+    {
+        return Err(BackendError::InstanceError(
+            InstanceError::IncompatibleModLoaderVersion,
+        ));
+    }
+
+    let new_metadata = InstanceMetadata::new_unchecked(
+        instance_metadata.name,
+        instance_metadata.icon,
+        mc_version.to_string(),
+        mc_release_type,
+        mc_release_time.to_string(),
+        mod_loader,
+        mod_loader_version.to_string(),
+    );
+
+    self::overwrite_instance(instance_name, new_metadata)?;
+    Ok(())
+}
+
+/// Renames an instance with the name `instance_name` to `new_name`
+pub fn rename_instance(instance_name: &str, new_name: &str) -> Result<(), BackendError> {
+    let (mut instance_metadata, old_instance_path) = self::get_existing(instance_name)?;
+
+    let new_instance_path = INSTANCES_DIR.join(new_name);
+
+    std::fs::create_dir_all(&new_instance_path)?;
+    sl_utils::fs::copy_dir_all(&old_instance_path, new_instance_path)?;
+
+    instance_metadata.name = new_name.to_string();
+
+    overwrite_instance(new_name, instance_metadata)?;
+    std::fs::remove_dir_all(old_instance_path)?;
+
+    Ok(())
+}
 
 /// Gets an existing instance by name assuming it may not exist
 /// returns Ok(None) if it does not exist

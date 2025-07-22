@@ -161,6 +161,19 @@ impl NeoForgeReleases {
             .or_else(|| self.latest_beta(mc_major_version, mc_minor_version))
     }
 
+    /// Checks if the given Minecraft and NeoForge versions combination is valid.
+    pub fn validate(&self, mc_version: &str, neoforge_version: &str) -> bool {
+        let mut spilt = mc_version.split('.');
+        let _ = spilt.next().unwrap();
+
+        let major_version = spilt.next().unwrap();
+        let minor_version = spilt.next().unwrap();
+        let neoforge_version = NeoForgeVersion::from_str(neoforge_version);
+        neoforge_version.mc_major_version == major_version
+            && neoforge_version.mc_minor_version == minor_version
+            && self.versions.iter().any(|v| *v == neoforge_version)
+    }
+
     pub fn latest_from_mc_version(&self, mc_version: &str) -> Option<&NeoForgeVersion> {
         let mut spilt = mc_version.split('.');
         let _ = spilt.next().unwrap();

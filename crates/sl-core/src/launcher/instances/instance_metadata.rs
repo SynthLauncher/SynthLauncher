@@ -47,6 +47,51 @@ pub enum ModLoader {
 }
 
 impl ModLoader {
+    /// Validate that the combination of Minecraft version and mod loader version is valid.
+    pub async fn validate_version(
+        &self,
+        mc_version: &str,
+        mod_loader_version: &str,
+    ) -> Result<bool, HttpError> {
+        let do_request = async |url: &str| -> Result<_, HttpError> {
+            Ok(REQUESTER.builder().download(url).await?.to_vec())
+        };
+
+        match self {
+            Self::Vanilla => Ok(false),
+            Self::Fabric => {
+                let versions = sl_meta::minecraft::loaders::fabric::versions::get_fabric_versions(
+                    mc_version, do_request,
+                )
+                .await?;
+
+                let is_valid = versions
+                    .iter()
+                    .any(|f| f.loader.version == mod_loader_version);
+                Ok(is_valid)
+            }
+            Self::Quilt => {
+                let versions = sl_meta::minecraft::loaders::quilt::versions::get_quilt_versions(
+                    mc_version, do_request,
+                )
+                .await?;
+
+                let is_valid = versions
+                    .iter()
+                    .any(|f| f.loader.version == mod_loader_version);
+                Ok(is_valid)
+            }
+            Self::Forge => {
+                let versions = forge::ForgeVersions::download(do_request).await?;
+                Ok(versions.validate(mc_version, mod_loader_version))
+            }
+            Self::NeoForge => {
+                let versions = neoforge::NeoForgeReleases::download(do_request).await?;
+                Ok(versions.validate(mc_version, mod_loader_version))
+            }
+        }
+    }
+
     pub async fn get_latest_version(&self, mc_version: &str) -> Result<String, HttpError> {
         let do_request = async |url: &str| -> Result<_, HttpError> {
             Ok(REQUESTER.builder().download(url).await?.to_vec())
@@ -97,40 +142,63 @@ pub struct InstanceMetadata {
 }
 
 impl InstanceMetadata {
+    /// Constructs a new instance metadata, without doing any version checks.
+    pub(super) const fn new_unchecked(
+        name: String,
+        icon: Option<String>,
+        mc_version: String,
+        mc_type: VersionType,
+        mc_release_time: String,
+        mod_loader: ModLoader,
+        mod_loader_version: String,
+    ) -> Self {
+        Self {
+            name,
+            icon,
+            mc_version,
+            mc_release_time,
+            mc_type,
+            mod_loader_version,
+            mod_loader,
+        }
+    }
+
     async fn new(
-        name: &str,
+        name: String,
         mc_version: &str,
         mod_loader: ModLoader,
         mod_loader_version: Option<String>,
         icon: Option<String>,
     ) -> Result<Self, BackendError> {
-        let version = VERSION_MANIFEST
-            .versions()
-            .find(|x| x.id == mc_version)
-            .ok_or(BackendError::InstanceError(
-                InstanceError::MinecraftVersionNotFound(mc_version.to_string()),
-            ))?;
+        let version =
+            VERSION_MANIFEST
+                .get_version_by_id(mc_version)
+                .ok_or(BackendError::InstanceError(
+                    InstanceError::MinecraftVersionNotFound(mc_version.to_string()),
+                ))?;
 
-        std::fs::create_dir_all(INSTANCES_DIR.join(name))?;
+        // TODO: remove this line
+        std::fs::create_dir_all(INSTANCES_DIR.join(&name))?;
+
         let mod_loader_version = match mod_loader_version {
             Some(specific) => specific,
             None => mod_loader.get_latest_version(mc_version).await?,
         };
 
-        Ok(Self {
-            name: name.to_string(),
-            mc_type: version.r#type.clone(),
-            mc_version: version.id.clone(),
-            mc_release_time: version.release_time.clone(),
+        Ok(Self::new_unchecked(
+            name,
             icon,
+            version.id.clone(),
+            version.r#type.clone(),
+            version.release_time.clone(),
             mod_loader,
             mod_loader_version,
-        })
+        ))
     }
 
     /// Creates a new instance, and adds it to the instances list at once
     pub async fn create(
-        name: &str,
+        name: String,
         version: &str,
         mod_loader: ModLoader,
         mod_loader_version: Option<String>,
