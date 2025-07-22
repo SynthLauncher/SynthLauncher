@@ -34,9 +34,8 @@ async fn run_cli() -> Result<(), BackendError> {
             let loader = loader_info.loader.unwrap_or_default();
             let loader_version = loader_info.loader_version;
 
-            let _ =
-                InstanceMetadata::create(&instance_name, &version, loader, loader_version, None)
-                    .await?;
+            let _ = InstanceMetadata::create(instance_name, &version, loader, loader_version, None)
+                .await?;
         }
         Commands::Launch { instance_name } => {
             let (instance, _) = instances::get_existing(&instance_name)?;

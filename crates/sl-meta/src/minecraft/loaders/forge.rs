@@ -30,7 +30,14 @@ impl ForgeVersions {
         self.promos
             .iter()
             .find(|(version_mc, _)| *version_mc == &format!("{minecraft_version}-latest"))
-            .map(|n| n.1.as_str())
+            .map(|(_, forge_version)| forge_version.as_str())
+    }
+
+    /// Checks if the given Minecraft and Forge versions combination is valid.
+    pub fn validate(&self, mc_version: &str, forge_version: &str) -> bool {
+        self.promos.iter().any(|(rmc_version, rforge_version)| {
+            rmc_version == mc_version && rforge_version == forge_version
+        })
     }
 }
 
