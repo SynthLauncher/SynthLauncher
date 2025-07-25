@@ -1,32 +1,30 @@
-use std::collections::HashMap;
-
-use tokio::{process::Child, sync::Mutex};
+use std::collections::HashSet;
+use tokio::sync::RwLock;
 
 #[derive(Debug)]
 pub struct RunningInstances {
-    pub instances: Mutex<HashMap<String, Child>>,
+    pub instances: RwLock<HashSet<String>>,
 }
 
 impl RunningInstances {
     pub fn new() -> Self {
         RunningInstances {
-            instances: Mutex::new(HashMap::new()),
+            instances: RwLock::new(HashSet::new()),
         }
     }
-
-    pub async fn add(&self, name: String, child: Child) {
-        self.instances.lock().await.insert(name, child);
+    
+    /// Add a new instance to the running instances list.
+    pub async fn add(&self, name: String) {
+        self.instances.write().await.insert(name);
+    }
+    
+    /// Remove an instance from the running instances list.
+    pub async fn remove(&self, name: &str) -> bool {
+        self.instances.write().await.remove(name)
     }
 
-    pub async fn remove(&self, name: &str) {
-        self.instances.lock().await.remove(name);
-    }
-
-    pub async fn kill(&self, name: &str) {
-        let mut processes = self.instances.lock().await;
-
-        if let Some(mut child) = processes.remove(name) {
-            let _ = child.kill().await;
-        }
+    /// Check if an instance is alive.
+    pub async fn is_alive(&self, name: &str) -> bool {
+        self.instances.read().await.contains(name)
     }
 }

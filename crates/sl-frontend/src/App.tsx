@@ -13,7 +13,7 @@ import { Toaster } from '@/components/ui/sonner';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="flex flex-col h-screen overflow-hidden">
+		<div className="font-noto-sans flex flex-col h-screen overflow-hidden">
 			<Navbar />
 			<div className="flex overflow-hidden h-full">{children}</div>
 		</div>

@@ -41,28 +41,56 @@ pub async fn remove_instance(name: &str) -> Result<(), String> {
 }
 
 async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<(), BackendError> {
+    let emit_target = format!("{name}-console");
+
     let (instance, _) = instances::get_existing(name)?;
     let loaded_instance = instance.load_init().await?;
-    let (child, reader) = loaded_instance.execute().await?;
+
+    let (mut child, reader) = loaded_instance.execute().await?;
     let mut reader = BufReader::new(reader);
 
-    RUNNING_INSTANCES.add(name.to_string(), child).await;
+    RUNNING_INSTANCES.add(name.to_string()).await;
+
     let mut line = String::new();
 
-    app_handle
-        .emit("stdout", "Starting instance...")
-        .expect("failed to emit the initial data to instance's Console");
+    let emit = |line: &str| app_handle.emit(&emit_target, line);
+    emit("Starting instance...")
+        .expect("failed to emit the initial data to the instance's Console");
 
+    let mut dead_peacfully = false;
     while let Ok(bytes_read) = reader.read_line(&mut line) {
         if bytes_read == 0 {
             continue;
         }
 
-        if let Err(e) = app_handle.emit("stdout", &line) {
+        if let Err(e) = emit(&line) {
             elog!("Error emitting stdio to frontend: {}", e);
         }
-
         line.clear();
+
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                emit(&format!("EXIT WITH CODE {}\n", status.code().unwrap_or(-1)))
+                    .expect("failed to emit end data");
+                dead_peacfully = true;
+                break;
+            }
+            Ok(None) => {}
+            Err(_) => break,
+        }
+
+        if !RUNNING_INSTANCES.is_alive(name).await {
+            break;
+        }
+    }
+
+    // in case it dead peacefully or an error occurred
+    RUNNING_INSTANCES.remove(&name).await;
+
+    // in case it was removed from the list or an error occurred
+    if !dead_peacfully {
+        _ = child.kill().await;
+        emit("DEAD ABNORMALLY\n").expect("failed to emit end data");
     }
 
     Ok(())
@@ -77,7 +105,7 @@ pub async fn launch_instance(name: &str, app_handle: AppHandle) -> Result<(), St
 
 #[tauri::command]
 pub async fn kill_instance(name: &str) -> Result<(), String> {
-    RUNNING_INSTANCES.kill(name).await;
+    RUNNING_INSTANCES.remove(name).await;
 
     Ok(())
 }

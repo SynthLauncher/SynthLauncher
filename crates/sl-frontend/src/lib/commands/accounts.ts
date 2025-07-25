@@ -1,18 +1,18 @@
 import { invoke } from '@tauri-apps/api/core';
-import { PlayerProfiles } from '@/lib/types/profiles';
 import { ToastError } from '@/components/toasters';
+import { PlayerAccounts } from '../types/account';
 
-export const getAllProfiles = async () => {
+export const getAccounts = async () => {
 	try {
-		return await invoke<PlayerProfiles>('get_profiles');
+		return await invoke<PlayerAccounts>('get_accounts');
 	} catch (error) {
 		ToastError(`${error}`);
 	}
 }
 
-export const setCurrentProfile = async (index: number) => {
+export const setCurrentAccount = async (name: string) => {
 	try {
-		await invoke('set_current_profile', { index: index });
+		await invoke('set_current_account', { name: name });
 	} catch (error) {
 		ToastError(`${error}`);
 	}

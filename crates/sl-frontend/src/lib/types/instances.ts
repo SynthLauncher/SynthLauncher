@@ -13,15 +13,12 @@ enum ModLoader {
 	Neoforge,
 }
 
-interface InstanceGameInfo {
-	id: string;
-	releaseTime: string;
-	type: VersionType;
-}
 
 export interface Instance {
 	name: string;
-	game_metadata: InstanceGameInfo;
+	mc_version: string;
+	releaseTime: string;
+	type: VersionType;	
 	mod_loader: ModLoader;
 	mod_loader_version: string;
 }

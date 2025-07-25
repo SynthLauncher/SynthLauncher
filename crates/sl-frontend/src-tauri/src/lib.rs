@@ -1,9 +1,9 @@
 use commands::{
     instances::{get_instances, create_instance, remove_instance, launch_instance, load_game_info, kill_instance}, 
-    profiles::{get_profiles, set_current_profile, create_offline_profile}, 
     launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
-    store::{search_modrinth_store, search_curseforge_store}
+    store::{search_modrinth_store, search_curseforge_store, get_modrinth_project_versions, install_modrinth_project},
+    player_accounts::{create_offline_account, get_accounts, set_current_account}
 };
 use lazy_static::lazy_static;
 
@@ -25,7 +25,6 @@ pub fn run() {
             get_instances,
             create_instance,
             remove_instance,
-            get_profiles,
             open_synthlauncher_folder,
             launch_instance,
             open_instance_folder,
@@ -34,8 +33,11 @@ pub fn run() {
             search_modrinth_store,
             search_curseforge_store,
             kill_instance,
-            set_current_profile,
-            create_offline_profile
+            set_current_account,
+            get_accounts,
+            create_offline_account,
+            get_modrinth_project_versions,
+            install_modrinth_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

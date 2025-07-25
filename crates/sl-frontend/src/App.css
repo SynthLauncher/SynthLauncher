@@ -3,6 +3,52 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+	font-family: 'Noto Sans';
+	src: url("/fonts/static/NotoSans-Regular.ttf");
+	font-weight: 400;
+  	font-style: normal;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/static/NotoSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/static/NotoSans-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/static/NotoSans-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/static/NotoSans-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/static/NotoSans-MediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@theme {
+	--font-noto-sans: 'Noto Sans', 'sans-serif';
+}
+
 @theme inline {
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);

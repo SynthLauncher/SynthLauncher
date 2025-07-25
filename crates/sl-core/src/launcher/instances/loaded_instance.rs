@@ -2,16 +2,15 @@ use crate::{
     launcher::{
         instances::{
             instance_config::InstanceConfig,
-            instance_metadata::{GameVersionMetadata, InstanceMetadata},
-        },
-        minecraft_version::LoadedMinecraftVersion, player_profiles::PlayerProfiles,
+            instance_metadata::InstanceMetadata,
+        }, minecraft_version::LoadedMinecraftVersion, player_accounts::PlayerAccounts
     },
     minecraft::install_client,
     ASSETS_DIR, LIBS_DIR,
 };
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::{minecraft::loaders::vanilla::Client, minecraft::version_manifest::VersionType};
-use sl_player::profile::PlayerProfile;
+use sl_player::PlayerData;
 use sl_utils::{dlog, errors::BackendError, log, wlog};
 
 use chrono::DateTime;
@@ -141,7 +140,8 @@ impl LoadedInstance {
 
     async fn generate_arguments(
         &self,
-        profile: &PlayerProfile,
+        player_username: &str,
+        player_data: &PlayerData,
     ) -> Result<Vec<String>, BackendError> {
         let classpath = self.generate_classpath();
         let game_dir = self.instance_dir();
@@ -165,9 +165,9 @@ impl LoadedInstance {
                 "version_name" => self.mc_version(),
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str()?,
-                "auth_uuid" => &profile.data.id,
-                "auth_access_token" => &profile.access_token,
-                "auth_player_name" => &profile.data.name,
+                "auth_uuid" => &player_data.id,
+                "auth_access_token" => &player_data.access_token,
+                "auth_player_name" => &player_username,
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
                 "version_type" => "SL",
                 "library_directory" => LIBS_DIR.to_str()?,
@@ -215,14 +215,14 @@ impl LoadedInstance {
         // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
         self.download_minecraft().await?;
 
-        let profiles = PlayerProfiles::load()?;
-        let profile = profiles.current_profile();
+        let profiles = PlayerAccounts::load()?;
+        let (name, data) = profiles.get_current();
 
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
             self.instance_metadata.name,
             self.instance_metadata.mod_loader,
-            profile.data.name
+            name
         );
 
         let current_java_path = self.config.java.java();
@@ -232,7 +232,7 @@ impl LoadedInstance {
         let max_ram = self.config.java.max_ram;
         let min_ram = self.config.java.min_ram;
 
-        let args = self.generate_arguments(&profile).await?;
+        let args = self.generate_arguments(&name, &data).await?;
 
         dlog!("Launching with args: {:?}", &args);
         let (reader, writer) = std::io::pipe()?;

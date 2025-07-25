@@ -1,7 +1,7 @@
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
-use sl_utils::{errors::BackendError, requester::Requester};
+use sl_utils::{dlog, errors::BackendError, requester::Requester};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthSearchHit {
@@ -213,6 +213,8 @@ pub async fn query_search(params: Params) -> Result<SearchResult, BackendError> 
             query_parts.join("&")
         )
     };
+
+    dlog!("{}", url);
 
     let json = Requester::new().get_json(&url).await?;
     Ok(json)

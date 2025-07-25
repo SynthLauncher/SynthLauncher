@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{ArgAction, Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use sl_core::launcher::instances::instance_metadata::ModLoader;
 
 #[derive(Parser)]
@@ -31,7 +31,7 @@ pub enum Commands {
         output: PathBuf,
     },
 
-    /// Installs a Minecraft instance
+    /// Creates a Minecraft instance
     Create {
         #[arg(required = true)]
         instance_name: String,
@@ -47,25 +47,30 @@ pub enum Commands {
         instance_name: String,
     },
 
-    /// Adds an offline player profile
-    AddOfflineProfile {
+    /// Adds an offline player account
+    AddOfflineAccount {
         #[arg(required = true)]
         name: String,
     },
 
-    /// Adds a premium player profile
-    AddPremiumProfile,
+    /// Adds a premium player account
+    AddPremiumAccount,
 
-    /// Sets the current profile
-    SetCurrentProfile {
+    /// Sets the current account
+    SetCurrentAccount {
         #[arg(required = true)]
         name: String,
-        #[arg(long, action = ArgAction::SetTrue)]
-        premium: bool,
     },
+
+    /// Lists all player instances
     ListInstances,
-    ListProfiles,
-    CurrentProfile,
+    
+    /// Lists all player accounts
+    ListAccounts,
+    
+    /// Displays the current account
+    CurrentAccount,
+    
+    /// Lists available Minecraft versions
     ListMinecraftVersions,
-    Test,
 }

@@ -63,8 +63,8 @@ pub async fn query_project(slug: &str) -> Result<ModrinthProject, BackendError> 
 }
 
 #[must_use]
-pub async fn query_project_versions(slug: &str) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
-    let url = format!("https://api.modrinth.com/v2/project/{}/version", slug);
+pub async fn query_project_versions(slug: &str, game_version: &str, loader: &str) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
+    let url = format!("https://api.modrinth.com/v2/project/{}/version?game_versions=[\"{}\"]&loaders=[\"{}\"]", slug, game_version, loader);
     let json = REQUESTER.get_json(&url).await?;
     Ok(json)
 }

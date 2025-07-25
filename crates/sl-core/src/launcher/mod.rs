@@ -14,8 +14,8 @@ use crate::{
 
 pub mod instances;
 pub mod java;
-pub mod player_profiles;
 pub mod minecraft_version;
+pub mod player_accounts;
 
 pub(crate) fn get_launcher_dir() -> PathBuf {
     #[cfg(target_os = "windows")]
