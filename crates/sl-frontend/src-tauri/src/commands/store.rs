@@ -36,7 +36,7 @@ pub async fn search_curseforge_store(
 pub async fn get_modrinth_project_versions(
     slug: &str,
     game_version: &str,
-    loader: ModLoader
+    loader: ModLoader,
 ) -> Result<Vec<ModrinthProjectVersion>, String> {
     let versions = sl_store::modrinth::get_project_versions(slug, game_version, loader).await.map_err(|e| e.to_string())?;
     dlog!("{:?}", versions);

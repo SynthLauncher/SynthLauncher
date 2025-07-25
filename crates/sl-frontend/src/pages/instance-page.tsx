@@ -143,7 +143,7 @@ const Tab = ({ tab, instance }: { tab: "content" | "logs" | "saves" | "screensho
   const [isCopied, setIsCopied] = useState(false)
 
   useEffect(() => {
-    const unlisten = listen<string>('stdout', (event) => {
+    const unlisten = listen<string>(`${instance.name}-console`, (event) => {
       setLogs((prev) => [...prev, event.payload]);
     });
 
@@ -374,22 +374,12 @@ const Tab = ({ tab, instance }: { tab: "content" | "logs" | "saves" | "screensho
 
             <div className="bg-black rounded-lg border border-neutral-800 min-h-[500px] max-h-[500px] overflow-hidden shadow-2xl">
               <div className="bg-neutral-900 border-b border-neutral-800 px-4 py-2 flex items-center gap-3">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
                 <div className="flex items-center gap-2 text-neutral-400 text-sm">
                   <Terminal className="w-4 h-4" />
                   <span>Minecraft Console</span>
                 </div>
-                <div className="ml-auto flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-green-400 font-medium">READY</span>
-                </div>
               </div>
 
-              {/* Console Content */}
               <div className="p-4 font-mono text-sm overflow-y-auto max-h-[440px] bg-black">
                 <div className="space-y-1">
                   {logs.length > 0 ? (
@@ -408,7 +398,7 @@ const Tab = ({ tab, instance }: { tab: "content" | "logs" | "saves" | "screensho
                     <div className="space-y-2 text-neutral-500">
                       <div className="flex items-start gap-2">
                         <span className="text-neutral-600 text-xs mt-0.5 font-mono tabular-nums min-w-[60px]">001</span>
-                        <span className="text-blue-400">[INFO] Console initialized and ready for output...</span>
+                        <span className="text-blue-400">[INFO] Console will output here...</span>
                       </div>
                     </div>
                   )}
