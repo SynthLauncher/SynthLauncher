@@ -7,7 +7,7 @@ use crate::PROFILES_PATH;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerAccounts {
-    current_account: String,
+    pub current_account: String,
     pub accounts: HashMap<String, PlayerData>,
 }
 
@@ -51,6 +51,7 @@ impl PlayerAccounts {
 
 pub fn add_account(name: String, data: PlayerData) -> std::io::Result<()> {
     let mut accounts = PlayerAccounts::load()?;
+    accounts.current_account = name.clone();
     accounts.accounts.insert(name, data);
     PlayerAccounts::save(&accounts)?;
     
@@ -62,7 +63,11 @@ pub fn remove_account(name: &str) -> std::io::Result<()> {
     accounts.accounts.remove(name);
 
     if accounts.current_account == name {
-        accounts.current_account = String::new();
+        if let Some((new_current, _)) = accounts.accounts.iter().next() {
+            accounts.current_account = new_current.clone();
+        } else {
+            accounts.current_account = String::new();
+        }
     }
 
     PlayerAccounts::save(&accounts)?;
