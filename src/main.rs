@@ -2,14 +2,17 @@ use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::{
     launcher::{
-        init_launcher_dir, instances::{
+        init_launcher_dir,
+        instances::{
             self, instance_importer::import_instance_from_path, instance_metadata::InstanceMetadata,
-        }, player_accounts::PlayerAccounts,
+        },
+        player_accounts::{add_account, set_current_account, PlayerAccounts},
     },
     VERSION_MANIFEST,
 };
 use sl_player::PlayerData;
 use sl_utils::{dlog, elog, errors::BackendError, log};
+use tokio::io::{self};
 
 mod cli;
 
@@ -37,24 +40,19 @@ async fn run_cli() -> Result<(), BackendError> {
             dlog!("Instance found!");
             let loaded_instance = instance.load_init().await?;
             let (mut child, mut reader) = loaded_instance.execute().await?;
-            let mut stdout = std::io::stdout();
+            let mut stdout = io::stdout();
+            tokio::io::copy(&mut reader, &mut stdout).await?;
 
-            loop {
-                std::io::copy(&mut reader, &mut stdout)?;
-
-                if let Some(status) = child.try_wait()? {
-                    if status.success() {
-                        dlog!("Instance exited successfully");
-                    } else {
-                        dlog!("Instance exited with error code {:?}", status.code());
-                    }
-                    break;
+            if let Some(status) = child.try_wait()? {
+                if status.success() {
+                    dlog!("Instance exited successfully");
+                } else {
+                    dlog!("Instance exited with error code {:?}", status.code());
                 }
             }
         }
         Commands::AddOfflineAccount { name } => {
-            let mut accounts = PlayerAccounts::load()?;
-            accounts.add(name, PlayerData::default())?;
+            add_account(name, PlayerData::default())?;
         }
         // FIXME
         Commands::AddPremiumAccount => {
@@ -72,9 +70,8 @@ async fn run_cli() -> Result<(), BackendError> {
             //     .unwrap();
             // profiles.add(profile)?;
         }
-        Commands::SetCurrentAccount { name} => {
-            let mut accounts = PlayerAccounts::load()?;
-            accounts.set_current(name)?;
+        Commands::SetCurrentAccount { name } => {
+            set_current_account(name)?;
         }
         Commands::ListInstances => {
             for (i, instance) in instances::get_all_instances()?.iter().enumerate() {
@@ -83,7 +80,10 @@ async fn run_cli() -> Result<(), BackendError> {
         }
         Commands::ListAccounts => {
             for (i, profile) in PlayerAccounts::load()?.accounts.iter() {
-                println!("[{}]: Access Token: {}; ID: {}", i, profile.access_token, profile.id);
+                println!(
+                    "[{}]: Access Token: {}; ID: {}",
+                    i, profile.access_token, profile.id
+                );
             }
         }
         Commands::CurrentAccount => {

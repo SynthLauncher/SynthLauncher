@@ -1,5 +1,10 @@
 use std::collections::HashSet;
+use lazy_static::lazy_static;
 use tokio::sync::RwLock;
+
+lazy_static! {
+    pub static ref RUNNING_INSTANCES: RunningInstances = RunningInstances::new();
+}
 
 #[derive(Debug)]
 pub struct RunningInstances {

@@ -3,18 +3,11 @@ use commands::{
     launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
     store::{search_modrinth_store, search_curseforge_store, get_modrinth_project_versions, install_modrinth_project},
-    player_accounts::{create_offline_account, get_accounts, set_current_account}
+    accounts::{accounts_get, accounts_set_current, accounts_remove, accounts_create_offline}
 };
-use lazy_static::lazy_static;
-
-use crate::running_instances::RunningInstances;
 
 mod commands;
-mod running_instances;
-
-lazy_static! {
-    pub static ref RUNNING_INSTANCES: RunningInstances = RunningInstances::new();
-}
+mod core;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -22,6 +15,11 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            accounts_get,
+            accounts_set_current,
+            accounts_remove,
+            accounts_create_offline,
+
             get_instances,
             create_instance,
             remove_instance,
@@ -33,11 +31,8 @@ pub fn run() {
             search_modrinth_store,
             search_curseforge_store,
             kill_instance,
-            set_current_account,
-            get_accounts,
-            create_offline_account,
             get_modrinth_project_versions,
-            install_modrinth_project
+            install_modrinth_project,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

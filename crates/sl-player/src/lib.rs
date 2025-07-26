@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 pub mod api;
-pub mod profile;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerData {

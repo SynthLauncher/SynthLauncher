@@ -4,7 +4,6 @@ import type { GameInfo, Instance } from "@/lib/types/instances"
 import {
   Blocks,
   Ellipsis,
-  FolderUp,
   Loader2,
   Download,
   FileText,
@@ -19,6 +18,7 @@ import {
   Play,
   Check,
   Copy,
+  Skull,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
@@ -26,7 +26,7 @@ import { ToastInfo, ToastSuccess } from "@/components/toasters"
 import { useTranslation } from "react-i18next"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { listen } from "@tauri-apps/api/event"
+import { getLogs, setupLogListener } from "@/lib/log-cache"
 
 const InstanceFolderButton = ({ onClick }: { onClick: () => void }) => {
 	return (
@@ -104,7 +104,7 @@ const InstanceHeader = ({ instance }: { instance: Instance }) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
             <DropdownMenuItem onClick={async () => killInstance(instance.name)}>
-              <FolderUp className="mr-1" /> Kill Instance
+              <Skull className="mr-1" /> Kill Instance
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -143,14 +143,17 @@ const Tab = ({ tab, instance }: { tab: "content" | "logs" | "saves" | "screensho
   const [isCopied, setIsCopied] = useState(false)
 
   useEffect(() => {
-    const unlisten = listen<string>(`${instance.name}-console`, (event) => {
-      setLogs((prev) => [...prev, event.payload]);
-    });
+    if (!instance) return;
 
-    return () => {
-      unlisten.then((fn) => fn());
-    };
-  }, []);
+    setupLogListener(instance.name);
+
+    const interval = setInterval(() => {
+      setLogs(getLogs(instance.name));
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [instance]);
+
 
   useEffect(() => {
     if (!instance) return

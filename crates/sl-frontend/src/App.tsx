@@ -1,4 +1,4 @@
-import { ProfileSidebar } from '@/components/layout/profile-sidebar';
+import { ProfileSidebar } from '@/components/layout/accounts-sidebar';
 import { useEffect } from 'react';
 import { HomePage } from '@/pages/home-page';
 import { InstancesPage } from '@/pages/instances-page';

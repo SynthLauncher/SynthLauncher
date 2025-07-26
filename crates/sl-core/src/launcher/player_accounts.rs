@@ -13,14 +13,9 @@ pub struct PlayerAccounts {
 
 impl PlayerAccounts {
     pub fn new() -> Self {
-        let default = PlayerData::default();
-
-        let mut accounts = HashMap::new();
-        accounts.insert("synther".to_string(), default);
-
         PlayerAccounts {
-            current_account: "synther".to_string(),
-            accounts,
+            current_account: String::new(),
+            accounts: HashMap::new(),
         }
     }
 
@@ -30,18 +25,11 @@ impl PlayerAccounts {
 
     pub fn get_current(&self) -> (&str, &PlayerData) {
         let name = &self.current_account;
-        let data = self.accounts.get(name).expect("Current account must exist!");
+        let data = self
+            .accounts
+            .get(name)
+            .expect("Current account must exist!");
         (name.as_str(), data)
-    }
-
-    pub fn set_current(&mut self, name: String) -> std::io::Result<()> {
-        if self.accounts.contains_key(&name) {
-            self.current_account = name;
-        }
-
-        Self::overwrite(&self)?;
-
-        Ok(())
     }
 
     pub fn load() -> std::io::Result<Self> {
@@ -49,26 +37,49 @@ impl PlayerAccounts {
         serde_json::from_str(&content).or_else(|_| Ok(Self::new()))
     }
 
-    pub fn overwrite(new_accounts: &PlayerAccounts) -> std::io::Result<()> {
+    pub fn save(new_accounts: &PlayerAccounts) -> std::io::Result<()> {
         let file = OpenOptions::new()
             .write(true)
             .truncate(true)
             .open(PROFILES_PATH.as_path())?;
 
         serde_json::to_writer_pretty(file, &new_accounts)?;
-        
+
         Ok(())
+    }
+}
+
+pub fn add_account(name: String, data: PlayerData) -> std::io::Result<()> {
+    let mut accounts = PlayerAccounts::load()?;
+    accounts.accounts.insert(name, data);
+    
+    PlayerAccounts::save(&accounts)?;
+    
+    Ok(())
+}
+
+pub fn remove_account(name: &str) -> std::io::Result<()> {
+    let mut accounts = PlayerAccounts::load()?;
+    accounts.accounts.remove(name);
+
+    if accounts.current_account == name {
+        if let Some((new_current, _)) = accounts.accounts.iter().next() {
+            accounts.current_account = new_current.clone();
+        }
     }
 
-    pub fn add(&mut self, name: String, data: PlayerData) -> std::io::Result<()> {
-        self.accounts.insert(name, data);
-        Self::overwrite(&self)?;
-        Ok(())
+    PlayerAccounts::save(&accounts)?;
+
+    Ok(())
+}
+
+pub fn set_current_account(name: String) -> std::io::Result<()> {
+    let mut accounts = PlayerAccounts::load()?;
+    if accounts.accounts.contains_key(&name) {
+        accounts.current_account = name;
     }
+
+    PlayerAccounts::save(&accounts)?;
     
-    pub fn remove(&mut self, name: &str) -> std::io::Result<()> {
-        self.accounts.remove(name);
-        Self::overwrite(&self)?;
-        Ok(())
-    }
+    Ok(())
 }

@@ -8,8 +8,9 @@ import {
   Edit3,
   Plus,
   ArrowLeft,
+  OctagonAlert,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -21,8 +22,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { FaMicrosoft } from "react-icons/fa6"
-import { createOfflineAccount, getAccounts, setCurrentAccount } from "@/lib/commands/accounts"
+import { createOfflineAccount, getAccounts, removeAccount, setCurrentAccount } from "@/lib/commands/accounts"
 import { PlayerAccounts, PlayerData } from "@/lib/types/account"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog"
 
 const ProfileDisplay = ({ account, name }: { account: PlayerData, name: string }) => {
   const isPremium = !(account.access_token === "0");
@@ -313,14 +315,45 @@ export const ProfileSidebar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 group"
-          >
-            <LogOut className="w-4 h-4 mr-3" />
-            Remove The Account
-            <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 group"
+                disabled={Object.keys(profiles?.accounts ?? {}).length === 1}
+              >
+                <LogOut className="w-4 h-4 mr-3" />
+                Remove The Account
+                <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader className="items-center">
+                <AlertDialogTitle>
+                  <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                    <OctagonAlert className="h-7 w-7 text-destructive" />
+                  </div>
+                  Are you absolutely sure?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-[15px] text-center">
+                  This action cannot be undone. This will delete your
+                  account in the launcher.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="mt-2 sm:justify-center">
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className={buttonVariants({ variant: "destructive" })}
+                  onClick={async () => {
+                    removeAccount(account?.[0] as string)
+                    await refreshProfiles()
+                  }}
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         <div className="mt-6 pt-4 border-t-2 border-neutral-700 text-center">

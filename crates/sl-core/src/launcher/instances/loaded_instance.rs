@@ -16,10 +16,9 @@ use sl_utils::{dlog, errors::BackendError, log, wlog};
 use chrono::DateTime;
 use std::{
     borrow::Cow,
-    io::PipeReader,
     path::{Path, PathBuf},
 };
-use tokio::process::Command;
+use tokio::{io::AsyncRead, process::Command};
 
 // Represents a loaded instance of Minecraft with its configurations and things required for launching
 pub struct LoadedInstance {
@@ -209,7 +208,7 @@ impl LoadedInstance {
     /// # Returns
     /// - Ok((child, reader)) reader is a pipe reader that can be used to read the output of the instance (stderr and stdout)
     /// - Err(BackendError) if the instance could not be executed
-    pub async fn execute(self) -> Result<(tokio::process::Child, PipeReader), BackendError> {
+    pub async fn execute(self) -> Result<(tokio::process::Child, impl AsyncRead), BackendError> {
         // the reason why the download operation is done here is to ensure that the files are available before executing the instance.
         // AND THE REASON WHY YOU DON'T LEAVE CALLING THIS TO THE CALLER OF THE EXECUTE METHOD is because it is just better and cleaner,
         // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
@@ -235,17 +234,18 @@ impl LoadedInstance {
         let args = self.generate_arguments(&name, &data).await?;
 
         dlog!("Launching with args: {:?}", &args);
-        let (reader, writer) = std::io::pipe()?;
 
-        let child = Command::new(current_java_path)
+        let mut child = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))
             .arg(format!("-Xms{}M", min_ram))
             .args(args)
-            .stdout(writer.try_clone()?)
-            .stderr(writer)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
             .current_dir(self.instance_path)
             .spawn()?;
 
-        Ok((child, reader))
+        let stdout = child.stdout.take().expect("Child did not have a handle to stdout");
+
+        Ok((child, stdout))
     }
 }
