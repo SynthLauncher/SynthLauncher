@@ -1,7 +1,11 @@
 use sl_core::launcher::instances;
 use sl_utils::errors::BackendError;
 use tauri::{AppHandle, Emitter};
-use tokio::{io::{AsyncBufReadExt, BufReader}, select, time::{sleep, Duration}};
+use tokio::{
+    io::{AsyncBufReadExt, BufReader},
+    select,
+    time::{sleep, Duration},
+};
 
 use crate::core::running_instances::RUNNING_INSTANCES;
 
@@ -28,19 +32,19 @@ pub async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<
         select! {
             read_result = reader.read_line(&mut line) => {
                 match read_result {
-                    Ok(0) => continue,
+                    Ok(0) => {
+                        if let Ok(Some(status)) = child.try_wait() {
+                            emit(&format!("EXIT WITH CODE {}\n", status.code().unwrap_or(-1)))
+                                .expect("failed to emit end");
+                            dead_peacfully = true;
+                            break 
+                        }
+                    },
                     Ok(_) => {
                         let _ = emit(&line);
                         line.clear();
                     }
                     Err(_) => break,
-                }
-
-                if let Ok(Some(status)) = child.try_wait() {
-                    emit(&format!("EXIT WITH CODE {}\n", status.code().unwrap_or(-1)))
-                        .expect("failed to emit end");
-                    dead_peacfully = true;
-                    break;
                 }
             }
 
