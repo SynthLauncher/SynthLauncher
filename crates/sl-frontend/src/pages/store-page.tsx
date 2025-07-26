@@ -216,7 +216,7 @@ const StoreFilter = ({
             </div>
             <div>
               <h3 className="text-yellow-400 font-medium text-sm">Select an Instance</h3>
-              <p className="text-yellow-300/80 text-sm">Choose an instance above to install {category}s to it.</p>
+              <p className="text-yellow-300/80 text-sm">Choose an instance above to add {category}s to it.</p>
             </div>
           </div>
         </div>
