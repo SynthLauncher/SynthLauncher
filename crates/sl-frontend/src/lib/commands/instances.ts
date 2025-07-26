@@ -1,4 +1,4 @@
-import { GameInfo, Instance } from '@/lib/types/instances';
+import { GameInfo, Instance, ModLoader } from '@/lib/types/instances';
 import { invoke } from '@tauri-apps/api/core';
 import { ToastError } from '@/components/toasters';
 
@@ -34,9 +34,9 @@ export const launchInstance = async (name: string) => {
 	}
 };
 
-export const getGameInfo = async (name: string) => {
+export const getGameInfo = async (name: string, loader: ModLoader) => {
 	try {
-		return await invoke<GameInfo>('load_game_info', { name: name });
+		return await invoke<GameInfo>('load_game_info', { name: name, loader: loader });
 	} catch (error) {
 		ToastError(`${error}`);
 	}

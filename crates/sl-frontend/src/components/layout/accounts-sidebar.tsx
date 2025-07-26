@@ -250,7 +250,19 @@ export const ProfileSidebar = () => {
 
   return (
     <div className="w-80 shrink-0 bg-layout border-l-2 border-layout overflow-y-auto flex flex-col">
-      <ProfileDisplay account={account?.[1] as PlayerData} name={account?.[0] as string} />
+      {account?.[1] && account?.[0] ? (
+        <ProfileDisplay account={account[1]} name={account[0]} />
+      ) : (
+        <div className="p-6 text-center text-neutral-400">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-neutral-700 flex items-center justify-center border border-neutral-600">
+            <User className="w-10 h-10 text-neutral-500" />
+          </div>
+          <h2 className="text-lg font-semibold">No Account Found</h2>
+          <p className="text-sm text-neutral-500 mt-2">
+            You don't have any accounts chosen yet.
+          </p>
+        </div>
+      )}
 
       <div className="mt-auto p-6">
         <div className="space-y-2">
@@ -269,39 +281,46 @@ export const ProfileSidebar = () => {
               className="w-64 bg-neutral-800 border-neutral-700"
               align="start"
             >
-              <div className="max-h-72 overflow-y-auto">
-                {Object.entries(profiles?.accounts as Record<string, PlayerData>).map(([name, account]) => {
-                  const isCurrent = name === profiles?.current_account as string;
-                  const isPremium = "0" === account.access_token;
-                  return (
-                    <DropdownMenuItem
-                      key={account.id}
-                      onClick={async () => {
-                        setCurrentAccount(name)
-                        await refreshProfiles()
-                      }}
-                      className="flex items-center gap-3 p-3 text-neutral-300 hover:text-white hover:bg-neutral-700 focus:bg-neutral-700 focus:text-white"
-                    >
-                      <img
-                        src={`https://mc-heads.net/avatar/${name}/80`}
-                        alt={account.id}
-                        className="w-8 h-8 rounded-lg"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{name}</span>
-                          {isCurrent && <div className="w-2 h-2 bg-green-400 rounded-full" />}
-                        </div>
-                        <div className="text-xs text-neutral-400">
-                          {!isPremium ? "Premium Account" : "Offline Account"}
-                        </div>
-                      </div>
-                      {!isPremium && <Crown className="w-4 h-4 text-yellow-400" />}
-                    </DropdownMenuItem>
-                  )
-                })}
-              </div>
-              <DropdownMenuSeparator className="bg-neutral-700" />
+              {(Object.keys(profiles?.accounts ?? {}).length >= 1) && (
+                <>
+                  <div className="max-h-72 overflow-y-auto">
+                    {Object.entries(profiles?.accounts as Record<string, PlayerData>).map(([name, account]) => {
+                      const isCurrent = name === profiles?.current_account as string;
+                      const isPremium = "0" === account?.access_token;
+                      return (
+                        <DropdownMenuItem
+                          key={account.id}
+                          onClick={async () => {
+                            setCurrentAccount(name)
+                            await refreshProfiles()
+                          }}
+                          className="flex items-center gap-3 p-3 text-neutral-300 hover:text-white hover:bg-neutral-700 focus:bg-neutral-700 focus:text-white"
+                        >
+                          <img
+                            src={`https://mc-heads.net/avatar/${name}/80`}
+                            alt={account.id}
+                            className="w-8 h-8 rounded-lg"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{name}</span>
+                              {isCurrent && <div className="w-2 h-2 bg-green-400 rounded-full" />}
+                            </div>
+                            <div className="text-xs text-neutral-400">
+                              {!isPremium ? "Premium Account" : "Offline Account"}
+                            </div>
+                          </div>
+                          {!isPremium && <Crown className="w-4 h-4 text-yellow-400" />}
+                        </DropdownMenuItem>
+                      )
+                    })}
+                  </div>
+
+
+                  <DropdownMenuSeparator className="bg-neutral-700" />
+                </>
+              )}
+
               <DropdownMenuItem
                 className="flex items-center gap-3 p-3 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 focus:bg-blue-500/10 focus:text-blue-300"
                 onSelect={(e) => {
@@ -315,49 +334,51 @@ export const ProfileSidebar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 group"
-                disabled={Object.keys(profiles?.accounts ?? {}).length === 1}
-              >
-                <LogOut className="w-4 h-4 mr-3" />
-                Remove The Account
-                <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader className="items-center">
-                <AlertDialogTitle>
-                  <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
-                    <OctagonAlert className="h-7 w-7 text-destructive" />
-                  </div>
-                  Are you absolutely sure?
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-[15px] text-center">
-                  This action cannot be undone. This will delete your
-                  account in the launcher.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="mt-2 sm:justify-center">
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className={buttonVariants({ variant: "destructive" })}
-                  onClick={async () => {
-                    removeAccount(account?.[0] as string)
-                    await refreshProfiles()
-                  }}
+          {account?.[1] && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 group"
                 >
-                  Continue
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  <LogOut className="w-4 h-4 mr-3" />
+                  Remove The Account
+                  <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader className="items-center">
+                  <AlertDialogTitle>
+                    <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                      <OctagonAlert className="h-7 w-7 text-destructive" />
+                    </div>
+                    Are you absolutely sure?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-[15px] text-center">
+                    This action cannot be undone. This will delete your
+                    account in the launcher.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="mt-2 sm:justify-center">
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className={buttonVariants({ variant: "destructive" })}
+                    onClick={async () => {
+                      removeAccount(account?.[0] as string)
+                      await refreshProfiles()
+                    }}
+                  >
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
         </div>
 
         <div className="mt-6 pt-4 border-t-2 border-neutral-700 text-center">
-          <p className="text-sm font-semibold text-sky-400">SynthLauncher v0.0.1</p>
+          <p className="text-sm font-normal text-neutral-400">SynthLauncher v0.0.1</p>
         </div>
       </div>
 

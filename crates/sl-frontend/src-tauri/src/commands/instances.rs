@@ -44,6 +44,6 @@ pub async fn kill_instance(name: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn load_game_info(name: &str) -> Result<GameInfo, String> {
-    get_game_info(name).map_err(|e| e.to_string())
+pub fn load_game_info(name: &str, loader: ModLoader) -> Result<GameInfo, String> {
+    get_game_info(name, &loader).map_err(|e| e.to_string())
 }

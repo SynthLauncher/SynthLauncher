@@ -5,7 +5,7 @@ enum VersionType {
 	Snapshot,
 }
 
-enum ModLoader {
+export enum ModLoader {
 	Vanilla,
 	Fabric,
 	Quilt,
@@ -40,7 +40,22 @@ export interface ScreenshotMetadata {
 	screenshot: string;
 }
 
+export interface ModMetadata {
+	id: string,
+	name: string,
+	version: string
+}
+
+export interface Mod {
+    metadata: ModMetadata,
+    file_name: string,
+    sha512: string,
+    icon?: string,
+}
+
+
 export interface GameInfo {
 	worlds: MinecraftWorldMetadata[];
 	screenshots: ScreenshotMetadata[];
+	mods: Mod[]
 }

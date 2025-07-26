@@ -132,9 +132,13 @@ pub fn get_minecraft_world_metadata(
 pub struct GameInfo {
     pub worlds: Vec<MinecraftWorldMetadata>,
     pub screenshots: Vec<ScreenshotMetadata>,
+    pub mods: Vec<Mod>,
 }
 
-pub fn get_game_info(instance_name: &str) -> Result<GameInfo, BackendError> {
+pub fn get_game_info(
+    instance_name: &str,
+    instance_mod_loader: &ModLoader,
+) -> Result<GameInfo, BackendError> {
     /// For each entry in `dir_path`, retrieve it's path, filter it by `filter_f` and get metadata using `get_f(path)`.
     fn get_metadata_of<R, E, F>(
         dir_path: &Path,
@@ -194,8 +198,23 @@ pub fn get_game_info(instance_name: &str) -> Result<GameInfo, BackendError> {
         Vec::new()
     };
 
+    let mods_path = instance_path.join("mods");
+    let mods = if mods_path.exists() {
+        get_metadata_of(
+            &mods_path,
+            |path| path.is_file(),
+            |path| get_mod_metadata(instance_mod_loader, path),
+        )?
+        .into_iter()
+        .flatten()
+        .collect()
+    } else {
+        Vec::new()
+    };
+
     Ok(GameInfo {
         worlds,
         screenshots,
+        mods,
     })
 }

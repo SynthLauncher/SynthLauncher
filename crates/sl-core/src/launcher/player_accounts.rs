@@ -52,7 +52,6 @@ impl PlayerAccounts {
 pub fn add_account(name: String, data: PlayerData) -> std::io::Result<()> {
     let mut accounts = PlayerAccounts::load()?;
     accounts.accounts.insert(name, data);
-    
     PlayerAccounts::save(&accounts)?;
     
     Ok(())
@@ -63,9 +62,7 @@ pub fn remove_account(name: &str) -> std::io::Result<()> {
     accounts.accounts.remove(name);
 
     if accounts.current_account == name {
-        if let Some((new_current, _)) = accounts.accounts.iter().next() {
-            accounts.current_account = new_current.clone();
-        }
+        accounts.current_account = String::new();
     }
 
     PlayerAccounts::save(&accounts)?;

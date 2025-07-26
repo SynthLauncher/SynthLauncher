@@ -158,7 +158,7 @@ const Tab = ({ tab, instance }: { tab: "content" | "logs" | "saves" | "screensho
   useEffect(() => {
     if (!instance) return
     const fetchAll = async () => {
-      const gameInfo = await getGameInfo(instance.name)
+      const gameInfo = await getGameInfo(instance.name,  instance.mod_loader)
       setGameInfo(gameInfo)
     }
     fetchAll()
