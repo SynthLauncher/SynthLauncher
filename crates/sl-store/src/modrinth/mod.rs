@@ -7,18 +7,12 @@ use sl_core::{
 use sl_utils::errors::BackendError;
 
 use crate::modrinth::{
-    api::{project::{query_project_version, query_project_versions, ModrinthProjectVersion}, ProjectType},
+    api::{project::query_project_version, ProjectType},
     mrpack::{download_modpack_files, read_modrinth_index, unzip_modpack, DependencyID},
 };
 
 pub mod api;
 pub mod mrpack;
-
-pub async fn get_project_versions(slug: &str, game_version: &str, loader: ModLoader) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
-    let loader = loader.to_string();
-    let project_versions = query_project_versions(slug, game_version, &loader).await?;
-    Ok(project_versions)
-}
 
 pub async fn install_modpack(slug: &str, version: &str) -> Result<(), BackendError> {
     let project_version = query_project_version(slug, version).await?;

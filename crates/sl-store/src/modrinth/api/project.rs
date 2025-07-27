@@ -1,14 +1,10 @@
-use std::{
-    path::{Path, PathBuf},
-};
+use std::{path::{Path, PathBuf}, fmt::Write};
 
 use serde::{Deserialize, Serialize};
 use sl_core::REQUESTER;
-use sl_utils::errors::BackendError;
+use sl_utils::{errors::BackendError};
 
-use crate::modrinth::api::{
-    GalleryImage, ProjectType,
-};
+use crate::modrinth::api::{GalleryImage, ProjectType};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthProject {
@@ -63,8 +59,25 @@ pub async fn query_project(slug: &str) -> Result<ModrinthProject, BackendError> 
 }
 
 #[must_use]
-pub async fn query_project_versions(slug: &str, game_version: &str, loader: &str) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
-    let url = format!("https://api.modrinth.com/v2/project/{}/version?game_versions=[\"{}\"]&loaders=[\"{}\"]", slug, game_version, loader);
+pub async fn query_project_versions(
+    slug: &str,
+    game_version: Option<&str>,
+    loader: Option<&str>,
+) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
+    let mut url = format!("https://api.modrinth.com/v2/project/{}/version?", slug);
+
+    let mut query_params = Vec::new();
+
+    if let Some(game_version) = game_version {
+        query_params.push(format!("game_versions=[\"{}\"]", game_version));
+    }
+
+    if let Some(loader) = loader {
+        query_params.push(format!("loaders=[\"{}\"]", loader));
+    }
+
+    _ = write!(url, "{}", query_params.join("&"));
+
     let json = REQUESTER.get_json(&url).await?;
     Ok(json)
 }
@@ -87,7 +100,7 @@ pub async fn download_project_file(
     dest: &Path,
 ) -> Result<PathBuf, BackendError> {
     let path = dest.join(&project_file.filename);
-    
+
     REQUESTER
         .builder()
         .download_to(&project_file.url, &path)

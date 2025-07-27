@@ -4,7 +4,8 @@ use sl_store::{
     facet_filters,
     modrinth::{api::{project::ModrinthProjectVersion, search::{query_search, Params, SearchResult}, ProjectType}, install_project},
 };
-use sl_utils::dlog;
+
+use crate::core::store::get_modrinth_project_versions_inner;
 
 #[tauri::command]
 pub async fn search_modrinth_store(
@@ -37,9 +38,9 @@ pub async fn get_modrinth_project_versions(
     slug: &str,
     game_version: &str,
     loader: ModLoader,
+    project_type: ProjectType
 ) -> Result<Vec<ModrinthProjectVersion>, String> {
-    let versions = sl_store::modrinth::get_project_versions(slug, game_version, loader).await.map_err(|e| e.to_string())?;
-    dlog!("{:?}", versions);
+    let versions = get_modrinth_project_versions_inner(slug, game_version, loader, project_type).await.map_err(|e| e.to_string())?;
     Ok(versions)
 }
 

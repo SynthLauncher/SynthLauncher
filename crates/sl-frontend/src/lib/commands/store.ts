@@ -45,7 +45,8 @@ export const getCurseforgeStoreSearch = async (
 export const getModrinthProjectVersions = async (
 	slug: string,
 	game_version: string,
-	loader: string
+	loader: string,
+	project_type: string
 ) => {
 	try {
 		const search = await invoke<ModrinthProjectVersion[]>(
@@ -53,7 +54,8 @@ export const getModrinthProjectVersions = async (
 			{
 				slug: slug,
 				gameVersion: game_version,
-				loader: loader
+				loader: loader,
+				projectType: project_type
 			}
 		);
 

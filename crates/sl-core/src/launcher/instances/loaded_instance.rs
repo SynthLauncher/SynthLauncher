@@ -1,9 +1,8 @@
 use crate::{
     launcher::{
-        instances::{
-            instance_config::InstanceConfig,
-            instance_metadata::InstanceMetadata,
-        }, minecraft_version::LoadedMinecraftVersion, player_accounts::PlayerAccounts
+        instances::{instance_config::InstanceConfig, instance_metadata::InstanceMetadata},
+        minecraft_version::LoadedMinecraftVersion,
+        player_accounts::PlayerAccounts,
     },
     minecraft::install_client,
     ASSETS_DIR, LIBS_DIR,
@@ -195,10 +194,10 @@ impl LoadedInstance {
         };
 
         fmt_args(&mut game_args);
+
         fmt_args(&mut jvm_args);
 
         jvm_args.push(client.main_class.clone());
-
         Ok([jvm_args, game_args].concat())
     }
 
@@ -231,6 +230,8 @@ impl LoadedInstance {
         let max_ram = self.config.java.max_ram;
         let min_ram = self.config.java.min_ram;
 
+        dlog!("min_ram: {}, max_ram: {}", min_ram, max_ram);
+
         let args = self.generate_arguments(&name, &data).await?;
 
         dlog!("Launching with args: {:?}", &args);
@@ -244,7 +245,10 @@ impl LoadedInstance {
             .current_dir(self.instance_path)
             .spawn()?;
 
-        let stdout = child.stdout.take().expect("Child did not have a handle to stdout");
+        let stdout = child
+            .stdout
+            .take()
+            .expect("Child did not have a handle to stdout");
 
         Ok((child, stdout))
     }

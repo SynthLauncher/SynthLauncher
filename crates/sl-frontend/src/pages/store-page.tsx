@@ -612,7 +612,6 @@ export const StorePage = () => {
 
   const handleContentClick = async (content: ModrinthSearchHit | CurseforgeProject) => {
     if (storeState.category === "modpack") {
-      console.log("Installing modpack:", content)
       return
     }
 
@@ -632,6 +631,7 @@ export const StorePage = () => {
         contentSlug as string,
         storeState.selectedInstance.mc_version,
         storeState.selectedInstance.mod_loader.toString(),
+        storeState.category
       )
 
       setContentState((prev) => ({
