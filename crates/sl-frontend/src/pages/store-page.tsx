@@ -1,7 +1,4 @@
-"use client"
-
 import { useEffect, useState } from "react"
-import { CurseforgeStoreCard, ModrinthStoreCard } from "@/components/layout/pages/store/store-card"
 import { Input } from "@/components/ui/input"
 import {
   SearchIcon,
@@ -19,7 +16,6 @@ import {
   Package,
   ChevronDown,
 } from "lucide-react"
-import { StoreCategorySelector } from "@/components/layout/pages/store/store-category-selector"
 import {
   getCurseforgeStoreSearch,
   getModrinthProjectVersions,
@@ -35,6 +31,111 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button"
 import { ToastError, ToastSuccess } from "@/components/toasters"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { CategoryList, CategorySelector, CategoryTrigger } from "@/components/ui/category-selector"
+
+const StoreCategorySelector = ({
+	values = [],
+	displayValues = [],
+  defaultValue,
+  onValueChange
+}: {
+  values: string[],
+  displayValues: string[],
+  defaultValue: string,
+  onValueChange: (v: string) => void;
+}) => {
+	return (
+		<CategorySelector defaultValue={defaultValue} onValueChange={onValueChange}>
+			<CategoryList className="bg-[#262729]">
+				{values?.map((value, index) => (
+					<CategoryTrigger className="hover:cursor-pointer" value={value}>
+						{displayValues[index]}
+					</CategoryTrigger>
+				))}
+			</CategoryList>
+		</CategorySelector>
+	);
+};
+
+const CurseforgeStoreCard = ({ hit }: { hit: CurseforgeProject }) => {
+	return (
+		<StoreCard
+			name={hit.name}
+			slug={hit.slug}
+			author={hit.authors[0].name}
+			description={hit.summary}
+			downloads={hit.downloadCount}
+			imageUrl={hit.logo.url || ''}
+		/>
+	);
+};
+
+const ModrinthStoreCard = ({ hit }: { hit: ModrinthSearchHit }) => {
+	return (
+		<StoreCard
+			name={hit.title}
+			slug={hit.slug}
+			author={hit.author}
+			description={hit.description}
+			downloads={hit.downloads}
+			imageUrl={hit.icon_url || 'https://cdn.modrinth.com/placeholder.svg'}
+		/>
+	);
+};
+
+const StoreCard = ({
+	name,
+	slug,
+	author,
+	description,
+	downloads,
+	imageUrl,
+}: {
+	name: string;
+	author: string;
+	description: string;
+	downloads: number;
+	imageUrl: string;
+	slug: string;
+}) => {
+	return (
+		<div
+			className="bg-[#1D2026] rounded-lg p-5 flex gap-4 max-w-full"
+			key={slug}
+		>
+			<img
+				src={imageUrl}
+				alt={`${name} icon`}
+				className="w-24 h-24 rounded-md object-cover"
+			/>
+
+			<div className="flex flex-col grow justify-between">
+				<h1 className="text-white text-lg font-bold">
+					{name}
+					<span className="text-gray-500 font-normal text-sm ml-2">
+						by {author}
+					</span>
+				</h1>
+
+				<p className="text-gray-400 text-sm mt-1 line-clamp-2">{description}</p>
+
+				<div className="flex gap-4 text-gray-400 text-sm mt-2">
+					<div className="flex items-center gap-1">
+						<Download className="w-4 h-4" />
+						<span>{downloads.toLocaleString()} downloads</span>
+					</div>
+				</div>
+			</div>
+
+			<div className="flex flex-col justify-between items-end ml-4">
+				<Button variant="install" className="gap-2">
+					<Download className="w-4 h-4" />
+					Install
+				</Button>
+			</div>
+		</div>
+	);
+};
 
 type StoreType = "modrinth" | "curseforge"
 type StoreErrorType = "failed" | "offline" | null
@@ -118,8 +219,7 @@ const StoreFilter = ({
           {category !== "modpack" && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
+                <Button
                   className="flex items-center gap-3 px-4 py-2 bg-[#2b3136] hover:bg-[#323842] rounded-lg border border-[#3a3d4f] text-white transition-all duration-200 min-w-[200px] justify-between"
                 >
                   <div className="flex items-center gap-3">
@@ -138,7 +238,7 @@ const StoreFilter = ({
                     </div>
                   </div>
                   <ChevronDown className="w-4 h-4 transition-transform duration-200" />
-                </button>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-[300px] bg-[#2b3136] border-[#3a3d4f] shadow-xl max-h-64 overflow-y-auto"
@@ -194,6 +294,7 @@ const StoreFilter = ({
           placeholder={`Search ${category}s...`}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
+          maxLength={50}
           className="bg-neutral-700/50 border-neutral-700 text-white placeholder-neutral-400 focus:border-sky-400/50 focus:bg-neutral-800/70 transition-all duration-300 h-12 text-base"
         />
         {searchQuery && (

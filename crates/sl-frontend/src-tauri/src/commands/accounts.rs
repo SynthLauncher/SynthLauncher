@@ -1,8 +1,10 @@
-use sl_core::launcher::player_accounts::{add_account, remove_account, set_current_account, PlayerAccounts};
+use sl_core::launcher::player_accounts::{
+    add_account, remove_account, set_current_account, PlayerAccounts,
+};
 use sl_player::PlayerData;
 
 #[tauri::command]
-pub fn accounts_get() -> Result<PlayerAccounts , String> {
+pub fn accounts_get() -> Result<PlayerAccounts, String> {
     PlayerAccounts::load().map_err(|err| err.to_string())
 }
 
@@ -23,5 +25,3 @@ pub fn accounts_create_offline(name: String) -> Result<(), String> {
     add_account(name, PlayerData::default()).map_err(|e| e.to_string())?;
     Ok(())
 }
-
-

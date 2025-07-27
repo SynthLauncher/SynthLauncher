@@ -133,12 +133,12 @@ pub struct GameVersionMetadata {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct InstanceMetadata {
     pub name: String,
-    pub icon: Option<String>,
     pub mc_version: String,
     pub mc_release_time: String,
     pub mc_type: VersionType,
     pub mod_loader_version: String,
     pub mod_loader: ModLoader,
+    pub icon: Option<String>,
 }
 
 impl InstanceMetadata {

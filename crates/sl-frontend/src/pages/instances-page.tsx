@@ -84,9 +84,10 @@ export const InstancesPage = () => {
 	const handleCreate = async (
 		name: string,
 		version: string,
-		modLoader: string
+		modLoader: string,
+		icon: string
 	) => {
-		await createInstance(name, version, modLoader);
+		await createInstance(name, version, modLoader, icon);
 		await fetchInstances();
 	};
 

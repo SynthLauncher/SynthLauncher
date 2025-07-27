@@ -17,8 +17,9 @@ pub async fn create_instance(
     name: String,
     version: String,
     mod_loader: ModLoader,
+    icon: String
 ) -> Result<(), String> {
-    InstanceMetadata::create(name, &version, mod_loader, None, None)
+    InstanceMetadata::create(name, &version, mod_loader, None, Some(icon))
         .await
         .map_err(|e| e.to_string())?;
 
@@ -31,8 +32,8 @@ pub async fn remove_instance(name: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn instances_edit() -> Result<(), String> {
-    // instances::edit_instance(instance_name, new_mc_version, new_modloader_version)
+pub async fn instances_edit(instance_name: String, new_mc_version: String) -> Result<(), String> {
+    instances::edit_instance(&instance_name, Some(&new_mc_version), None).await.map_err(|e| e.to_string())?;
 
     Ok(())
 }

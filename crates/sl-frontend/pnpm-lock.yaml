@@ -71,6 +71,9 @@ importers:
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.7(@types/react@18.3.21))(@types/react@18.3.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      hi-base32:
+        specifier: ^0.5.1
+        version: 0.5.1
       i18next:
         specifier: ^25.3.2
         version: 25.3.2(typescript@5.6.3)
@@ -1417,6 +1420,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  hi-base32@0.5.1:
+    resolution: {integrity: sha512-EmBBpvdYh/4XxsnUybsPag6VikPYnN30td+vQk+GI3qpahVEG9+gTkG0aXVxTjBqQ5T6ijbWIu77O+C5WFWsnA==}
 
   html-parse-stringify@3.0.1:
     resolution: {integrity: sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==}
@@ -2989,6 +2995,8 @@ snapshots:
   globals@11.12.0: {}
 
   graceful-fs@4.2.11: {}
+
+  hi-base32@0.5.1: {}
 
   html-parse-stringify@3.0.1:
     dependencies:

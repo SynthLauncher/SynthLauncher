@@ -13,13 +13,15 @@ export const getInstances = async () => {
 export const createInstance = async (
 	name: string,
 	version: string,
-	modLoader: string
+	modLoader: string,
+	icon: string
 ) => {
 	try {
 		await invoke('create_instance', {
 			name: name,
 			version: version,
 			modLoader: modLoader,
+			icon: icon
 		});
 	} catch (error) {
 		ToastError(`${error}`)

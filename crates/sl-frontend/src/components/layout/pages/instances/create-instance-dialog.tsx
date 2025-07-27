@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogOverlay } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { getMinecraftVersions } from "@/lib/commands/minecraft"
-import { ArrowUpNarrowWide, Box, Plus, Upload, X, ChevronDown, Search, Loader2 } from "lucide-react"
+import { Box, Plus, Upload, X, ChevronDown, Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 
@@ -13,7 +13,7 @@ export const CreateInstanceDialog = ({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreate: (name: string, version: string, loader: string) => void
+  onCreate: (name: string, version: string, loader: string, icon: string) => void
 }) => {
   const [name, setName] = useState("")
   const [version, setVersion] = useState("")
@@ -23,7 +23,6 @@ export const CreateInstanceDialog = ({
   const [versionFilter, setVersionFilter] = useState("")
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
   const [isLoaderDropdownOpen, setIsLoaderDropdownOpen] = useState(false)
-  const [showAdvanced, setShowAdvanced] = useState(false)
   const [isLoadingVersions, setIsLoadingVersions] = useState(false)
 
   const minecraftVersionsRef = useRef<string[]>([])
@@ -41,7 +40,7 @@ export const CreateInstanceDialog = ({
   useEffect(() => {
     const fetchMinecraftVersions = async () => {
       if (minecraftVersionsRef.current.length > 0) {
-        return; // If versions are already fetched, don't fetch again
+        return;
       }
 
       setIsLoadingVersions(true)
@@ -83,14 +82,13 @@ export const CreateInstanceDialog = ({
       return
     }
     onOpenChange(false)
-    onCreate(name, version, loader)
+    onCreate(name, version, loader, iconPreview as string)
 
     setName("")
     setVersion("")
     setLoader("Vanilla")
     setIconFile(null)
     setIconPreview(null)
-    setShowAdvanced(false)
     setVersionFilter("")
   }
 
@@ -102,7 +100,6 @@ export const CreateInstanceDialog = ({
     setLoader("Vanilla")
     setIconFile(null)
     setIconPreview(null)
-    setShowAdvanced(false)
     setVersionFilter("")
   }
 
@@ -118,7 +115,6 @@ export const CreateInstanceDialog = ({
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
-          {/* Instance Name */}
           <div className="grid gap-2">
             <Label htmlFor="name" className="text-sm font-medium text-gray-200">
               Instance Name *
@@ -134,7 +130,6 @@ export const CreateInstanceDialog = ({
             {name.length > 40 && <p className="text-xs text-yellow-400">{50 - name.length} characters remaining</p>}
           </div>
 
-          {/* Minecraft Version */}
           <div className="grid gap-2">
             <Label htmlFor="version" className="text-sm font-medium text-gray-200">
               Minecraft Version
@@ -192,7 +187,6 @@ export const CreateInstanceDialog = ({
             </div>
           </div>
 
-          {/* Mod Loader */}
           <div className="grid gap-2">
             <Label htmlFor="modloader" className="text-sm font-medium text-gray-200">
               Mod Loader
@@ -230,7 +224,6 @@ export const CreateInstanceDialog = ({
             </div>
           </div>
 
-          {/* Instance Icon */}
           <div className="grid gap-2">
             <Label htmlFor="icon" className="text-sm font-medium text-gray-200">
               Instance Icon
@@ -276,14 +269,6 @@ export const CreateInstanceDialog = ({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="px-4 py-2 bg-[#2b3136] hover:bg-[#323842] text-gray-200 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <ArrowUpNarrowWide width={16} height={16} />
-            <span>{showAdvanced ? "Hide" : "Show"} Advanced</span>
-          </Button>
-
           <Button
             onClick={handleCancel}
             className="px-4 py-2 bg-[#2b3136] hover:bg-[#323842] text-gray-200 rounded-lg transition-colors flex items-center gap-2"

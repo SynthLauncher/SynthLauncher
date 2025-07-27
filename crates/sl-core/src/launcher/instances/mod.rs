@@ -19,6 +19,7 @@ pub mod instance_exporter;
 pub mod instance_importer;
 pub mod instance_metadata;
 pub mod loaded_instance;
+pub mod instance_game;
 
 const INSTANCE_FILE_NAME: &str = "instance.json";
 

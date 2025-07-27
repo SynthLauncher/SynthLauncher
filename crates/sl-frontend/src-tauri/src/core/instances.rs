@@ -1,3 +1,4 @@
+use data_encoding::BASE32_NOPAD;
 use sl_core::launcher::instances;
 use sl_utils::errors::BackendError;
 use tauri::{AppHandle, Emitter};
@@ -10,7 +11,8 @@ use tokio::{
 use crate::core::running_instances::RUNNING_INSTANCES;
 
 pub async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<(), BackendError> {
-    let emit_target = format!("{name}-console");
+    let encoded = BASE32_NOPAD.encode(name.as_bytes());
+    let emit_target = format!("{encoded}-console");
 
     let (instance, _) = instances::get_existing(name)?;
     let loaded_instance = instance.load_init().await?;
