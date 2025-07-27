@@ -31,6 +31,13 @@ pub async fn remove_instance(name: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub async fn instances_edit() -> Result<(), String> {
+    // instances::edit_instance(instance_name, new_mc_version, new_modloader_version)
+
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn launch_instance(name: &str, app_handle: AppHandle) -> Result<(), String> {
     launch_instance_inner(name, app_handle)
         .await

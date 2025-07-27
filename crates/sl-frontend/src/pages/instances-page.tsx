@@ -28,7 +28,7 @@ const InstanceCard = ({ mc_version, mod_loader, name }: Instance) => {
 				navigate(`/instances/${name}`, { state: name });
 			}}
 		>
-			<div className="w-12 h-12 rounded-xl bg-[#2A2F3F] group-hover:bg-[#33394D] flex items-center justify-center transition-colors shadow-inner">
+			<div className="w-12 h-12 rounded-xl bg-[#2A2F3F] group-hover:bg-[#33394D] flex shrink-0 items-center justify-center transition-colors shadow-inner">
 				{getIconByTitle(name)}
 			</div>
 
