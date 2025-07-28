@@ -21,6 +21,7 @@
 - **Optimized performance:** SynthLauncher is designed to be fast, efficient, and lightweight.
 - **Open-Source:** SynthLauncher is completely open-source, and open to contributors.
 
+
 ## Community
 
 [![SynthLauncher Discord Server](https://discord.com/api/guilds/1250864715790553098/widget.png?style=banner3)](https://discord.gg/MbBGunfMJ4)
