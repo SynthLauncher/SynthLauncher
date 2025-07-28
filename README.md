@@ -1,7 +1,7 @@
 # SynthLauncher
 
 <p align="center">
-  <img src="assets/logo.png" alt="SynthLauncher Logo" width="200" />
+  <img src="assets/repo/logo.png" alt="SynthLauncher Logo" width="200" />
 </p>
 
 **SynthLauncher** is an open-source Minecraft launcher. Our goal is to provide a seamless, optimized experience that enhances performance across all types of systems. Currently, the launcher is in active development, and we welcome contributions from the community.
