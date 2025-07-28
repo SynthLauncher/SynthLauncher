@@ -38,7 +38,3 @@ If you have any questions or need further assistance, feel free to reach out to 
 1. [CrabLauncher](https://github.com/safiworks/CrabLauncher)
 2. [QuantumLauncher](https://github.com/Mrmayman/quantum-launcher)
 3. [SmallLauncher](https://github.com/smallauncher/smallauncher)
-
----
-
-## **SynthLauncher** - A Minecraft Launcher for Everyone
