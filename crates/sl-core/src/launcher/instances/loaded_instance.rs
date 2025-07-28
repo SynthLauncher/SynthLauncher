@@ -170,6 +170,8 @@ impl LoadedInstance {
                 "version_type" => "SL",
                 "library_directory" => LIBS_DIR.to_str()?,
                 "classpath_separator" => MULTI_PATH_SEPARATOR,
+                "launcher_name" => "SynthLauncher",
+                "launcher_version" => "1.0",
                 other => {
                     wlog!(
                         "Couldn't evaluate argument: {}, for launching minecraft",
@@ -235,6 +237,8 @@ impl LoadedInstance {
         let args = self.generate_arguments(&name, &data).await?;
 
         dlog!("Launching with args: {:?}", &args);
+
+        dlog!("Using Java: {}", current_java_path.display());
 
         let mut child = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))

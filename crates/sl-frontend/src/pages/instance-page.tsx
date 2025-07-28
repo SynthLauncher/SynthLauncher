@@ -1,4 +1,4 @@
-import { getGameInfo, getInstances, killInstance, launchInstance } from "@/lib/commands/instances"
+import { getInstances, killInstance, launchInstance } from "@/lib/commands/instances"
 import { openInstanceFolder } from "@/lib/commands/launcher"
 import type { GameInfo, Instance } from "@/lib/types/instances"
 import {
@@ -22,44 +22,45 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { ToastInfo, ToastSuccess } from "@/components/toasters"
 import { useTranslation } from "react-i18next"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { getLogs, setupLogListener } from "@/lib/log-cache"
+import { useRunningInstances } from "@/lib/running-instances"
 
 const InstanceFolderButton = ({ onClick }: { onClick: () => void }) => {
-	return (
-		<Button size="icon" variant="instance-option" onClick={onClick}>
-			<Folder className="w-6 h-6 text-white" />
-		</Button>
-	);
+  return (
+    <Button size="icon" variant="instance-option" onClick={onClick}>
+      <Folder className="w-6 h-6 text-white" />
+    </Button>
+  );
 };
 
 const InstancePlayButton = ({
-	onClick,
-	isRunning,
+  onClick,
+  isRunning,
 }: {
-	onClick: () => void;
-	isRunning: boolean;
+  onClick: () => void;
+  isRunning: boolean;
 }) => {
-	return (
-		<Button
-			className={`bg-green-500 hover:bg-green-600 text-white 
+  return (
+    <Button
+      className={`bg-green-500 hover:bg-green-600 text-white 
                 font-semibold rounded-md flex items-center gap-2 
                 shadow transition disabled:opacity-50 disabled:cursor-not-allowed`}
-			size="instance-play"
-			onClick={onClick}
-			disabled={isRunning}
-		>
-			<Play className="w-6 h-6" />
-			<span>{isRunning ? 'Running...' : 'Play'}</span>
-		</Button>
-	);
+      size="instance-play"
+      onClick={onClick}
+      disabled={isRunning}
+    >
+      <Play className="w-6 h-6" />
+      <span>{isRunning ? 'Running...' : 'Play'}</span>
+    </Button>
+  );
 };
 
 const InstanceHeader = ({ instance }: { instance: Instance }) => {
-  const [isRunning, setIsRunning] = useState(false);
+  const runningInstances = useRunningInstances();
+  const isRunning = runningInstances.has(instance.name)
 
   return (
     <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-neutral-800 rounded-2xl p-6 gap-6 shadow-lg">
@@ -84,16 +85,7 @@ const InstanceHeader = ({ instance }: { instance: Instance }) => {
       </div>
       <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
         <InstancePlayButton
-          onClick={async () => {
-            setIsRunning(true)
-            try {
-              ToastInfo("Instance has begun launching...")
-              await launchInstance(instance.name)
-              ToastSuccess("Instance has been closed successfully.")
-            } finally {
-              setIsRunning(false)
-            }
-          }}
+          onClick={async () => await launchInstance(instance.name)}
           isRunning={isRunning}
         />
         <DropdownMenu>
@@ -155,17 +147,17 @@ const Tab = ({ tab, instance }: { tab: "content" | "logs" | "saves" | "screensho
   }, [instance]);
 
 
-  useEffect(() => {
-    if (!instance) return
-    const fetchAll = async () => {
-      const gameInfo = await getGameInfo(instance.name,  instance.mod_loader)
-      setGameInfo(gameInfo)
-    }
-    fetchAll()
-  }, [instance])
+  // useEffect(() => {
+  //   if (!instance) return
+  //   const fetchAll = async () => {
+  //     const gameInfo = await getGameInfo(instance.name, instance.mod_loader)
+  //     setGameInfo(gameInfo)
+  //   }
+  //   fetchAll()
+  // }, [instance])
 
 
-    const copyLogsToClipboard = async () => {
+  const copyLogsToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(logs.join("\n"))
       setIsCopied(true)
@@ -349,68 +341,68 @@ const Tab = ({ tab, instance }: { tab: "content" | "logs" | "saves" | "screensho
       )}
 
       {tab === "console" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-blue-400" />
-                <h2 className="text-lg font-semibold text-white">Console</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-5 h-5 text-blue-400" />
+              <h2 className="text-lg font-semibold text-white">Console</h2>
+            </div>
+            <Button
+              onClick={copyLogsToClipboard}
+              variant="outline"
+              size="sm"
+              className="border-neutral-600 bg-neutral-700/50 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-all duration-200"
+            >
+              {isCopied ? (
+                <>
+                  <Check className="w-4 h-4 mr-2 text-green-400" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Logs
+                </>
+              )}
+            </Button>
+          </div>
+
+          <div className="bg-black rounded-lg border border-neutral-800 min-h-[500px] max-h-[500px] overflow-hidden shadow-2xl">
+            <div className="bg-neutral-900 border-b border-neutral-800 px-4 py-2 flex items-center gap-3">
+              <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                <Terminal className="w-4 h-4" />
+                <span>Minecraft Console</span>
               </div>
-              <Button
-                onClick={copyLogsToClipboard}
-                variant="outline"
-                size="sm"
-                className="border-neutral-600 bg-neutral-700/50 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-all duration-200"
-              >
-                {isCopied ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2 text-green-400" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy Logs
-                  </>
-                )}
-              </Button>
             </div>
 
-            <div className="bg-black rounded-lg border border-neutral-800 min-h-[500px] max-h-[500px] overflow-hidden shadow-2xl">
-              <div className="bg-neutral-900 border-b border-neutral-800 px-4 py-2 flex items-center gap-3">
-                <div className="flex items-center gap-2 text-neutral-400 text-sm">
-                  <Terminal className="w-4 h-4" />
-                  <span>Minecraft Console</span>
-                </div>
-              </div>
-
-              <div className="p-4 font-mono text-sm overflow-y-auto max-h-[440px] bg-black">
-                <div className="space-y-1">
-                  {logs.length > 0 ? (
-                    logs.map((line, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-2 group hover:bg-neutral-900/30 px-2 py-0.5 rounded transition-colors"
-                      >
-                        <span className="text-neutral-600 text-xs mt-0.5 font-mono tabular-nums min-w-[60px]">
-                          {String(idx + 1).padStart(3, "0")}
-                        </span>
-                        <span className="text-green-400 break-all leading-relaxed">{line}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="space-y-2 text-neutral-500">
-                      <div className="flex items-start gap-2">
-                        <span className="text-neutral-600 text-xs mt-0.5 font-mono tabular-nums min-w-[60px]">001</span>
-                        <span className="text-blue-400">[INFO] Console will output here...</span>
-                      </div>
+            <div className="p-4 font-mono text-sm overflow-y-auto max-h-[440px] bg-black">
+              <div className="space-y-1">
+                {logs.length > 0 ? (
+                  logs.map((line, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2 group hover:bg-neutral-900/30 px-2 py-0.5 rounded transition-colors"
+                    >
+                      <span className="text-neutral-600 text-xs mt-0.5 font-mono tabular-nums min-w-[60px]">
+                        {String(idx + 1).padStart(3, "0")}
+                      </span>
+                      <span className="text-green-400 break-all leading-relaxed">{line}</span>
                     </div>
-                  )}
-                </div>
-
+                  ))
+                ) : (
+                  <div className="space-y-2 text-neutral-500">
+                    <div className="flex items-start gap-2">
+                      <span className="text-neutral-600 text-xs mt-0.5 font-mono tabular-nums min-w-[60px]">001</span>
+                      <span className="text-blue-400">[INFO] Console will output here...</span>
+                    </div>
+                  </div>
+                )}
               </div>
+
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
@@ -434,16 +426,16 @@ export const InstancePage = () => {
 
   if (isLoading) {
     return (
-        <div className="flex flex-col h-full items-center justify-center py-16 px-6">
-          <div className="relative mb-4">
-            <Loader2 className="animate-spin w-8 h-8 text-blue-400" />
-            <div className="absolute inset-0 w-8 h-8 border-2 border-blue-400/20 rounded-full animate-pulse"></div>
-          </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Loading the instance</h3>
-          <p className="text-neutral-400 text-center">
-            Getting the instance data
-          </p>
+      <div className="flex flex-col h-full items-center justify-center py-16 px-6">
+        <div className="relative mb-4">
+          <Loader2 className="animate-spin w-8 h-8 text-blue-400" />
+          <div className="absolute inset-0 w-8 h-8 border-2 border-blue-400/20 rounded-full animate-pulse"></div>
         </div>
+        <h3 className="text-lg font-semibold text-white mb-2">Loading the instance</h3>
+        <p className="text-neutral-400 text-center">
+          Getting the instance data
+        </p>
+      </div>
     )
   }
 

@@ -1,6 +1,5 @@
 use sl_core::launcher::instances::{
     self,
-    game::{get_game_info, GameInfo},
     instance_metadata::{InstanceMetadata, ModLoader},
 };
 use tauri::AppHandle;
@@ -17,9 +16,9 @@ pub async fn create_instance(
     name: String,
     version: String,
     mod_loader: ModLoader,
-    icon: String
+    icon: Option<String>,
 ) -> Result<(), String> {
-    InstanceMetadata::create(name, &version, mod_loader, None, Some(icon))
+    InstanceMetadata::create(name, &version, mod_loader, None, icon)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -32,13 +31,6 @@ pub async fn remove_instance(name: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn instances_edit(instance_name: String, new_mc_version: String) -> Result<(), String> {
-    instances::edit_instance(&instance_name, Some(&new_mc_version), None).await.map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
-#[tauri::command]
 pub async fn launch_instance(name: &str, app_handle: AppHandle) -> Result<(), String> {
     launch_instance_inner(name, app_handle)
         .await
@@ -46,12 +38,12 @@ pub async fn launch_instance(name: &str, app_handle: AppHandle) -> Result<(), St
 }
 
 #[tauri::command]
-pub async fn kill_instance(name: &str) -> Result<(), String> {
-    RUNNING_INSTANCES.remove(name).await;
+pub async fn kill_instance(name: &str, app_handle: AppHandle) -> Result<(), String> {
+    RUNNING_INSTANCES.remove(name, &app_handle).await;
     Ok(())
 }
 
 #[tauri::command]
-pub fn load_game_info(name: &str, loader: ModLoader) -> Result<GameInfo, String> {
-    get_game_info(name, &loader).map_err(|e| e.to_string())
+pub async fn get_running_instances() -> Vec<String> {
+    RUNNING_INSTANCES.list().await
 }

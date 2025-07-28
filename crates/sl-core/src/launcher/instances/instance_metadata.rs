@@ -122,15 +122,6 @@ impl ModLoader {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct GameVersionMetadata {
-    #[serde(rename = "id")]
-    pub version: String,
-    pub release_time: String,
-    pub r#type: VersionType,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct InstanceMetadata {
     pub name: String,
     pub mc_version: String,

@@ -36,9 +36,14 @@ const WindowControl = ({
 export const Navbar = () => {
 	return (
 		<nav
-			className="w-full flex h-[3.3rem] justify-end items-center p-1 bg-layout"
+			className="w-full flex h-[3.3rem] justify-between items-center p-1 bg-layout"
 			data-tauri-drag-region
 		>
+      <div className='flex items-center gap-2 ml-[0.75rem]'>
+        <img width={35} height={35} src="/images/synthlauncher-logo.png" alt="SynthLauncher Logo" />
+        <h1 className='text-xl font-bold'>SynthLauncher</h1>
+      </div>
+
 			<div className="flex gap-[0.1rem]">
 				<WindowControl
 					onClick={handleWindowMinimize}

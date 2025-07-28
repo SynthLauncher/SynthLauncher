@@ -20,11 +20,12 @@ pub async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<
     let (mut child, reader) = loaded_instance.execute().await?;
     let mut reader = BufReader::new(reader);
 
-    RUNNING_INSTANCES.add(name.to_string()).await;
+    RUNNING_INSTANCES.add(name.to_string(), &app_handle).await;
 
     let mut line = String::new();
 
     let emit = |line: &str| app_handle.emit(&emit_target, line);
+    
     emit("Starting instance...")
         .expect("failed to emit the initial data to the instance's Console");
 
@@ -36,7 +37,7 @@ pub async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<
                 match read_result {
                     Ok(0) => {
                         if let Ok(Some(status)) = child.try_wait() {
-                            emit(&format!("EXIT WITH CODE {}\n", status.code().unwrap_or(-1)))
+                            emit(&format!("Exited with code: {}\n", status.code().unwrap_or(-1)))
                                 .expect("failed to emit end");
                             dead_peacfully = true;
                             break 
@@ -58,7 +59,7 @@ pub async fn launch_instance_inner(name: &str, app_handle: AppHandle) -> Result<
         }
     }
 
-    RUNNING_INSTANCES.remove(&name).await;
+    RUNNING_INSTANCES.remove(&name, &app_handle).await;
 
     // in case it was removed from the list or an error occurred
     if !dead_peacfully {

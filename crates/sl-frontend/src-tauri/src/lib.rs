@@ -1,5 +1,5 @@
 use commands::{
-    instances::{get_instances, create_instance, remove_instance, launch_instance, load_game_info, kill_instance}, 
+    instances::{get_instances, create_instance, remove_instance, launch_instance, kill_instance, get_running_instances}, 
     launcher::{open_synthlauncher_folder, open_instance_folder}, 
     minecraft::{get_minecraft_versions},
     store::{search_modrinth_store, search_curseforge_store, get_modrinth_project_versions, install_modrinth_project},
@@ -23,16 +23,17 @@ pub fn run() {
             get_instances,
             create_instance,
             remove_instance,
-            open_synthlauncher_folder,
             launch_instance,
+            
+            open_synthlauncher_folder,
             open_instance_folder,
-            load_game_info,
             get_minecraft_versions,
             search_modrinth_store,
             search_curseforge_store,
             kill_instance,
             get_modrinth_project_versions,
             install_modrinth_project,
+            get_running_instances
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

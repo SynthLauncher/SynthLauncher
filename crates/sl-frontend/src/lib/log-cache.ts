@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import base32 from "hi-base32"
+
 const logCache = new Map<string, string[]>();
 const logListeners = new Map<string, boolean>();
 

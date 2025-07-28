@@ -1,6 +1,6 @@
 import { GameInfo, Instance, ModLoader } from '@/lib/types/instances';
 import { invoke } from '@tauri-apps/api/core';
-import { ToastError } from '@/components/toasters';
+import { ToastError, ToastInfo, ToastSuccess } from '@/components/toasters';
 
 export const getInstances = async () => {
 	try {
@@ -30,17 +30,11 @@ export const createInstance = async (
 
 export const launchInstance = async (name: string) => {
 	try {
+		ToastInfo("Instance has begun launching...")
 		await invoke('launch_instance', { name: name });
+		ToastSuccess("Instance has been closed successfully.")
 	} catch (error) {
 		ToastError(`${error}`)
-	}
-};
-
-export const getGameInfo = async (name: string, loader: ModLoader) => {
-	try {
-		return await invoke<GameInfo>('load_game_info', { name: name, loader: loader });
-	} catch (error) {
-		ToastError(`${error}`);
 	}
 };
 
