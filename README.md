@@ -23,35 +23,13 @@
 > [!NOTE]
 > We will be implementing more features!
 
-## Current Status
+## Community
 
-1. **Added Fabric Loader:**
-![ss1](assets/images/v0.0.1-dev/fabric-1.png)
-![ss2](assets/images/v0.0.1-dev/fabric-2.png)
-
-2. **Added Microsoft Auth:**
-![ss3](assets/images/v0.0.1-dev/hypixel.png)
-
-3. **Added Discord RPC:**
-![ss4](assets/images/v0.0.1-dev/discord-rpc.png)
-
-4. **Sound fixes for older versions**
-
-## Contributing
-
-We appreciate and welcome contributions! If you’re interested in helping out, please fork the repository, make your changes, and submit a pull request. Whether you’re fixing bugs, optimizing performance, or adding new features, your contributions are valuable.
-
+- **SynthLauncher Disocrd Server:**
 [![SynthLauncher Discord Server](https://discord.com/api/guilds/1250864715790553098/widget.png?style=banner3)](https://discord.gg/MbBGunfMJ4)
 
-### How to Contribute
-
-1. Fork the repository.
-2. Create a new branch for your feature or fix.
-3. Make your changes and test them.
-4. Submit a pull request with a detailed description of your changes.
-
-> [!NOTE]
-> If you want to join the team, please contact STierProgrammer.
+- **SynthLauncher Subreddit:**
+[![r/SynthLauncher](https://img.shields.io/reddit/subreddit-subscribers/synthlauncher?style=for-the-badge&logo=reddit)](https://www.reddit.com/r/SynthLauncher)
 
 ## Contact
 
