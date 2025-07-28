@@ -8,9 +8,6 @@
 
 <p align="center">
   <a href="https://github.com/SynthLauncher/SynthLauncher">
-    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License Badge">
-  </a>
-  <a href="https://github.com/SynthLauncher/SynthLauncher">
     <img src="https://img.shields.io/github/forks/SynthLauncher/SynthLauncher.svg" alt="Forks Badge">
   </a>
   <a href="https://github.com/SynthLauncher/SynthLauncher">
