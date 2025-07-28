@@ -41,6 +41,8 @@
 
 We appreciate and welcome contributions! If you’re interested in helping out, please fork the repository, make your changes, and submit a pull request. Whether you’re fixing bugs, optimizing performance, or adding new features, your contributions are valuable.
 
+[![SynthLauncher Discord Server](https://discord.com/api/guilds/1250864715790553098/widget.json)](https://discord.gg/MbBGunfMJ4)
+
 ### How to Contribute
 
 1. Fork the repository.
