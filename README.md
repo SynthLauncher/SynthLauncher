@@ -15,13 +15,11 @@
   </a>
 </p>
 
-## Features
+## Current features
 
-- **Optimized Performance:** We’re focused on maximizing performance, reducing load times, and minimizing resource usage to ensure a smooth Minecraft experience.
-- **Open-Source:** SynthLauncher is completely open-source, and we encourage contributions from developers who share our vision.
-
-> [!NOTE]
-> We will be implementing more features!
+- **Modrinth and Curseforge support:** SynthLauncher has full support for installing modpacks, mods, resourcepacks and shaderpacks from Modrinth and Curseforge. 
+- **Optimized performance:** SynthLauncher is designed to be fast, efficient, and lightweight.
+- **Open-Source:** SynthLauncher is completely open-source, and open to contributors.
 
 ## Community
 
@@ -37,4 +35,3 @@ If you have any questions or need further assistance, feel free to reach out to 
 
 1. [CrabLauncher](https://github.com/safiworks/CrabLauncher)
 2. [QuantumLauncher](https://github.com/Mrmayman/quantum-launcher)
-3. [SmallLauncher](https://github.com/smallauncher/smallauncher)
