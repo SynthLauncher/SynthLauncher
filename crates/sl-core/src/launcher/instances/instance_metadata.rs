@@ -123,6 +123,7 @@ impl ModLoader {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct InstanceMetadata {
+    pub scheme_version: u32,
     pub name: String,
     pub mc_version: String,
     pub mc_release_time: String,
@@ -144,6 +145,7 @@ impl InstanceMetadata {
         mod_loader_version: String,
     ) -> Self {
         Self {
+            scheme_version: 0,
             name,
             icon,
             mc_version,
