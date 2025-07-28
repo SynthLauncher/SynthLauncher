@@ -6,6 +6,18 @@
   <strong>SynthLauncher</strong> is a free, open-source, lightweight and feature-rich custom Minecraft launcher. 
 </p>
 
+<p align="center">
+  <a href="https://github.com/SynthLauncher/SynthLauncher">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License Badge">
+  </a>
+  <a href="https://github.com/SynthLauncher/SynthLauncher">
+    <img src="https://img.shields.io/github/forks/SynthLauncher/SynthLauncher.svg" alt="Forks Badge">
+  </a>
+  <a href="https://github.com/SynthLauncher/SynthLauncher">
+    <img src="https://img.shields.io/github/stars/SynthLauncher/SynthLauncher.svg" alt="Stars Badge">
+  </a>
+</p>
+
 ## Features
 
 - **Optimized Performance:** We’re focused on maximizing performance, reducing load times, and minimizing resource usage to ensure a smooth Minecraft experience.
