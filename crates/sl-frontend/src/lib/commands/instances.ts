@@ -45,3 +45,12 @@ export const killInstance = async (name: string) => {
 		ToastError(`${error}`)
 	}
 }
+
+export const exportInstance = async (instance_name: string, output: string) => {
+	try {
+		await invoke('export_instance', { instanceName: instance_name, output: output})
+		ToastSuccess(`Successfully exported at: ${output}`);
+	} catch (error) {
+		ToastError(`${error}`)
+	}
+}

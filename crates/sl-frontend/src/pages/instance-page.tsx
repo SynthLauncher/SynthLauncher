@@ -1,5 +1,5 @@
-import { getInstances, killInstance, launchInstance } from "@/lib/commands/instances"
-import { openInstanceFolder } from "@/lib/commands/launcher"
+import { exportInstance, getInstances, killInstance, launchInstance } from "@/lib/commands/instances"
+import { openFolder, openInstanceFolder } from "@/lib/commands/launcher"
 import type { GameInfo, Instance } from "@/lib/types/instances"
 import {
   Blocks,
@@ -19,6 +19,8 @@ import {
   Check,
   Copy,
   Skull,
+  Upload,
+  Axe,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
@@ -27,6 +29,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button"
 import { getLogs, setupLogListener } from "@/lib/log-cache"
 import { useRunningInstances } from "@/lib/running-instances"
+import { open } from "@tauri-apps/plugin-dialog"
 
 const InstanceFolderButton = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -62,6 +65,17 @@ const InstanceHeader = ({ instance }: { instance: Instance }) => {
   const runningInstances = useRunningInstances();
   const isRunning = runningInstances.has(instance.name)
 
+  const handleSelectDirectory = async () => {
+    const path = await open({
+      directory: true,  
+    });
+
+    if (path) {
+      exportInstance(instance.name, path)
+      openFolder(path)
+    }
+  };
+
   return (
     <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-neutral-800 rounded-2xl p-6 gap-6 shadow-lg">
       <div className="flex gap-6 items-center w-full lg:w-auto">
@@ -96,7 +110,10 @@ const InstanceHeader = ({ instance }: { instance: Instance }) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mt-2">
             <DropdownMenuItem onClick={async () => killInstance(instance.name)}>
-              <Skull className="mr-1" /> Kill Instance
+              <Axe className="mr-1" /> Kill Instance
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSelectDirectory}>
+              <Upload className="mr-1" /> Export Instance
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

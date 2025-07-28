@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use sl_core::launcher::instances::{
     self,
     instance_metadata::{InstanceMetadata, ModLoader},
@@ -46,4 +48,13 @@ pub async fn kill_instance(name: &str, app_handle: AppHandle) -> Result<(), Stri
 #[tauri::command]
 pub async fn get_running_instances() -> Vec<String> {
     RUNNING_INSTANCES.list().await
+}
+
+#[tauri::command]
+pub async fn export_instance(instance_name: &str, output: &Path) -> Result<(), String> {
+    let (instance, _) = instances::get_existing(&instance_name).map_err(|e| e.to_string())?;
+    let exporter = instance.exporter_to_path(&output.join(instance_name)).map_err(|e| e.to_string())?;
+    exporter.export().map_err(|e| e.to_string())?;
+
+    Ok(())
 }
