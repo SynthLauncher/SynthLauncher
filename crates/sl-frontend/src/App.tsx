@@ -8,6 +8,7 @@ import { Sidebar } from '@/components/layout/sidebar';
 import { Route, Routes } from 'react-router-dom';
 import { InstancePage } from '@/pages/instance-page';
 import { Toaster } from '@/components/ui/sonner';
+import { useEffect } from 'react';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -39,6 +40,22 @@ function MainContent() {
 }
 
 function App() {
+	useEffect(() => {
+		const isDevelopment = process.env.NODE_ENV === 'development';
+
+		if (isDevelopment) {
+			document.addEventListener('contextmenu', (event) => event.preventDefault());
+		} else {
+			document.removeEventListener('contextmenu', (event) => event.preventDefault());
+		}
+
+		return () => {
+			if (isDevelopment) {
+				document.removeEventListener('contextmenu', (event) => event.preventDefault());
+			}
+		};
+	}, []);
+
 	return (
 		<AppLayout>
 			<MainContent />
