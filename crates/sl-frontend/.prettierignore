@@ -1,0 +1,7 @@
+# Ignore artifacts:
+build
+coverage
+public
+node_modules
+dist
+src-tauri

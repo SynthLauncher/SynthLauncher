@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "sl-frontend",
+  "productName": "SynthLauncher",
   "version": "0.1.0",
   "identifier": "com.synthlauncher.frontend",
   "build": {
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "sl-frontend",
-        "width": 800,
+        "title": "SynthLauncher",
+        "width": 960,
         "height": 600,
+        "minWidth": 960,
+        "minHeight": 600,
         "minimizable": true,
         "maximizable": true,
         "decorations": false,

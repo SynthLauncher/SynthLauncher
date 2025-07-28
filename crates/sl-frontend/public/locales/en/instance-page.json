@@ -1,0 +1,9 @@
+{
+    "tabs": {
+        "content": "content",
+        "logs": "logs",
+        "saves": "saves",
+        "screenshots": "screenshots",
+        "console": "console"
+    }
+}

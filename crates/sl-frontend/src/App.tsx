@@ -1,50 +1,50 @@
-import { useState } from "react";
-import Sidebar from "./components/layout/Sidebar";
-import HomePage from "./pages/HomePage";
-import { Navbar } from "./components/layout/Navbar";
-import ProfileSidebar from "./components/layout/ProfileSidebar";
-import InstancesPage from "./pages/InstancesPage";
-import { StorePage } from "./pages/StorePage";
+import { ProfileSidebar } from '@/components/layout/accounts-sidebar';
+import { HomePage } from '@/pages/home-page';
+import { InstancesPage } from '@/pages/instances-page';
+import { StorePage } from '@/pages/store-page';
+import { UnknownPage } from '@/pages/unknown-page';
+import { Navbar } from '@/components/layout/navbar';
+import { Sidebar } from '@/components/layout/sidebar';
+import { Route, Routes } from 'react-router-dom';
+import { InstancePage } from '@/pages/instance-page';
+import { Toaster } from '@/components/ui/sonner';
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="font-noto-sans flex flex-col h-screen overflow-hidden overscroll-none">
+			<Navbar />
+			<div className="flex overflow-hidden h-full">{children}</div>
+		</div>
+	);
+}
+
+function MainContent() {
+	return (
+		<>
+			<Sidebar />
+			<div className="flex bg-neutral-900 w-full rounded-tl-2xl border-l-2 border-t-2 border-[#2D2F32]">
+				<div className="w-full h-full overflow-y-auto p-6">
+					<Routes>
+						<Route path="/" element={<HomePage />} />
+						<Route path="/instances" element={<InstancesPage />} />
+						<Route path="/instances/:name" element={<InstancePage />} />
+						<Route path="/store" element={<StorePage />} />
+						<Route path="*" element={<UnknownPage />} />
+					</Routes>
+				</div>
+				<ProfileSidebar />
+			</div>
+		</>
+	);
+}
 
 function App() {
-  const [activeTab, setActiveTab] = useState("home");
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "home":
-        return <HomePage />;
-      case "instances":
-        return <InstancesPage />;
-      case "store":
-        return <StorePage />;
-      default:
-        return (
-          <div className="flex items-center justify-center h-full p-8">
-            <div className="text-center">
-              <h2 className="text-white text-2xl font-bold mb-4">
-                Unknown Page
-              </h2>
-              <p className="text-gray-400">Please return to the home page!</p>
-            </div>
-          </div>
-        );
-    }
-  };
-
-  return (
-    <div className="flex flex-col h-screen bg-[#1B1D21] overflow-hidden">
-      <Navbar />
-
-      <div className="flex h-full overflow-hidden">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-        <div className="flex w-full bg-[#141518] rounded-tl-2xl border-t-2 border-l-2 border-[#2D2F32]">
-          <div className="w-full">{renderContent()}</div>
-          <ProfileSidebar />
-        </div>
-      </div>
-    </div>
-  );
+	return (
+		<AppLayout>
+			<MainContent />
+			<Toaster />
+		</AppLayout>
+	);
 }
 
 export default App;

@@ -1,8 +1,7 @@
 [package]
 name = "sl-frontend"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "SynthLauncher App"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,17 +14,20 @@ name = "sl_frontend_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.3.0", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-opener = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
 sl-core = { path = "../../sl-core" }
-sl-mod-manager = { path = "../../sl-mod-manager"}
-
-tokio = "1.45.0"
+sl-store = { path = "../../sl-store"}
 sl-utils = { path = "../../sl-utils" }
-tauri-plugin-dialog = "2"
-synrinth = "0.1.9"
+sl-player = { path = "../../sl-player" }
+tokio = "1.46.1"
+
+tauri = { version = "2.6.2", features = [] }
+tauri-plugin-opener = "2.4.0"
+tauri-plugin-dialog = "2.3.0"
+serde = "1.0.219"
+serde_json = "1.0.140"
+lazy_static = "1.5.0"
+base64 = "0.22.1"
+data-encoding = "2.9.0"

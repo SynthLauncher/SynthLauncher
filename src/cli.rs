@@ -1,5 +1,7 @@
-use clap::{ArgAction, Args, Parser, Subcommand};
-use sl_core::instance::InstanceType;
+use std::path::PathBuf;
+
+use clap::{Args, Parser, Subcommand};
+use sl_core::launcher::instances::instance_metadata::ModLoader;
 
 #[derive(Parser)]
 #[command(about, long_about = None)]
@@ -10,16 +12,27 @@ pub struct Cli {
 
 #[derive(Args, Default)]
 pub struct LoaderInfo {
-    /// can be "vanilla" or "fabric" or "quilt" or "forge"
-    pub loader: Option<InstanceType>,
-    /// depends on the loader, can be left empty for vanilla
+    /// Can be "vanilla"/"fabric"/"quilt"/"forge"
+    pub loader: Option<ModLoader>,
+    /// Depends on the loader, can be left empty for vanilla
     pub loader_version: Option<String>,
 }
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Install a Minecraft instance
-    Install {
+    /// Imports an instance from a given path
+    Import {
+        path: PathBuf,
+    },
+    /// Exports an instance to a given path
+    Export {
+        instance_name: String,
+        #[arg(short, long)]
+        output: PathBuf,
+    },
+
+    /// Creates a Minecraft instance
+    Create {
         #[arg(required = true)]
         instance_name: String,
         #[arg(required = true)]
@@ -27,21 +40,37 @@ pub enum Commands {
         #[command(flatten)]
         loader_info: LoaderInfo,
     },
-    /// Launch a Minecraft instance
+
+    /// Launches a Minecraft instance
     Launch {
         #[arg(required = true)]
         instance_name: String,
     },
-    AddOfflineProfile {
+
+    /// Adds an offline player account
+    AddOfflineAccount {
         #[arg(required = true)]
         name: String,
-    },
-    AddPremiumProfile,
-    SetCurrentProfile {
-        #[arg(required = true)]
-        name: String,
-        #[arg(long, action = ArgAction::SetTrue)]
-        premium: bool,
     },
 
+    /// Adds a premium player account
+    AddPremiumAccount,
+
+    /// Sets the current account
+    SetCurrentAccount {
+        #[arg(required = true)]
+        name: String,
+    },
+
+    /// Lists all player instances
+    ListInstances,
+    
+    /// Lists all player accounts
+    ListAccounts,
+    
+    /// Displays the current account
+    CurrentAccount,
+    
+    /// Lists available Minecraft versions
+    ListMinecraftVersions,
 }

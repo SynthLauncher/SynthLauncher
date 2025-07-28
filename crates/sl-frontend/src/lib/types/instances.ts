@@ -1,35 +1,61 @@
 enum VersionType {
-  OldBeta,
-  OldAlpha,
-  Release,
-  Snapshot,
-};
+	OldBeta,
+	OldAlpha,
+	Release,
+	Snapshot,
+}
 
-enum InstanceType {
-  Vanilla,
-  Fabric,
-  Quilt,
-};
+export enum ModLoader {
+	Vanilla,
+	Fabric,
+	Quilt,
+	Forge,
+	Neoforge,
+}
 
-interface InstanceGameInfo {
-  id: string;
-  releaseTime: string;
-  type: VersionType;
-};
 
 export interface Instance {
-  name: string;
-  game_info: InstanceGameInfo;
-  instance_type: InstanceType;
-};
+	name: string;
+	mc_version: string;
+	releaseTime: string;
+	type: VersionType;	
+	mod_loader: ModLoader;
+	mod_loader_version: string;
+}
 
 export type InstanceCardProps = {
-  title: string;
-  version: string;
-  modLoader?: string;
-  modCount?: number;
-  lastPlayed: string;
-  image: string;
-  favorite?: boolean;
+	title: string;
+	version: string;
+	modLoader?: string;
+	image: string;
 };
 
+export interface MinecraftWorldMetadata {
+	name: string;
+	icon: string;
+}
+
+export interface ScreenshotMetadata {
+	name: string;
+	screenshot: string;
+}
+
+export interface ModMetadata {
+	id: string,
+	name: string,
+	version: string
+}
+
+export interface Mod {
+    metadata: ModMetadata,
+    file_name: string,
+    sha512: string,
+    icon?: string,
+}
+
+
+export interface GameInfo {
+	worlds: MinecraftWorldMetadata[];
+	screenshots: ScreenshotMetadata[];
+	mods: Mod[]
+}
