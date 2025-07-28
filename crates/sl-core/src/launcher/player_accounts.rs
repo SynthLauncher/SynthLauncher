@@ -7,6 +7,7 @@ use crate::PROFILES_PATH;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerAccounts {
+    pub scheme_version: u32,
     pub current_account: String,
     pub accounts: HashMap<String, PlayerData>,
 }
@@ -16,6 +17,7 @@ impl PlayerAccounts {
         PlayerAccounts {
             current_account: String::new(),
             accounts: HashMap::new(),
+            scheme_version: 0
         }
     }
 
