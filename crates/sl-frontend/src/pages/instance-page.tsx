@@ -441,7 +441,7 @@ export const InstancePage = () => {
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">Loading the instance</h3>
           <p className="text-neutral-400 text-center">
-            Getting the instance data!
+            Getting the instance data
           </p>
         </div>
     )
@@ -457,7 +457,7 @@ export const InstancePage = () => {
 
         <h3 className="text-xl font-semibold text-red-400 mb-3">Failed to find instance</h3>
         <p className="text-neutral-400 text-center max-w-md mb-4">
-          Make sure the instance exists. Please try again later.
+          Make sure the instance exists and try again later.
         </p>
       </div>
     )
