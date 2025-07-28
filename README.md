@@ -25,10 +25,8 @@
 
 ## Community
 
-- **SynthLauncher Disocrd Server:**
 [![SynthLauncher Discord Server](https://discord.com/api/guilds/1250864715790553098/widget.png?style=banner3)](https://discord.gg/MbBGunfMJ4)
 
-- **SynthLauncher Subreddit:**
 [![r/SynthLauncher](https://img.shields.io/reddit/subreddit-subscribers/synthlauncher?style=for-the-badge&logo=reddit)](https://www.reddit.com/r/SynthLauncher)
 
 ## Contact
