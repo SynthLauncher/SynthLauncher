@@ -51,7 +51,7 @@ impl PlayerAccounts {
     }
 }
 
-pub fn add_account(name: String, data: PlayerData) -> std::io::Result<()> {
+pub fn add_account(data: PlayerData, name: String) -> std::io::Result<()> {
     let mut accounts = PlayerAccounts::load()?;
     accounts.current_account = name.clone();
     accounts.accounts.insert(name, data);
