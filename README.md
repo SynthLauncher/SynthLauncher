@@ -24,6 +24,58 @@
 - **Optimized performance:** SynthLauncher is designed to be fast, efficient, and lightweight.
 - **Open-Source:** SynthLauncher is completely open-source, and open to contributors.
 
+# Running the Code
+
+You can run **SynthLauncher** either via the Command Line Interface (CLI) or the Graphical User Interface (GUI).
+
+## Running via CLI
+
+1. Open a terminal and navigate to the root directory of the project.
+
+2. Run the following command to build and start the CLI version:
+
+   ```bash
+   cargo run
+   ```
+
+3. After running, you should see output similar to this:
+
+   <img src="assets/images/repo/synthlauncher-cli.png" alt="SynthLauncher CLI Output" />
+
+4. To execute a command, run:
+
+   ```bash
+   cargo run <COMMAND>
+   ```
+
+## Running via GUI
+
+The GUI is built using a frontend framework managed by `pnpm` and Tauri.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/download/)
+- [pnpm](https://pnpm.io/installation)
+
+1. From the root directory, change to the frontend directory:
+
+   ```bash
+   cd crates/sl-frontend
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+3. Run the development server with Tauri:
+
+   ```bash
+   pnpm run tauri dev
+   ```
+
+4. The GUI application should launch shortly after.
 
 ## Community
 
