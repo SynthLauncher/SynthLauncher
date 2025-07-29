@@ -67,7 +67,7 @@ const InstanceHeader = ({ instance }: { instance: Instance }) => {
 
   const handleSelectDirectory = async () => {
     const path = await open({
-      directory: true,  
+      directory: true,
     });
 
     if (path) {
@@ -75,6 +75,11 @@ const InstanceHeader = ({ instance }: { instance: Instance }) => {
       openFolder(path)
     }
   };
+
+  const handlePlayButtonClick = async () => {
+    await launchInstance(instance.name);
+  };
+
 
   return (
     <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-neutral-800 rounded-2xl p-6 gap-6 shadow-lg">
@@ -99,7 +104,7 @@ const InstanceHeader = ({ instance }: { instance: Instance }) => {
       </div>
       <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end">
         <InstancePlayButton
-          onClick={async () => await launchInstance(instance.name)}
+          onClick={handlePlayButtonClick}
           isRunning={isRunning}
         />
         <DropdownMenu>

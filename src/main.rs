@@ -52,7 +52,7 @@ async fn run_cli() -> Result<(), BackendError> {
             }
         }
         Commands::AddOfflineAccount { name } => {
-            add_account(name, PlayerData::default())?;
+            add_account(PlayerData::offline(&name), name)?;
         }
         // FIXME
         Commands::AddPremiumAccount => {

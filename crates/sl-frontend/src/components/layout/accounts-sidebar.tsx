@@ -273,7 +273,7 @@ export const ProfileSidebar = () => {
                 className="w-full justify-start text-neutral-300 hover:text-white hover:bg-neutral-700 transition-all duration-300 group"
               >
                 <Edit3 className="w-4 h-4 mr-3 group-hover:text-blue-400 transition-colors" />
-                Switch Account
+                {account?.[1] ? "Switch Account" : "Create an Account"}
                 <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
             </DropdownMenuTrigger>

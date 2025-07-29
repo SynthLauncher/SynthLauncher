@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
+use uuid::{uuid, Uuid};
 
 pub mod api;
+
+const NS: Uuid = uuid!("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerData {
@@ -9,9 +12,9 @@ pub struct PlayerData {
 }
 
 impl PlayerData {
-    pub fn default() -> Self {
+    pub fn offline(name: &str) -> Self {
         Self {
-            id: "8667ba71-b85a-4004-af54-457a9734eed7".to_string(),
+            id: Uuid::new_v3(&NS, format!("OfflinePlayer:{name}").as_bytes()).to_string(),
             access_token: "0".to_string(),
         }
     }

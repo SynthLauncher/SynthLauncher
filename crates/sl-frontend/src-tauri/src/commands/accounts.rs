@@ -22,6 +22,6 @@ pub fn accounts_set_current(name: String) -> Result<(), String> {
 
 #[tauri::command]
 pub fn accounts_create_offline(name: String) -> Result<(), String> {
-    add_account(name, PlayerData::default()).map_err(|e| e.to_string())?;
+    add_account(PlayerData::offline(&name), name).map_err(|e| e.to_string())?;
     Ok(())
 }

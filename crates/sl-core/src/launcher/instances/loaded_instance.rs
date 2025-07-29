@@ -199,8 +199,16 @@ impl LoadedInstance {
 
         fmt_args(&mut jvm_args);
 
+        // !!!DO NOT REMOVE!!!
+        // jvm_args.push("-javaagent:/home/stierprogrammer/Desktop/synthlauncher/authlib-injector-1.2.5.jar=http://192.168.2.80:8000/".to_string());
+        // jvm_args.push("-Dauthlibinjector.noShowServerName".to_string());
+
         jvm_args.push(client.main_class.clone());
         Ok([jvm_args, game_args].concat())
+    }
+
+    fn last_log_path(&self) -> PathBuf {
+        self.instance_path.join("logs/latest-run.log")
     }
 
     #[must_use = "must wait on child to exit"]
@@ -238,22 +246,34 @@ impl LoadedInstance {
 
         dlog!("Launching with args: {:?}", &args);
 
-        dlog!("Using Java: {}", current_java_path.display());
+        let log_path = self.last_log_path();
+        tokio::fs::create_dir_all(log_path.parent().unwrap()).await?;
 
-        let mut child = Command::new(current_java_path)
+        let log_file = std::fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(&log_path)?;
+
+        dlog!(
+            "Using Java: {}, logging to {}",
+            current_java_path.display(),
+            log_path.display()
+        );
+
+        let child = Command::new(current_java_path)
             .arg(format!("-Xmx{}M", max_ram))
             .arg(format!("-Xms{}M", min_ram))
             .args(args)
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
+            .stdout(log_file.try_clone()?)
+            .stderr(log_file.try_clone()?)
             .current_dir(self.instance_path)
             .spawn()?;
 
-        let stdout = child
-            .stdout
-            .take()
-            .expect("Child did not have a handle to stdout");
-
-        Ok((child, stdout))
+        let log_file = tokio::fs::OpenOptions::new()
+            .read(true)
+            .open(log_path)
+            .await?;
+        Ok((child, log_file))
     }
 }
