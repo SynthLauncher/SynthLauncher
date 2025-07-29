@@ -199,6 +199,10 @@ impl LoadedInstance {
 
         fmt_args(&mut jvm_args);
 
+        // !!!DO NOT REMOVE!!!
+        // jvm_args.push("-javaagent:/home/stierprogrammer/Desktop/synthlauncher/authlib-injector-1.2.5.jar=http://192.168.2.80:8000/".to_string());
+        // jvm_args.push("-Dauthlibinjector.noShowServerName".to_string());
+
         jvm_args.push(client.main_class.clone());
         Ok([jvm_args, game_args].concat())
     }
