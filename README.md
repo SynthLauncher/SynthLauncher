@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">  
-  <strong>SynthLauncher</strong> is a free, open-source, fast and lightweight Minecraft launcher packed with features.
+  <strong>SynthLauncher</strong> is a free, open-source, feature-packed and lightweight Minecraft launcher.
 </p>
 
 <p align="center">
