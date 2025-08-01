@@ -19,7 +19,7 @@ pub async fn search_modrinth_store(
     project_type: &str,
     page: u32,
 ) -> Result<SearchResult, String> {
-    let search_result = query_search(query, project_type, page)
+    let search_result = query_search(query, project_type, (page - 1) * 16)
         .await
         .map_err(|e| e.to_string())?;
     Ok(search_result)
