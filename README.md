@@ -18,7 +18,7 @@
   </a>
 </p>
 
-## Current features
+# Current features
 
 - **Modrinth and Curseforge support:** SynthLauncher has full support for installing modpacks, mods, resourcepacks and shaderpacks from Modrinth and Curseforge. 
 - **Optimized performance:** SynthLauncher is designed to be fast, efficient, and lightweight.
@@ -77,13 +77,13 @@ The GUI is built using a frontend framework managed by `pnpm` and Tauri.
 
 4. The GUI application should launch shortly after.
 
-## Community
+# Community
 
 [![SynthLauncher Discord Server](https://discord.com/api/guilds/1250864715790553098/widget.png?style=banner3)](https://discord.gg/MbBGunfMJ4)
 
 [![r/SynthLauncher](https://img.shields.io/reddit/subreddit-subscribers/synthlauncher?style=for-the-badge&logo=reddit)](https://www.reddit.com/r/SynthLauncher)
 
-## Contact
+# Contact
 
 If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker, Email: [STierProgrammer@gmail.com](mailto:stierprogrammer@gmail.com) or Discord: `stierprogrammer`.
 

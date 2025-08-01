@@ -1,10 +1,22 @@
-use std::{path::{Path, PathBuf}, fmt::Write};
+use std::{
+    fmt::Write,
+    path::Path, sync::Arc,
+};
 
+use dashmap::DashMap;
+use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::{Deserialize, Serialize};
 use sl_core::REQUESTER;
-use sl_utils::{errors::BackendError};
+use sl_utils::errors::BackendError;
 
-use crate::modrinth::api::{GalleryImage, ProjectType};
+use crate::modrinth::api::ProjectType;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ModrinthProjectDependency {
+    pub project_id: String,
+    pub dependency_type: String, // TODO: Maybe make this an enum
+    pub version_id: Option<String>
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthProject {
@@ -16,10 +28,89 @@ pub struct ModrinthProject {
     pub downloads: u32,
     pub icon_url: Option<String>,
     pub followers: u32,
+    /// Project versions
     pub versions: Vec<String>,
+    /// Supported Minecraft versions
     pub game_versions: Vec<String>,
     pub loaders: Vec<String>,
-    pub gallery: Vec<GalleryImage>,
+}
+
+type ProjectId = String;
+type VersionId = String;
+
+#[derive(Debug, Clone)]
+pub struct ResolutionState {
+    pub resolved: Arc<DashMap<ProjectId, VersionId>>
+}
+
+impl ResolutionState {
+    pub fn new() -> Self {
+        Self {
+            resolved: Arc::new(DashMap::new()),
+        }
+    }
+}
+
+async fn pick_latest_version_id(
+    project_id: &str,
+    game_version: &str,
+    loader: &str,
+) -> Result<String, BackendError> {
+    let versions = query_project_versions(project_id, Some(game_version), Some(loader)).await?;
+
+    let latest_id = versions[0].id.clone();
+    Ok(latest_id)
+}
+
+pub async fn resolve_mod(
+    state: &ResolutionState,
+    project_id: String,
+    version_id: String,
+    game_version: &str,
+    loader: &str,
+) -> Result<(), BackendError> {
+    if state.resolved.contains_key(&project_id) {
+        return Ok(());
+    }
+
+    state.resolved.insert(project_id.clone(), version_id.clone());
+
+    let version_info = query_project_version(&project_id, &version_id).await?;
+
+    let mut futures = FuturesUnordered::new();
+
+    for dep in &version_info.dependencies {
+        if dep.dependency_type != "required" {
+            continue;
+        }
+
+        let dep_vid = if let Some(vid) = &dep.version_id {
+            vid.clone()
+        } else {
+            pick_latest_version_id(&dep.project_id, game_version, loader).await?
+        };
+
+        futures.push(resolve_mod(
+            state,
+            dep.project_id.clone(),
+            dep_vid,
+            game_version,
+            loader,
+        ));
+    }
+
+    while let Some(res) = futures.next().await {
+        res?;
+    }
+
+    Ok(())
+}
+
+#[must_use]
+pub async fn query_project(slug: &str) -> Result<ModrinthProject, BackendError> {
+    let url = format!("https://api.modrinth.com/v2/project/{}", slug);
+    let json = REQUESTER.get_json(&url).await?;
+    Ok(json)
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -47,15 +138,8 @@ pub struct ModrinthProjectVersion {
     pub loaders: Vec<String>,
     pub version_number: String,
     pub downloads: u32,
-    pub version_type: String,
     pub files: Vec<ModrinthProjectFile>,
-}
-
-#[must_use]
-pub async fn query_project(slug: &str) -> Result<ModrinthProject, BackendError> {
-    let url = format!("https://api.modrinth.com/v2/project/{}", slug);
-    let json = REQUESTER.get_json(&url).await?;
-    Ok(json)
+    pub dependencies: Vec<ModrinthProjectDependency>,
 }
 
 #[must_use]
@@ -91,6 +175,7 @@ pub async fn query_project_version(
         "https://api.modrinth.com/v2/project/{}/version/{}",
         slug, version
     );
+    
     let json = REQUESTER.get_json(&url).await?;
     Ok(json)
 }
@@ -98,13 +183,57 @@ pub async fn query_project_version(
 pub async fn download_project_file(
     project_file: &ModrinthProjectFile,
     dest: &Path,
-) -> Result<PathBuf, BackendError> {
-    let path = dest.join(&project_file.filename);
-
+) -> Result<(), BackendError> {
     REQUESTER
         .builder()
-        .download_to(&project_file.url, &path)
+        .download_to(&project_file.url, &dest.join(&project_file.filename))
         .await?;
 
-    Ok(path)
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio;
+
+    #[tokio::test]
+    async fn test_resolve_mod_real_api_latest() {
+        let state = ResolutionState::new();
+
+        let project_id = "modmenu".to_string();
+
+        let latest_versions = query_project_versions(&project_id, None, None)
+            .await
+            .expect("Failed to fetch project versions");
+
+        assert!(
+            !latest_versions.is_empty(),
+            "No versions found for project {}",
+            project_id
+        );
+
+        let latest_version = &latest_versions[0];
+
+        println!("{:?}", latest_version.dependencies);
+
+        let result = resolve_mod(
+            &state.clone(),
+            project_id.clone(),
+            latest_version.id.clone(),
+            "1.20.1",
+            "fabric",
+        )
+        .await;
+
+        assert!(result.is_ok(), "resolve_mod failed: {:?}", result.err());
+
+        assert!(
+            state.resolved.contains_key(&project_id),
+            "Expected {} to be in resolved map",
+            project_id
+        );
+
+        println!("Resolved mods: {:#?}", state.resolved);
+    }
 }

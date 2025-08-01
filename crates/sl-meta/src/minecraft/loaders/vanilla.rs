@@ -152,7 +152,7 @@ impl Arguments {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Display, EnumString)]
+#[derive(Debug, Deserialize, Clone, Copy, Display, EnumString)]
 #[strum(serialize_all = "kebab-case")]
 #[serde(rename_all = "kebab-case")]
 pub enum JavaComponent {
@@ -165,7 +165,7 @@ pub enum JavaComponent {
     MinecraftJavaExe,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub struct JavaVersion {
     pub component: JavaComponent,
@@ -240,7 +240,7 @@ pub struct Client {
     #[serde(alias = "minecraftArguments")]
     pub arguments: Arguments,
     pub libraries: Vec<Library>,
-    pub java_version: JavaVersion,
+    pub java_version: Option<JavaVersion>,
     pub main_class: String,
     pub downloads: Downloads,
     pub assets: String,

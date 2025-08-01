@@ -1,7 +1,11 @@
 use serde::{Deserialize, Serialize};
-use sl_utils::{errors::BackendError, requester::Requester};
+use sl_core::REQUESTER;
+use sl_utils::errors::BackendError;
 
-use crate::curseforge::api::{project::CurseforgeProject, MINECRAFT_GAME_ID, PAGE_SIZE};
+use crate::{
+    curseforge::api::{project::CurseforgeProject, MINECRAFT_GAME_ID},
+    PAGE_SIZE,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -13,7 +17,7 @@ pub struct CurseforgePagination {
 #[serde(rename_all = "camelCase")]
 pub struct CurseforgeSearchResponse {
     pub data: Vec<CurseforgeProject>,
-    pub pagination: CurseforgePagination
+    pub pagination: CurseforgePagination,
 }
 
 pub async fn query_curseforge_search(
@@ -22,17 +26,10 @@ pub async fn query_curseforge_search(
     offset: u32,
 ) -> Result<CurseforgeSearchResponse, BackendError> {
     let url = format!(
-        "https://api.curseforge.com/v1/mods/search?gameId={}&classId={}&searchFilter={}&pageSize={}&index={}&sortField={}&sortOrder={}",
-        MINECRAFT_GAME_ID,
-        class_id,
-        urlencoding::encode(query),
-        PAGE_SIZE,
-        offset,
-        2,    
-        "desc"  
+        "https://api.curseforge.com/v1/mods/search?gameId={MINECRAFT_GAME_ID}&classId={class_id}&searchFilter={query}&pageSize={PAGE_SIZE}&index={offset}&sortField=2&sortOrder=\"desc\"",
     );
 
-    let res: CurseforgeSearchResponse = Requester::new().get_json(&url).await?;
+    let res: CurseforgeSearchResponse = REQUESTER.get_json(&url).await?;
 
     Ok(res)
 }

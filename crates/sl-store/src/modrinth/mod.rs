@@ -1,5 +1,6 @@
 use std::{path::Path, str::FromStr};
 
+use futures_util::{stream::FuturesUnordered, StreamExt};
 use sl_core::{
     launcher::instances::instance_metadata::{InstanceMetadata, ModLoader},
     INSTANCES_DIR, REQUESTER,
@@ -7,7 +8,7 @@ use sl_core::{
 use sl_utils::errors::BackendError;
 
 use crate::modrinth::{
-    api::{project::query_project_version, ProjectType},
+    api::{project::{query_project_version, resolve_mod, ResolutionState}, ProjectType},
     mrpack::{download_modpack_files, read_modrinth_index, unzip_modpack, DependencyID},
 };
 
@@ -49,6 +50,37 @@ pub async fn install_modpack(slug: &str, version: &str) -> Result<(), BackendErr
 
     let loaded_instance = instance.load_init().await?;
     loaded_instance.execute().await?;
+
+    Ok(())
+}
+
+pub async fn install_mod_with_deps(
+    slug: &str,
+    version: &str,
+    instance_path: &Path,
+) -> Result<(), BackendError> {
+    let project_type = ProjectType::Mod;
+
+    let state = ResolutionState::new();
+
+    resolve_mod(&state, slug.to_string(), version.to_string(), "1.20.1", "fabric").await?;
+
+    let mut futures = FuturesUnordered::new();
+
+    for entry in state.resolved.iter() {
+        let proj_id = entry.key().clone();
+        let ver_id = entry.value().clone();
+        let instance_path = instance_path.to_owned();
+        let pt = project_type.clone();
+
+        futures.push(async move {
+            install_project(&proj_id, &ver_id, &instance_path, pt).await
+        });
+    }
+
+    while let Some(res) = futures.next().await {
+        res?;
+    }
 
     Ok(())
 }

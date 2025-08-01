@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use sl_core::REQUESTER;
+use sl_utils::errors::BackendError;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -15,7 +17,7 @@ pub struct CurseforgeProjectAuthor {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CurseforgeFile {
-    pub file_name: Option<String>,
+    pub file_name: String,
     pub download_url: Option<String>,
     pub game_versions: Vec<String>,
 }
@@ -31,5 +33,20 @@ pub struct CurseforgeProject {
     pub download_count: u64,
     pub logo: CurseforgeProjectAsset,
     pub authors: Vec<CurseforgeProjectAuthor>,
-    pub latest_files: Vec<CurseforgeFile>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct QueryProjectFileResponse {
+    pub data: CurseforgeFile
+}
+
+pub async fn query_project_file(mod_id: u32, file_id: u32) -> Result<QueryProjectFileResponse, BackendError> {
+    let url = format!("https://api.curseforge.com/v1/mods/{mod_id}/files/{file_id}");
+   
+    let res = REQUESTER.get_json(&url).await?;
+    Ok(res)
+}
+
+pub async fn download_project_file() -> Result<(), BackendError> {
+    Ok(())
 }

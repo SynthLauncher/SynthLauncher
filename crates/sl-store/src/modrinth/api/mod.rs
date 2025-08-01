@@ -11,11 +11,3 @@ pub enum ProjectType {
     Resourcepack,
     Shader,
 }
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct GalleryImage {
-    pub url: String,
-    pub featured: bool,
-    pub title: Option<String>,
-    pub description: Option<String>,
-}

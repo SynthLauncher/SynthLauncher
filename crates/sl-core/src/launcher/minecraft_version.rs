@@ -82,7 +82,7 @@ impl MinecraftVersionID {
         instance_dir: &Path,
         vanilla_client: &Client,
     ) -> Result<InstanceConfig, BackendError> {
-        read_instance_config(instance_dir, &vanilla_client.java_version.component)
+        read_instance_config(instance_dir, &vanilla_client.java_version)
             .await
     }
 

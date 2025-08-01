@@ -2,13 +2,11 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use sl_java_manager::{jre_manifest::installer::download_jre_manifest_version, JAVA_BINARY};
-use sl_meta::{minecraft::loaders::vanilla::JavaComponent};
+use sl_meta::minecraft::loaders::vanilla::{JavaComponent, JavaVersion};
 use sl_utils::errors::BackendError;
 use sl_utils::wlog;
 
-use crate::{
-    JAVAS_DIR, JRE_MANIFEST, LAUNCHER_DIR, REQUESTER
-};
+use crate::{JAVAS_DIR, JRE_MANIFEST, LAUNCHER_DIR, REQUESTER};
 
 /// Defines the config file name, relative to the launcher directory and the instance directory.
 pub const CONFIG_FILE_NAME: &str = "config.toml";
@@ -32,12 +30,7 @@ async fn default_java_path(component: &JavaComponent) -> Result<PathBuf, Backend
     let java_path = JAVAS_DIR.join(component.to_string());
 
     if !java_path.exists() {
-        download_jre_manifest_version(
-            &REQUESTER,
-            &JRE_MANIFEST,
-            &JAVAS_DIR,
-            component
-        ).await?;
+        download_jre_manifest_version(&REQUESTER, &JRE_MANIFEST, &JAVAS_DIR, component).await?;
     }
 
     Ok(java_path.join("bin").join(JAVA_BINARY))
@@ -70,7 +63,10 @@ impl JavaConfig {
                 // Fallback to /usr/bin/java if available
                 static FALLBACK: &str = "/usr/bin/java";
                 if Path::new(FALLBACK).exists() {
-                    wlog!("Configured Java path {:?} does not exist, falling back to /usr/bin/java", self.path);
+                    wlog!(
+                        "Configured Java path {:?} does not exist, falling back to /usr/bin/java",
+                        self.path
+                    );
                     return Path::new(FALLBACK);
                 }
             }
@@ -81,7 +77,11 @@ impl JavaConfig {
                     if output.status.success() {
                         let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
                         if !path.is_empty() && std::path::Path::new(&path).exists() {
-                            wlog!("Configured Java path {:?} does not exist, falling back to {}", self.path, path);
+                            wlog!(
+                                "Configured Java path {:?} does not exist, falling back to {}",
+                                self.path,
+                                path
+                            );
                             return std::path::Path::new(Box::leak(path.into_boxed_str()));
                         }
                     }
@@ -147,13 +147,26 @@ async fn get_instance_config(
 /// Implement a method to edit the configuration for an instance and also globally
 pub(crate) async fn read_instance_config(
     instance_directory: &Path,
-    java_version: &JavaComponent,
+    java_version: &Option<JavaVersion>,
 ) -> Result<InstanceConfig, BackendError> {
     let instance_local_config_path = instance_directory.join(CONFIG_FILE_NAME);
-    get_instance_config(&instance_local_config_path, java_version)
-        .await
-        .map(|con| {
-            con.try_deserialize::<InstanceConfig>()
-                .expect("failed to deserialize config")
+
+    // Temporary workaround
+    // TODO: Change
+    let component = java_version.as_ref()
+        .unwrap_or(&JavaVersion {
+            component: JavaComponent::JreLegacy,
+            major_version: 8,
         })
+        .component;
+
+    get_instance_config(
+        &instance_local_config_path,
+        &component,
+    )
+    .await
+    .map(|con| {
+        con.try_deserialize::<InstanceConfig>()
+            .expect("failed to deserialize config")
+    })
 }

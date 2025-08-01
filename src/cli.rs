@@ -73,4 +73,5 @@ pub enum Commands {
     
     /// Lists available Minecraft versions
     ListMinecraftVersions,
+    Test
 }
