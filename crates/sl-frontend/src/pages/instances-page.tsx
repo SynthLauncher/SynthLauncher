@@ -7,7 +7,7 @@ import { Blocks, Gamepad, Gem, Pickaxe, Plus, SearchIcon, Sword } from 'lucide-r
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const InstanceCard = ({ mc_version, mod_loader, name }: Instance) => {
+export const InstanceCard = ({ mc_version, mod_loader, name }: Instance) => {
 	const getIconByTitle = (title: string) => {
 		const lowerTitle = title.toLowerCase();
 		if (lowerTitle.includes('survival'))
