@@ -1,7 +1,7 @@
 use std::{
     fs::OpenOptions,
     io::{Seek, Write},
-    path::{Path, PathBuf},
+    path::Path,
 };
 
 use serde::{Deserialize, Serialize};
@@ -10,17 +10,19 @@ use sl_meta::minecraft::{
         forge, neoforge,
         quilt::{self},
     },
-    version_manifest::VersionType,
+    version_manifest::{VersionManifest, VersionType},
 };
-use sl_utils::errors::{BackendError, HttpError, InstanceError};
+use sl_utils::{
+    errors::{BackendError, HttpError, InstanceError},
+    requester::Requester,
+};
 use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::{
-    launcher::{
-        instances::{self, instance_exporter::InstanceExporter, loaded_instance::LoadedInstance},
-        minecraft_version::MinecraftVersionID,
+    instances::{
+        instance_exporter::InstanceExporter, loaded_instance::LoadedInstance, InstanceManager,
     },
-    INSTANCES_DIR, REQUESTER, VERSION_MANIFEST,
+    minecraft::minecraft_version::MinecraftVersionID,
 };
 
 #[derive(
@@ -50,11 +52,12 @@ impl ModLoader {
     /// Validate that the combination of Minecraft version and mod loader version is valid.
     pub async fn validate_version(
         &self,
+        requester: &Requester,
         mc_version: &str,
         mod_loader_version: &str,
     ) -> Result<bool, HttpError> {
         let do_request = async |url: &str| -> Result<_, HttpError> {
-            Ok(REQUESTER.builder().download(url).await?.to_vec())
+            Ok(requester.builder().download(url).await?.to_vec())
         };
 
         match self {
@@ -92,9 +95,13 @@ impl ModLoader {
         }
     }
 
-    pub async fn get_latest_version(&self, mc_version: &str) -> Result<String, HttpError> {
+    pub async fn get_latest_version(
+        &self,
+        requester: &Requester,
+        mc_version: &str,
+    ) -> Result<String, HttpError> {
         let do_request = async |url: &str| -> Result<_, HttpError> {
-            Ok(REQUESTER.builder().download(url).await?.to_vec())
+            Ok(requester.builder().download(url).await?.to_vec())
         };
 
         match self {
@@ -156,7 +163,9 @@ impl InstanceMetadata {
         }
     }
 
-    async fn new(
+    pub(crate) async fn new(
+        requester: &Requester,
+        version_manifest: &VersionManifest,
         name: String,
         mc_version: &str,
         mod_loader: ModLoader,
@@ -164,18 +173,15 @@ impl InstanceMetadata {
         icon: Option<String>,
     ) -> Result<Self, BackendError> {
         let version =
-            VERSION_MANIFEST
+            version_manifest
                 .get_version_by_id(mc_version)
                 .ok_or(BackendError::InstanceError(
                     InstanceError::MinecraftVersionNotFound(mc_version.to_string()),
                 ))?;
 
-        // TODO: remove this line
-        std::fs::create_dir_all(INSTANCES_DIR.join(&name))?;
-
         let mod_loader_version = match mod_loader_version {
             Some(specific) => specific,
-            None => mod_loader.get_latest_version(mc_version).await?,
+            None => mod_loader.get_latest_version(requester, mc_version).await?,
         };
 
         Ok(Self::new_unchecked(
@@ -189,27 +195,12 @@ impl InstanceMetadata {
         ))
     }
 
-    /// Creates a new instance, and adds it to the instances list at once
-    pub async fn create(
-        name: String,
-        version: &str,
-        mod_loader: ModLoader,
-        mod_loader_version: Option<String>,
-        icon: Option<String>,
-    ) -> Result<Self, BackendError> {
-        let instance = Self::new(name, version, mod_loader, mod_loader_version, icon).await?;
-        // TODO: embed this into this struct for cleaner code
-        instances::add_new(&instance)?;
-        Ok(instance)
-    }
-
-    fn instance_dir(&self) -> PathBuf {
-        INSTANCES_DIR.join(&self.name)
-    }
-
     /// Loads ('Upgrades' information to) an instance's in memory representation
-    pub async fn load_init(self) -> Result<LoadedInstance, BackendError> {
-        let instance_dir = self.instance_dir();
+    pub async fn load_init<'a>(
+        self,
+        man: &'a InstanceManager<'a>,
+    ) -> Result<LoadedInstance<'a>, BackendError> {
+        let instance_dir = man.instance_dir(&self.name);
 
         let version_id = MinecraftVersionID::new(
             self.mod_loader,
@@ -217,9 +208,10 @@ impl InstanceMetadata {
             self.mc_version.clone(),
         );
 
-        let (loaded_version, config) = version_id.load_init(&instance_dir).await?;
+        let (loaded_version, config) = version_id.load_init(man, &instance_dir).await?;
 
         Ok(LoadedInstance::new(
+            man,
             self,
             instance_dir,
             loaded_version,
@@ -228,13 +220,18 @@ impl InstanceMetadata {
     }
 
     /// Creates an instance exporter that will export the instance to a Writer in Zip format
-    pub fn exporter<'a, W: Write + Seek>(self, export_to: W) -> InstanceExporter<'a, W> {
-        InstanceExporter::new(export_to, self.instance_dir())
+    pub fn exporter<'a, W: Write + Seek>(
+        self,
+        instance_man: &InstanceManager<'_>,
+        export_to: W,
+    ) -> InstanceExporter<'a, W> {
+        InstanceExporter::new(export_to, instance_man.instance_dir(&self.name))
     }
 
     /// Creates an Instance Exporter that will export the instance to a given Path, the exported data would be in Zip format
     pub fn exporter_to_path<'a>(
         self,
+        instance_man: &InstanceManager<'_>,
         path: &Path,
     ) -> std::io::Result<InstanceExporter<'a, impl Write + Seek>> {
         let export_to_file = OpenOptions::new()
@@ -243,6 +240,6 @@ impl InstanceMetadata {
             .read(true)
             .open(path)?;
 
-        Ok(Self::exporter(self, export_to_file))
+        Ok(Self::exporter(self, instance_man, export_to_file))
     }
 }

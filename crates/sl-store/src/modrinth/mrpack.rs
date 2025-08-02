@@ -7,8 +7,7 @@ use std::{
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
-use sl_core::REQUESTER;
-use sl_utils::errors::BackendError;
+use sl_utils::{errors::BackendError, requester::Requester};
 use zip::ZipArchive;
 
 const MODRINTH_INDEX_NAME: &'static str = "modrinth.index.json";
@@ -104,6 +103,7 @@ pub async fn read_modrinth_index(modpack_path: &Path) -> Result<ModrinthPack, Ba
 }
 
 async fn download_modpack_file(
+    requester: &Requester,
     path: &Path,
     modpack_file: &ModrinthIndex,
 ) -> Result<(), BackendError> {
@@ -112,7 +112,7 @@ async fn download_modpack_file(
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    REQUESTER
+    requester
         .builder()
         .download_to(&modpack_file.downloads[0], &path)
         .await?;
@@ -121,22 +121,25 @@ async fn download_modpack_file(
 }
 
 pub async fn download_modpack_files(
+    requester: &Requester,
     instance_path: &Path,
     modpack_files: &[ModrinthIndex],
 ) -> Result<(), BackendError> {
     let modpack_files = modpack_files.to_vec();
-    let mut tasks = FuturesUnordered::new();
+    let tasks = FuturesUnordered::new();
 
-    for modpack_file in modpack_files {
-        let instance_path = instance_path.to_path_buf();
-
-        tasks.push(tokio::spawn(async move {
-            download_modpack_file(&instance_path, &modpack_file).await
-        }));
+    for modpack_file in &modpack_files {
+        tasks.push(download_modpack_file(
+            requester,
+            instance_path,
+            modpack_file,
+        ));
     }
 
-    while let Some(result) = tasks.next().await {
-        result??;
+    let results = tasks.collect::<Vec<_>>().await;
+
+    for result in results {
+        result?;
     }
 
     Ok(())

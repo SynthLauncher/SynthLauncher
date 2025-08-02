@@ -7,20 +7,21 @@ use std::{
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::minecraft::loaders::neoforge::{NeoForgeLoaderProfile, NeoForgeVersion};
 use sl_utils::{
-    dlog, log,
-    {
-        errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
-    },
+    dlog,
+    errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
+    log,
+    requester::Requester,
 };
 use tempfile::TempDir;
 use tokio::io::AsyncWriteExt;
-
-use crate::{LIBS_DIR, REQUESTER};
 
 const NEOFORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/NeoForgeInstaller.java");
 
 pub struct NeoForgeInstaller<'a> {
+    requester: &'a Requester,
+    libs_dir: &'a Path,
+
     minecraft_version: &'a str,
     version: NeoForgeVersion,
 
@@ -35,6 +36,8 @@ pub struct NeoForgeInstaller<'a> {
 
 impl<'a> NeoForgeInstaller<'a> {
     pub async fn new(
+        requester: &'a Requester,
+        libs_dir: &'a Path,
         minecraft_version: &'a str,
         neoforge_version: &str,
         java_path: &'a Path,
@@ -53,6 +56,8 @@ impl<'a> NeoForgeInstaller<'a> {
         tokio::fs::write(&java_forge_installer, NEOFORGE_JAVA_INSTALLER_SRC).await?;
 
         Ok(Self {
+            requester,
+            libs_dir,
             minecraft_version,
             version: neoforge_version,
             cache_dir,
@@ -72,7 +77,7 @@ impl<'a> NeoForgeInstaller<'a> {
             installer_path.display()
         );
 
-        REQUESTER
+        self.requester
             .builder()
             .download_to(&url, &installer_path)
             .await?;
@@ -184,9 +189,9 @@ impl<'a> NeoForgeInstaller<'a> {
 
         while let Some(entry) = neoforge_libraries.next_entry().await.unwrap() {
             let src_path = entry.path();
-            let dest_path = LIBS_DIR.join(entry.file_name());
+            let dest_path = self.libs_dir.join(entry.file_name());
 
-            sl_utils::fs::copy_dir_all(src_path, dest_path)?;
+            sl_utils::fs::async_copy_dir_all(src_path, dest_path).await?;
         }
 
         // copy the neoforge json to the instance directory...
@@ -216,6 +221,9 @@ impl<'a> NeoForgeInstaller<'a> {
 }
 
 pub async fn install_neoforge_loader(
+    requester: &Requester,
+    libs_dir: &Path,
+
     minecraft_version: &str,
     neoforge_version: &str,
     java_path: &Path,
@@ -223,6 +231,8 @@ pub async fn install_neoforge_loader(
     output_loader_json_path: &Path,
 ) -> Result<NeoForgeLoaderProfile, BackendError> {
     NeoForgeInstaller::new(
+        requester,
+        libs_dir,
         minecraft_version,
         neoforge_version,
         java_path,

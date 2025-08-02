@@ -1,22 +1,17 @@
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
+use sl_java_manager::jre_manifest::JreManifest;
 use sl_java_manager::{jre_manifest::installer::download_jre_manifest_version, JAVA_BINARY};
 use sl_meta::minecraft::loaders::vanilla::{JavaComponent, JavaVersion};
 use sl_utils::errors::BackendError;
+use sl_utils::requester::Requester;
 use sl_utils::wlog;
 
-use crate::{JAVAS_DIR, JRE_MANIFEST, LAUNCHER_DIR, REQUESTER};
+use crate::instances::InstanceManager;
 
 /// Defines the config file name, relative to the launcher directory and the instance directory.
 pub const CONFIG_FILE_NAME: &str = "config.toml";
-
-fn launcher_config_name() -> String {
-    LAUNCHER_DIR
-        .join(CONFIG_FILE_NAME)
-        .to_string_lossy()
-        .to_string()
-}
 
 const fn default_min_memory() -> usize {
     1024
@@ -26,11 +21,16 @@ const fn default_max_memory() -> usize {
     2048
 }
 
-async fn default_java_path(component: &JavaComponent) -> Result<PathBuf, BackendError> {
-    let java_path = JAVAS_DIR.join(component.to_string());
+async fn try_get_java_path_or_fetch(
+    requester: &Requester,
+    jre_manifest: &JreManifest,
+    javas_dir: &Path,
+    component: &JavaComponent,
+) -> Result<PathBuf, BackendError> {
+    let java_path = javas_dir.join(component.to_string());
 
     if !java_path.exists() {
-        download_jre_manifest_version(&REQUESTER, &JRE_MANIFEST, &JAVAS_DIR, component).await?;
+        download_jre_manifest_version(requester, jre_manifest, &javas_dir, component).await?;
     }
 
     Ok(java_path.join("bin").join(JAVA_BINARY))
@@ -100,6 +100,37 @@ impl JavaConfig {
     }
 }
 
+/// Returns the default launcher directory path for the current platform.
+fn default_launcher_dir() -> PathBuf {
+    use std::env;
+
+    #[cfg(target_os = "windows")]
+    {
+        env::var("APPDATA")
+            .map(|appdata| PathBuf::from(appdata).join("SynthLauncher"))
+            .expect("%APPDATA% not found")
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        env::var("HOME")
+            .map(|home| {
+                PathBuf::from(home)
+                    .join("Library")
+                    .join("Application Support")
+                    .join("SynthLauncher")
+            })
+            .expect("$HOME not found")
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        env::var("HOME")
+            .map(|home| PathBuf::from(home).join(".synthlauncher"))
+            .expect("$HOME not found")
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct InstanceConfig {
     #[serde(default)]
@@ -107,32 +138,50 @@ pub struct InstanceConfig {
     pub java: JavaConfig,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct LauncherConfig {
+    #[serde(flatten)]
+    pub instance: InstanceConfig,
+}
+
+/// Gets the [`LauncherConfig`] from the given path, only reads doesn't deserialize.
+pub(crate) fn get_launcher_config(
+    launcher_config_path: &Path,
+) -> Result<config::Config, config::ConfigError> {
+    let mut config_builder = config::Config::builder();
+
+    if launcher_config_path.exists() {
+        config_builder = config_builder.add_source(config::File::from(launcher_config_path));
+    }
+
+    let config = config_builder.build()?;
+    Ok(config)
+}
+
 async fn get_instance_config(
+    man: &InstanceManager<'_>,
     instance_local_config_path: &Path,
     java_component: &JavaComponent,
+    resolve_against_config: &config::Config,
 ) -> Result<config::Config, BackendError> {
-    let instance_local_config_name = instance_local_config_path
-        .to_str()
-        .expect("instance local config isn't a Path");
-
-    let launcher_config_name = launcher_config_name();
     let mut config_builder = config::Config::builder()
         .set_default(
             "java.path",
-            default_java_path(java_component)
-                .await?
-                .to_str()
-                .expect("java path isn't valid UTF-8"),
+            try_get_java_path_or_fetch(
+                man.requester(),
+                man.jre_manifest().await,
+                man.javas_path(),
+                java_component,
+            )
+            .await?
+            .to_str()
+            .expect("java path isn't valid UTF-8"),
         )
-        .expect("failed to set default java path");
-
-    if std::fs::exists(&launcher_config_name).is_ok_and(|r| r) {
-        config_builder = config_builder.add_source(config::File::with_name(&launcher_config_name));
-    }
+        .expect("failed to set default java path")
+        .add_source(resolve_against_config.clone());
 
     if instance_local_config_path.exists() {
-        config_builder =
-            config_builder.add_source(config::File::with_name(instance_local_config_name));
+        config_builder = config_builder.add_source(config::File::from(instance_local_config_path));
     }
 
     let config = config_builder.build().expect("failed to get config");
@@ -145,15 +194,18 @@ async fn get_instance_config(
 ///
 /// TODO: THIS SHOULD ONLY BE USED TO LOAD THE FUNCTION, THE RESULTS OF THIS COULD COME FROM DIFFERENT SOURCES,
 /// Implement a method to edit the configuration for an instance and also globally
-pub(crate) async fn read_instance_config(
+pub(crate) async fn read_instance_config_against(
+    man: &InstanceManager<'_>,
     instance_directory: &Path,
     java_version: &Option<JavaVersion>,
+    resolve_against_config: &config::Config,
 ) -> Result<InstanceConfig, BackendError> {
     let instance_local_config_path = instance_directory.join(CONFIG_FILE_NAME);
 
     // Temporary workaround
     // TODO: Change
-    let component = java_version.as_ref()
+    let component = &java_version
+        .as_ref()
         .unwrap_or(&JavaVersion {
             component: JavaComponent::JreLegacy,
             major_version: 8,
@@ -161,8 +213,10 @@ pub(crate) async fn read_instance_config(
         .component;
 
     get_instance_config(
+        man,
         &instance_local_config_path,
-        &component,
+        component,
+        resolve_against_config,
     )
     .await
     .map(|con| {

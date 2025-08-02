@@ -1,10 +1,10 @@
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::minecraft::loaders::forge::ForgeLoaderProfile;
 use sl_utils::{
-    dlog, elog, log,
-    {
-        errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
-    },
+    dlog, elog,
+    errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
+    log,
+    requester::Requester,
 };
 use std::{
     io::BufReader,
@@ -14,12 +14,13 @@ use std::{
 use tempfile::TempDir;
 use tokio::{fs, io::AsyncWriteExt};
 
-use crate::{LIBS_DIR, REQUESTER};
-
 pub const FORGE_JAVA_INSTALLER_SRC: &str =
     include_str!("../../../../assets/scripts/ForgeInstaller.java");
 
 struct ForgeInstaller<'a> {
+    requester: &'a Requester,
+    libs_dir: &'a Path,
+
     java_path: &'a Path,
     javac_path: &'a Path,
     output_loader_json_path: &'a Path,
@@ -38,6 +39,8 @@ struct ForgeInstaller<'a> {
 
 impl<'a> ForgeInstaller<'a> {
     async fn new(
+        requester: &'a Requester,
+        libs_dir: &'a Path,
         mc_version: &'a str,
         forge_version: &'a str,
         java_path: &'a Path,
@@ -81,6 +84,8 @@ impl<'a> ForgeInstaller<'a> {
         tokio::fs::write(&java_forge_installer, FORGE_JAVA_INSTALLER_SRC).await?;
 
         Ok(Self {
+            requester,
+            libs_dir,
             short_version,
             norm_version,
             cache_dir,
@@ -138,10 +143,7 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn try_downloading_from_urls(&self, urls: &[&str], path: &Path) -> Result<(), HttpError> {
         for url in urls {
-            let downloaded = REQUESTER
-                .builder()
-                .download_to(&url, &path)
-                .await;
+            let downloaded = self.requester.builder().download_to(&url, &path).await;
 
             match downloaded {
                 Ok(_) => {
@@ -262,9 +264,9 @@ impl<'a> ForgeInstaller<'a> {
 
         while let Some(entry) = forge_libraries.next_entry().await.unwrap() {
             let src_path = entry.path();
-            let dest_path = LIBS_DIR.join(entry.file_name());
+            let dest_path = self.libs_dir.join(entry.file_name());
 
-            sl_utils::fs::copy_dir_all(src_path, dest_path)?;
+            sl_utils::fs::async_copy_dir_all(src_path, dest_path).await?;
         }
 
         // copy the forge json to the instance directory...
@@ -294,6 +296,8 @@ impl<'a> ForgeInstaller<'a> {
 }
 
 pub async fn install_forge_loader(
+    requester: &Requester,
+    libs_dir: &Path,
     mc_version: &str,
     forge_version: &str,
     java_path: &Path,
@@ -301,6 +305,8 @@ pub async fn install_forge_loader(
     output_loader_json_path: &Path,
 ) -> Result<ForgeLoaderProfile, BackendError> {
     ForgeInstaller::new(
+        requester,
+        libs_dir,
         mc_version,
         forge_version,
         java_path,

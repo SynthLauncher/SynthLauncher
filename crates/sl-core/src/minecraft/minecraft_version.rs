@@ -1,20 +1,25 @@
+//! Represents a Minecraft version files that is then used by an instance or multiple instances.
+
 use crate::{
-    launcher::instances::instance_config::{read_instance_config, InstanceConfig}, loaders::{
+    config::InstanceConfig,
+    instances::InstanceManager,
+    loaders::{
         fabric::install_fabric_loader, forge::install_forge_loader,
         neoforge::install_neoforge_loader, quilt::install_quilt_loader, Loaders,
-    }, minecraft::version_manifest::download_version_json, VERSIONS_DIR
+    },
+    minecraft::version_manifest::download_version_json,
 };
 
-use super::instances::instance_metadata::ModLoader;
-use sl_meta::minecraft::loaders::vanilla::Client;
-use sl_utils::{dlog, errors::BackendError};
+use crate::instances::instance_metadata::ModLoader;
+use sl_meta::minecraft::{loaders::vanilla::Client, version_manifest::VersionManifest};
+use sl_utils::{dlog, errors::BackendError, requester::Requester};
 use std::{
     fs::OpenOptions,
     io::BufReader,
     path::{Path, PathBuf},
 };
 
-pub(super) struct MinecraftVersionID {
+pub struct MinecraftVersionID {
     loader: ModLoader,
     loader_version: String,
     vanilla_version: String,
@@ -30,8 +35,8 @@ impl MinecraftVersionID {
         }
     }
 
-    fn dir_path(&self) -> PathBuf {
-        VERSIONS_DIR.join(self.to_string())
+    fn dir_path(&self, versions_dir: &Path) -> PathBuf {
+        versions_dir.join(self.to_string())
     }
 
     fn client_jar_path(&self, dir_path: &Path) -> PathBuf {
@@ -70,24 +75,39 @@ impl MinecraftVersionID {
         Some(vanilla_json)
     }
 
-    async fn init_vanilla_json(&mut self, path: &Path) -> Result<Client, BackendError> {
+    async fn init_vanilla_json(
+        &mut self,
+        version_manifest: &VersionManifest,
+        requester: &Requester,
+        path: &Path,
+    ) -> Result<Client, BackendError> {
         match self.try_get_vanilla_json(path) {
             Some(results) => Ok(results),
-            None => self.reinit_vanilla_json(path).await,
+            None => {
+                self.reinit_vanilla_json(version_manifest, requester, path)
+                    .await
+            }
         }
     }
 
     async fn load_config(
         &self,
+        instance_manager: &InstanceManager<'_>,
         instance_dir: &Path,
         vanilla_client: &Client,
     ) -> Result<InstanceConfig, BackendError> {
-        read_instance_config(instance_dir, &vanilla_client.java_version)
-            .await
+        crate::config::read_instance_config_against(
+            instance_manager,
+            instance_dir,
+            &vanilla_client.java_version,
+            instance_manager.config(),
+        )
+        .await
     }
 
     async fn reinit_modloader(
         &self,
+        manager: &InstanceManager<'_>,
         modloader_json_path: &Path,
         java_path: &Path,
         javac_path: &Path,
@@ -98,6 +118,8 @@ impl MinecraftVersionID {
         match self.loader {
             ModLoader::Vanilla => Ok(Loaders::Vanilla),
             ModLoader::NeoForge => install_neoforge_loader(
+                manager.requester(),
+                manager.libs_root(),
                 &self.vanilla_version,
                 loader_version,
                 java_path,
@@ -117,6 +139,8 @@ impl MinecraftVersionID {
                     .map(|ok| Loaders::Quilt(ok))
             }
             ModLoader::Forge => install_forge_loader(
+                manager.requester(),
+                manager.libs_root(),
                 &self.vanilla_version,
                 loader_version,
                 java_path,
@@ -136,6 +160,7 @@ impl MinecraftVersionID {
 
     async fn init_mod_loader(
         &mut self,
+        manager: &InstanceManager<'_>,
         modloader_json_path: &Path,
         java_path: &Path,
         javac_path: &Path,
@@ -147,7 +172,7 @@ impl MinecraftVersionID {
         match self.try_get_modloader(modloader_json_path) {
             Some(results) => Ok(results),
             None => {
-                self.reinit_modloader(&modloader_json_path, java_path, javac_path)
+                self.reinit_modloader(manager, &modloader_json_path, java_path, javac_path)
                     .await
             }
         }
@@ -155,6 +180,8 @@ impl MinecraftVersionID {
 
     async fn reinit_vanilla_json(
         &mut self,
+        manifest: &VersionManifest,
+        requester: &Requester,
         vanilla_json_path: &Path,
     ) -> Result<Client, BackendError> {
         dlog!("Re-initializing the instance");
@@ -164,7 +191,13 @@ impl MinecraftVersionID {
             .read(true)
             .write(true)
             .open(vanilla_json_path)?;
-        download_version_json(&self.vanilla_version, vanilla_json_path).await?;
+        download_version_json(
+            manifest,
+            requester,
+            &self.vanilla_version,
+            vanilla_json_path,
+        )
+        .await?;
 
         let reader = std::io::BufReader::new(vanilla_json_file);
         let vanilla_json = serde_json::from_reader(reader)?;
@@ -179,23 +212,32 @@ impl MinecraftVersionID {
     /// All of the files downloaded and initialized by this operation are returned in-memory
     pub async fn load_init(
         mut self,
+        man: &InstanceManager<'_>,
         instance_dir: &Path,
     ) -> Result<(LoadedMinecraftVersion, InstanceConfig), BackendError> {
-        let dir_path = self.dir_path();
+        let dir_path = self.dir_path(man.versions_root());
         std::fs::create_dir_all(&dir_path)?;
 
         let client_jar_path = self.client_jar_path(&dir_path);
         let vanilla_json_path = self.vanilla_json_path(&dir_path);
         let modloader_json_path = self.modloader_json_path(&dir_path);
 
-        let vanilla_client = self.init_vanilla_json(&vanilla_json_path).await?;
-        let config = self.load_config(&instance_dir, &vanilla_client).await?;
+        let vanilla_client = self
+            .init_vanilla_json(
+                man.version_manifest().await,
+                man.requester(),
+                &vanilla_json_path,
+            )
+            .await?;
+        let config = self
+            .load_config(man, &instance_dir, &vanilla_client)
+            .await?;
 
         let java_path = config.java.java();
         let javac_path = &config.java.get_javac();
 
         let mod_loader = self
-            .init_mod_loader(&modloader_json_path, java_path, javac_path)
+            .init_mod_loader(man, &modloader_json_path, java_path, javac_path)
             .await?;
 
         let minecraft_client_json = mod_loader.concat(vanilla_client);
@@ -210,7 +252,7 @@ impl MinecraftVersionID {
     }
 }
 
-pub(super) struct LoadedMinecraftVersion {
+pub struct LoadedMinecraftVersion {
     client_jar_path: PathBuf,
     minecraft_client_json: Client,
 }

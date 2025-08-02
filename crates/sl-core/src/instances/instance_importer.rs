@@ -1,18 +1,28 @@
-use std::{fs::{File, OpenOptions}, io::{BufReader, BufWriter, Read, Seek, SeekFrom}, path::Path};
+use std::{
+    fs::{File, OpenOptions},
+    io::{BufReader, BufWriter, Read, Seek, SeekFrom},
+    path::Path,
+};
 
 use sl_utils::{errors::InstanceImportErr, zip::ZipExtractor};
 use tempfile::TempDir;
 
-use crate::{launcher::instances::{instance_metadata::InstanceMetadata, INSTANCE_FILE_NAME}, INSTANCES_DIR};
-
+use crate::instances::{instance_metadata::InstanceMetadata, InstanceManager, INSTANCE_FILE_NAME};
 
 /// Imports an Instance exported in a Zip format from a file at `file_path`
-pub fn import_instance_from_path(file_path: &Path) -> Result<(), InstanceImportErr> {
-    import_instance(BufReader::new(File::open(file_path)?))
+pub(crate) async fn import_instance_from_path(
+    man: &mut InstanceManager<'_>,
+    file_path: &Path,
+) -> Result<(), InstanceImportErr> {
+    import_instance(man, BufReader::new(File::open(file_path)?)).await
 }
 
+// TODO: make more async
 /// Imports an Instance exported in a Zip format, from a reader
-pub fn import_instance<R: Read + Seek>(reader: R) -> Result<(), InstanceImportErr> {
+pub(crate) async fn import_instance<R: Read + Seek>(
+    man: &mut InstanceManager<'_>,
+    reader: R,
+) -> Result<(), InstanceImportErr> {
     // ==================================
     // Extract & Cache the data to Import
     let cache_dir = TempDir::new()?;
@@ -35,7 +45,7 @@ pub fn import_instance<R: Read + Seek>(reader: R) -> Result<(), InstanceImportEr
 
     let cached_instance_file_reader = BufReader::new(&mut cached_instance_file);
     // =======================
-    // validate and modify the instance metadata until we get a valid metadata
+    // validate and modify the instance metadata until we get a valid metadata (name)
     let mut instance_metadata: InstanceMetadata =
         serde_json::from_reader(cached_instance_file_reader)
             .map_err(|_| InstanceImportErr::Corrupted)?;
@@ -43,12 +53,12 @@ pub fn import_instance<R: Read + Seek>(reader: R) -> Result<(), InstanceImportEr
     let orig_name = &instance_metadata.name;
 
     let mut name = instance_metadata.name.clone();
-    let mut instance_import_path = INSTANCES_DIR.join(&name);
+    let mut instance_import_path = man.instance_file(&name);
     let mut n = 1;
 
     while std::fs::exists(&instance_import_path).is_ok_and(|e| e) {
         name = format!("{orig_name} ({n})");
-        instance_import_path = INSTANCES_DIR.join(&name);
+        instance_import_path = man.instance_file(&name);
         n += 1;
     }
 
@@ -64,6 +74,6 @@ pub fn import_instance<R: Read + Seek>(reader: R) -> Result<(), InstanceImportEr
 
     // =======================
     // Copy the cached data to the destination
-    sl_utils::fs::copy_dir_all(cache_dir_path, instance_import_path)?;
+    sl_utils::fs::async_copy_dir_all(cache_dir_path, instance_import_path).await?;
     Ok(())
 }

@@ -1,11 +1,7 @@
 use crate::{
-    launcher::{
-        instances::{instance_config::InstanceConfig, instance_metadata::InstanceMetadata},
-        minecraft_version::LoadedMinecraftVersion,
-        player_accounts::PlayerAccounts,
-    },
-    minecraft::install_client,
-    ASSETS_DIR, LIBS_DIR,
+    config::InstanceConfig,
+    instances::{instance_metadata::InstanceMetadata, InstanceManager},
+    minecraft::{install_client, minecraft_version::LoadedMinecraftVersion},
 };
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::{minecraft::loaders::vanilla::Client, minecraft::version_manifest::VersionType};
@@ -20,21 +16,24 @@ use std::{
 use tokio::{io::AsyncRead, process::Command};
 
 // Represents a loaded instance of Minecraft with its configurations and things required for launching
-pub struct LoadedInstance {
+pub struct LoadedInstance<'a> {
+    manager: &'a InstanceManager<'a>,
     instance_metadata: InstanceMetadata,
     config: InstanceConfig,
     instance_path: PathBuf,
     loaded_version: LoadedMinecraftVersion,
 }
 
-impl LoadedInstance {
+impl<'a> LoadedInstance<'a> {
     pub(super) const fn new(
+        manager: &'a InstanceManager<'a>,
         instance_metadata: InstanceMetadata,
         instance_dir: PathBuf,
         loaded_version: LoadedMinecraftVersion,
         config: InstanceConfig,
     ) -> Self {
         Self {
+            manager,
             instance_metadata,
             config,
             instance_path: instance_dir,
@@ -73,9 +72,12 @@ impl LoadedInstance {
     async fn download_minecraft(&self) -> Result<(), BackendError> {
         // will automatically perform hash verification and only re install corrupted files
         install_client(
+            self.manager.requester(),
             &self.loaded_version.client_json(),
             &self.loaded_version.client_jar_path(),
             &self.instance_path,
+            self.manager.assets_root(),
+            self.manager.libs_root(),
         )
         .await?;
         Ok(())
@@ -83,6 +85,8 @@ impl LoadedInstance {
 
     /// Generates the classpath for executing minecraft for this instance
     fn generate_classpath(&self) -> String {
+        let libs_root = self.manager.libs_root();
+
         let client = self.client_json();
         let libs = client.libraries();
 
@@ -90,12 +94,15 @@ impl LoadedInstance {
         for lib in libs {
             if let Some(ref native) = lib.native_from_platform() {
                 let path = native.path.as_ref().unwrap();
-                let full_path = LIBS_DIR.join(path);
+
+                let full_path = libs_root.join(path);
                 classpath.push(format!("{}", full_path.display()));
             }
+
             if let Some(ref artifact) = lib.downloads.artifact {
                 let path = artifact.path.as_ref().unwrap();
-                let full_path = LIBS_DIR.join(path);
+
+                let full_path = libs_root.join(path);
                 classpath.push(format!("{}", full_path.display()));
             }
         }
@@ -154,11 +161,13 @@ impl LoadedInstance {
         let regex = regex::Regex::new(r"\$\{(\w+)\}").expect("Failed to compile regex!");
 
         self.generate_sound_arguments(&mut jvm_args);
+        let assets_root = self.manager.assets_root();
+        let libs_root = self.manager.libs_root();
 
         let fmt_arg = |arg: &str| {
             Some(match arg {
                 "game_directory" => game_dir.to_str()?,
-                "assets_root" | "game_assets" => ASSETS_DIR.to_str()?,
+                "assets_root" | "game_assets" => assets_root.to_str()?,
                 "assets_index_name" => &client.assets,
                 "version_name" => self.mc_version(),
                 "classpath" => classpath.as_str(),
@@ -168,7 +177,7 @@ impl LoadedInstance {
                 "auth_player_name" => &player_username,
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
                 "version_type" => "SL",
-                "library_directory" => LIBS_DIR.to_str()?,
+                "library_directory" => libs_root.to_str()?,
                 "classpath_separator" => MULTI_PATH_SEPARATOR,
                 "launcher_name" => "SynthLauncher",
                 "launcher_version" => "1.0",
@@ -202,7 +211,7 @@ impl LoadedInstance {
         // !!!DO NOT REMOVE!!!
         // jvm_args.push("-javaagent:/home/stierprogrammer/Desktop/synthlauncher/assets/scripts/authlib-injector-1.2.5.jar=http://0.0.0.0:8000/".to_string());
         // jvm_args.push("-Dauthlibinjector.noShowServerName".to_string());
-        
+
         jvm_args.push(client.main_class.clone());
         Ok([jvm_args, game_args].concat())
     }
@@ -223,8 +232,8 @@ impl LoadedInstance {
         // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
         self.download_minecraft().await?;
 
-        let profiles = PlayerAccounts::load()?;
-        let (name, data) = profiles.get_current();
+        let accounts = self.manager.try_load_accounts().await?;
+        let (name, data) = accounts.get_current();
 
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand};
-use sl_core::launcher::instances::instance_metadata::ModLoader;
+use sl_core::instances::instance_metadata::ModLoader;
 
 #[derive(Parser)]
 #[command(about, long_about = None)]
@@ -64,14 +64,14 @@ pub enum Commands {
 
     /// Lists all player instances
     ListInstances,
-    
+
     /// Lists all player accounts
     ListAccounts,
-    
+
     /// Displays the current account
     CurrentAccount,
-    
+
     /// Lists available Minecraft versions
     ListMinecraftVersions,
-    Test
+    Test,
 }

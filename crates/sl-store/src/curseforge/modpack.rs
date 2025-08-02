@@ -2,8 +2,7 @@ use std::{fs::File, io::BufReader, path::Path};
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
-use sl_core::REQUESTER;
-use sl_utils::errors::BackendError;
+use sl_utils::{errors::BackendError, requester::Requester};
 use zip::ZipArchive;
 
 use crate::curseforge::api::project::query_project_file;
@@ -67,14 +66,16 @@ pub async fn read_modpack_manifest(modpack_path: &Path) -> Result<ModpackManifes
 }
 
 async fn download_modpack_file(
+    requester: &Requester,
     mods_folder: &Path,
     modpack_file: &ModpackFile,
 ) -> Result<(), BackendError> {
-    let project_file = query_project_file(modpack_file.project_id, modpack_file.file_id).await?;
+    let project_file =
+        query_project_file(requester, modpack_file.project_id, modpack_file.file_id).await?;
     let path = mods_folder.join(project_file.data.file_name);
 
     if let Some(download_url) = project_file.data.download_url {
-        REQUESTER
+        requester
             .builder()
             .download_to(&download_url, &path)
             .await?;
@@ -84,21 +85,23 @@ async fn download_modpack_file(
 }
 
 pub async fn download_modpack_files(
+    requester: &Requester,
     instance_path: &Path,
     modpack_files: Vec<ModpackFile>,
 ) -> Result<(), BackendError> {
-    let mut tasks = FuturesUnordered::new();
+    let tasks = FuturesUnordered::new();
 
-    for modpack_file in modpack_files {
-        let instance_path = instance_path.to_path_buf();
-
-        tasks.push(tokio::spawn(async move {
-            download_modpack_file(&instance_path, &modpack_file).await
-        }));
+    for modpack_file in &modpack_files {
+        tasks.push(download_modpack_file(
+            requester,
+            instance_path,
+            modpack_file,
+        ));
     }
 
-    while let Some(result) = tasks.next().await {
-        result??;
+    let futures = tasks.collect::<Vec<_>>().await;
+    for result in futures {
+        result?;
     }
 
     Ok(())

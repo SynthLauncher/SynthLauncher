@@ -1,13 +1,9 @@
-use std::{
-    fmt::Write,
-    path::Path, sync::Arc,
-};
+use std::{fmt::Write, path::Path, sync::Arc};
 
 use dashmap::DashMap;
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::{Deserialize, Serialize};
-use sl_core::REQUESTER;
-use sl_utils::errors::BackendError;
+use sl_utils::{errors::BackendError, requester::Requester};
 
 use crate::modrinth::api::ProjectType;
 
@@ -15,7 +11,7 @@ use crate::modrinth::api::ProjectType;
 pub struct ModrinthProjectDependency {
     pub project_id: String,
     pub dependency_type: String, // TODO: Maybe make this an enum
-    pub version_id: Option<String>
+    pub version_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -40,7 +36,7 @@ type VersionId = String;
 
 #[derive(Debug, Clone)]
 pub struct ResolutionState {
-    pub resolved: Arc<DashMap<ProjectId, VersionId>>
+    pub resolved: Arc<DashMap<ProjectId, VersionId>>,
 }
 
 impl ResolutionState {
@@ -52,17 +48,20 @@ impl ResolutionState {
 }
 
 async fn pick_latest_version_id(
+    requester: &Requester,
     project_id: &str,
     game_version: &str,
     loader: &str,
 ) -> Result<String, BackendError> {
-    let versions = query_project_versions(project_id, Some(game_version), Some(loader)).await?;
+    let versions =
+        query_project_versions(requester, project_id, Some(game_version), Some(loader)).await?;
 
     let latest_id = versions[0].id.clone();
     Ok(latest_id)
 }
 
 pub async fn resolve_mod(
+    requester: &Requester,
     state: &ResolutionState,
     project_id: String,
     version_id: String,
@@ -73,9 +72,11 @@ pub async fn resolve_mod(
         return Ok(());
     }
 
-    state.resolved.insert(project_id.clone(), version_id.clone());
+    state
+        .resolved
+        .insert(project_id.clone(), version_id.clone());
 
-    let version_info = query_project_version(&project_id, &version_id).await?;
+    let version_info = query_project_version(requester, &project_id, &version_id).await?;
 
     let mut futures = FuturesUnordered::new();
 
@@ -87,10 +88,11 @@ pub async fn resolve_mod(
         let dep_vid = if let Some(vid) = &dep.version_id {
             vid.clone()
         } else {
-            pick_latest_version_id(&dep.project_id, game_version, loader).await?
+            pick_latest_version_id(requester, &dep.project_id, game_version, loader).await?
         };
 
         futures.push(resolve_mod(
+            requester,
             state,
             dep.project_id.clone(),
             dep_vid,
@@ -107,9 +109,12 @@ pub async fn resolve_mod(
 }
 
 #[must_use]
-pub async fn query_project(slug: &str) -> Result<ModrinthProject, BackendError> {
+pub async fn query_project(
+    requester: &Requester,
+    slug: &str,
+) -> Result<ModrinthProject, BackendError> {
     let url = format!("https://api.modrinth.com/v2/project/{}", slug);
-    let json = REQUESTER.get_json(&url).await?;
+    let json = requester.get_json(&url).await?;
     Ok(json)
 }
 
@@ -144,6 +149,7 @@ pub struct ModrinthProjectVersion {
 
 #[must_use]
 pub async fn query_project_versions(
+    requester: &Requester,
     slug: &str,
     game_version: Option<&str>,
     loader: Option<&str>,
@@ -162,12 +168,13 @@ pub async fn query_project_versions(
 
     _ = write!(url, "{}", query_params.join("&"));
 
-    let json = REQUESTER.get_json(&url).await?;
+    let json = requester.get_json(&url).await?;
     Ok(json)
 }
 
 #[must_use]
 pub async fn query_project_version(
+    requester: &Requester,
     slug: &str,
     version: &str,
 ) -> Result<ModrinthProjectVersion, BackendError> {
@@ -175,16 +182,16 @@ pub async fn query_project_version(
         "https://api.modrinth.com/v2/project/{}/version/{}",
         slug, version
     );
-    
-    let json = REQUESTER.get_json(&url).await?;
+    let json = requester.get_json(&url).await?;
     Ok(json)
 }
 
 pub async fn download_project_file(
+    requester: &Requester,
     project_file: &ModrinthProjectFile,
     dest: &Path,
 ) -> Result<(), BackendError> {
-    REQUESTER
+    requester
         .builder()
         .download_to(&project_file.url, &dest.join(&project_file.filename))
         .await?;
@@ -202,8 +209,8 @@ mod tests {
         let state = ResolutionState::new();
 
         let project_id = "modmenu".to_string();
-
-        let latest_versions = query_project_versions(&project_id, None, None)
+        let requester = Requester::new();
+        let latest_versions = query_project_versions(&requester, &project_id, None, None)
             .await
             .expect("Failed to fetch project versions");
 
@@ -218,6 +225,7 @@ mod tests {
         println!("{:?}", latest_version.dependencies);
 
         let result = resolve_mod(
+            &requester,
             &state.clone(),
             project_id.clone(),
             latest_version.id.clone(),

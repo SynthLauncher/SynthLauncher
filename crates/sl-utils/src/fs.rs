@@ -18,3 +18,51 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Re
     }
     Ok(())
 }
+
+async fn partial_async_copy_dir_all(
+    src: impl AsRef<Path>,
+    dst: impl AsRef<Path>,
+) -> std::io::Result<()> {
+    tokio::fs::create_dir_all(&dst).await?;
+    let mut entries = tokio::fs::read_dir(src).await?;
+
+    while let Some(entry) = entries.next_entry().await? {
+        let ty = entry.file_type().await?;
+
+        let src_path = entry.path();
+        let dest_path = dst.as_ref().join(entry.file_name());
+
+        if ty.is_dir() {
+            // FIXME: not async, this is the best I could come up with for now, because async functions cannot be called recursively
+            copy_dir_all(src_path, dest_path)?
+        } else {
+            tokio::fs::copy(src_path, dest_path).await?;
+        }
+    }
+    Ok(())
+}
+
+/// Similar to [`copy_dir_all`], but async
+pub async fn async_copy_dir_all(
+    src: impl AsRef<Path>,
+    dst: impl AsRef<Path>,
+) -> std::io::Result<()> {
+    tokio::fs::create_dir_all(&dst).await?;
+    let mut entries = tokio::fs::read_dir(src).await?;
+
+    while let Some(entry) = entries.next_entry().await? {
+        let ty = entry.file_type().await?;
+
+        let src_path = entry.path();
+        let dest_path = dst.as_ref().join(entry.file_name());
+
+        if ty.is_dir() {
+            // FIXME: not async, this is the best I could come up with for now, because async functions cannot be called recursively
+            // js 2 levels of async
+            partial_async_copy_dir_all(src_path, dest_path).await?
+        } else {
+            tokio::fs::copy(src_path, dest_path).await?;
+        }
+    }
+    Ok(())
+}

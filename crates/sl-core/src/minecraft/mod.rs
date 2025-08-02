@@ -9,12 +9,15 @@ use futures::{stream::FuturesUnordered, StreamExt};
 
 use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
 use sl_utils::{
-    elog, errors::{BackendError, HttpError}, log, zip::ZipExtractor
+    elog,
+    errors::{BackendError, HttpError},
+    log,
+    requester::Requester,
+    zip::ZipExtractor,
 };
 
-use crate::{ASSETS_DIR, LIBS_DIR, REQUESTER};
-
-pub mod version_manifest;
+pub(crate) mod minecraft_version;
+pub(crate) mod version_manifest;
 
 // TODO: Implement verify_data function that is fast enough, this one is really slow so i removed it and replaced it with verifying size
 // #[inline(always)]
@@ -34,8 +37,13 @@ pub mod version_manifest;
 //     hash.as_slice() == sha1.as_bytes()
 // }
 
-#[inline(always)]
-async fn download_and_verify(download: &Download, path: &Path) -> Result<(), HttpError> {
+/// Downloads and verifies the integrity of a given client Download entry
+#[inline]
+async fn download_and_verify(
+    requester: &Requester,
+    download: &Download,
+    path: &Path,
+) -> Result<(), HttpError> {
     if let Ok(f) = tokio::fs::File::open(path).await {
         let valid = match download.size {
             Some(size) => {
@@ -55,7 +63,7 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Htt
         tokio::fs::create_dir_all(parent).await?;
     }
 
-    REQUESTER
+    requester
         .builder()
         .download_to(&download.url, &path)
         .await?;
@@ -63,22 +71,26 @@ async fn download_and_verify(download: &Download, path: &Path) -> Result<(), Htt
     Ok(())
 }
 
-async fn download_and_read_file(download: &Download, path: &Path) -> Result<Bytes, HttpError> {
+async fn download_and_read_file(
+    requester: &Requester,
+    download: &Download,
+    path: &Path,
+) -> Result<Bytes, HttpError> {
     let full_path = if let Some(ref child) = download.path {
         &path.join(child)
     } else {
         path
     };
 
-    download_and_verify(download, full_path).await?;
-    Ok(Bytes::from(
-        tokio::fs::read(full_path)
-            .await
-            .expect("get_download_in: failed to read downloaded file"),
-    ))
+    download_and_verify(requester, download, full_path).await?;
+    Ok(Bytes::from(tokio::fs::read(full_path).await?))
 }
 
-async fn download_to(download: &Download, path: &Path) -> Result<(), HttpError> {
+async fn download_to(
+    requester: &Requester,
+    download: &Download,
+    path: &Path,
+) -> Result<(), HttpError> {
     if download.url.is_empty() {
         return Ok(());
     }
@@ -89,11 +101,16 @@ async fn download_to(download: &Download, path: &Path) -> Result<(), HttpError> 
         path
     };
 
-    download_and_verify(download, full_path).await
+    download_and_verify(requester, download, full_path).await?;
+    Ok(())
 }
 
 #[inline(always)]
-async fn download_futures<T, F, R, I>(to_download: I, download_max: usize, download: F) -> Vec<R>
+async fn download_futures<T, F, R, I>(
+    mut to_download: I,
+    download_max: usize,
+    download: F,
+) -> Vec<R>
 where
     T: Send,
     I: Send,
@@ -106,38 +123,48 @@ where
     let size_hint = size_1.unwrap_or(size_0);
 
     let mut outputs = Vec::with_capacity(size_hint.min(10));
-    let mut futures = FuturesUnordered::new();
+    let to_download_ref = to_download.by_ref();
 
-    for item in to_download {
-        futures.push(download(item));
-        if futures.len() == download_max {
-            let next = futures.next().await.unwrap();
-            outputs.push(next);
+    loop {
+        let futures = FuturesUnordered::new();
+
+        for item in to_download_ref.take(download_max) {
+            futures.push(download(item));
         }
-    }
 
-    while let Some(future) = futures.next().await {
-        outputs.push(future);
-    }
+        let collected_outputs = futures.collect::<Vec<_>>().await;
 
-    outputs
+        if collected_outputs.is_empty() {
+            break outputs;
+        }
+
+        outputs.extend(collected_outputs);
+    }
 }
 
 // This could be made faster maybe
-async fn install_assets(client: &Client) -> Result<(), BackendError> {
+async fn install_assets(
+    requester: &Requester,
+    assets_root_path: &Path,
+    client: &Client,
+) -> Result<(), BackendError> {
     log!("Downloading assets!");
     let assets = &client.assets;
-    let indexes_dir = ASSETS_DIR.join("indexes");
+
+    let indexes_dir = assets_root_path.join("indexes");
+    let objects_dir = assets_root_path.join("objects");
+
     let indexes_path = indexes_dir.join(format!("{}.json", assets));
 
-    let download = download_and_read_file(&client.asset_index, &indexes_path).await?;
+    let download = download_and_read_file(requester, &client.asset_index, &indexes_path).await?;
 
     let index: AssetIndex = serde_json::from_slice(&download)?;
     let objects = index.objects;
 
     let download_object = async |object: AssetObject| -> Result<(), HttpError> {
         let dir_name = &object.hash[0..2];
-        let dir = ASSETS_DIR.join("objects").join(dir_name);
+        let dir = objects_dir.join(dir_name);
+
         let path = dir.join(&object.hash);
 
         if path.exists() {
@@ -146,12 +173,15 @@ async fn install_assets(client: &Client) -> Result<(), BackendError> {
 
         tokio::fs::create_dir_all(&dir).await?;
 
-        REQUESTER
+        requester
             .builder()
-            .download_to(&format!(
-                "https://resources.download.minecraft.net/{dir_name}/{}",
-                object.hash
-            ), &path)
+            .download_to(
+                &format!(
+                    "https://resources.download.minecraft.net/{dir_name}/{}",
+                    object.hash
+                ),
+                &path,
+            )
             .await?;
 
         Ok(())
@@ -171,18 +201,23 @@ async fn install_assets(client: &Client) -> Result<(), BackendError> {
     Ok(())
 }
 
-async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> {
+async fn install_libs(
+    requester: &Requester,
+    client: &Client,
+    libs_dir: &Path,
+    path: &Path,
+) -> Result<(), BackendError> {
     log!("Downloading libraries...");
     let path = path.to_path_buf();
 
     let download_lib = async move |lib: &Library| -> Result<(), BackendError> {
         if let Some(ref artifact) = lib.downloads.artifact {
-            download_to(artifact, &LIBS_DIR).await?;
+            download_to(requester, artifact, libs_dir).await?;
         }
 
         if let Some(native) = lib.native_from_platform() {
             // FIXME: this is so terrible just download and return a reader at least
-            let bytes = download_and_read_file(native, &LIBS_DIR).await?;
+            let bytes = download_and_read_file(requester, native, libs_dir).await?;
 
             if let Some(ref extract_rules) = lib.extract {
                 let natives_dir = path.join(".natives");
@@ -212,18 +247,21 @@ async fn install_libs(client: &Client, path: &Path) -> Result<(), BackendError> 
 }
 
 pub(crate) async fn install_client(
+    requester: &Requester,
     client: &Client,
     client_jar_path: &Path,
     instance_path: &Path,
+    assets_root_path: &Path,
+    libs_root_path: &Path,
 ) -> Result<(), BackendError> {
     let start = Instant::now();
-    install_assets(client).await?;
+    install_assets(requester, assets_root_path, client).await?;
     println!("Assets download time: {:?}", start.elapsed());
 
-    install_libs(client, instance_path).await?;
+    install_libs(requester, client, libs_root_path, instance_path).await?;
 
     log!("Downloading {}", client_jar_path.display());
-    download_to(&client.downloads.client, &client_jar_path).await?;
+    download_to(requester, &client.downloads.client, &client_jar_path).await?;
     log!("Done downloading {}", client_jar_path.display());
 
     Ok(())

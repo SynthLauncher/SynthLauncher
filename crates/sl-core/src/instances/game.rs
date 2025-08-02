@@ -9,7 +9,7 @@ use std::{
 };
 use zip::ZipArchive;
 
-use crate::{launcher::instances::instance_metadata::ModLoader, INSTANCES_DIR};
+use crate::instances::instance_metadata::ModLoader;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModMetadata {
@@ -109,7 +109,7 @@ pub struct MinecraftWorldMetadata {
     pub icon: String,
 }
 
-pub fn get_minecraft_world_metadata(
+pub(crate) fn get_minecraft_world_metadata(
     world_folder_path: &Path,
 ) -> Result<MinecraftWorldMetadata, BackendError> {
     let icon_path = world_folder_path.join("icon.png");
@@ -135,8 +135,8 @@ pub struct GameInfo {
     pub mods: Vec<Mod>,
 }
 
-pub fn get_game_info(
-    instance_name: &str,
+pub(crate) fn get_game_info(
+    instance_path: &Path,
     instance_mod_loader: &ModLoader,
 ) -> Result<GameInfo, BackendError> {
     /// For each entry in `dir_path`, retrieve it's path, filter it by `filter_f` and get metadata using `get_f(path)`.
@@ -169,7 +169,6 @@ pub fn get_game_info(
         Ok(results_iter.collect())
     }
 
-    let instance_path = &*INSTANCES_DIR.join(instance_name);
     let saves_path = instance_path.join("saves");
 
     let worlds = if saves_path.exists() {

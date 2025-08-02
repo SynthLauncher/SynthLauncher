@@ -2,16 +2,7 @@ use std::path::Path;
 
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::{
-    launcher::{
-        init_launcher_dir,
-        instances::{
-            self, instance_importer::import_instance_from_path, instance_metadata::InstanceMetadata,
-        },
-        player_accounts::{add_account, set_current_account, PlayerAccounts},
-    },
-    VERSION_MANIFEST,
-};
+use sl_core::environment::LauncherEnv;
 use sl_player::PlayerData;
 use sl_store::modrinth::install_mod_with_deps;
 use sl_utils::{dlog, elog, errors::BackendError, log};
@@ -20,8 +11,7 @@ use tokio::io::{self};
 mod cli;
 
 async fn run_cli() -> Result<(), BackendError> {
-    init_launcher_dir().await?;
-
+    let env = LauncherEnv::new_at_default();
     let cli = Cli::parse();
 
     match cli.command {
@@ -32,28 +22,40 @@ async fn run_cli() -> Result<(), BackendError> {
         } => {
             let loader = loader_info.loader.unwrap_or_default();
             let loader_version = loader_info.loader_version;
-
-            let _ = InstanceMetadata::create(instance_name, &version, loader, loader_version, None)
-                .await?;
+            let _ = env.instances().create_instance(
+                instance_name,
+                &version,
+                loader,
+                loader_version,
+                None,
+            );
         }
         Commands::Launch { instance_name } => {
-            let (instance, _) = instances::get_existing(&instance_name)?;
+            let instances = env.instances();
+            let (instance, _) = instances.get_existing(&instance_name)?;
+
             dlog!("Instance found!");
-            let loaded_instance = instance.load_init().await?;
+            let loaded_instance = instance.load_init(&instances).await?;
             let (mut child, mut reader) = loaded_instance.execute().await?;
             let mut stdout = io::stdout();
-            tokio::io::copy(&mut reader, &mut stdout).await?;
+            loop {
+                tokio::io::copy(&mut reader, &mut stdout).await?;
 
-            if let Some(status) = child.try_wait()? {
-                if status.success() {
-                    dlog!("Instance exited successfully");
-                } else {
-                    dlog!("Instance exited with error code {:?}", status.code());
+                if let Some(status) = child.try_wait()? {
+                    if status.success() {
+                        dlog!("Instance exited successfully");
+                    } else {
+                        dlog!("Instance exited with error code {:?}", status.code());
+                    }
+
+                    break;
                 }
             }
         }
         Commands::AddOfflineAccount { name } => {
-            add_account(PlayerData::offline(&name), name)?;
+            let mut accounts = env.accounts();
+            let data = PlayerData::offline(&name);
+            accounts.add_account(name, data).await?;
         }
         // FIXME
         Commands::AddPremiumAccount => {
@@ -72,15 +74,20 @@ async fn run_cli() -> Result<(), BackendError> {
             // profiles.add(profile)?;
         }
         Commands::SetCurrentAccount { name } => {
-            set_current_account(name)?;
+            let mut accounts = env.accounts();
+            accounts.set_current_account(name).await?;
         }
         Commands::ListInstances => {
-            for (i, instance) in instances::get_all_instances()?.iter().enumerate() {
+            let instances = env.instances();
+            for (i, instance) in instances.get_all_instances().await?.iter().enumerate() {
                 println!("[{}] {:#?}", i, instance);
             }
         }
         Commands::ListAccounts => {
-            for (i, profile) in PlayerAccounts::load()?.accounts.iter() {
+            let accounts = env.accounts();
+            let accounts = accounts.load().await?;
+
+            for (i, profile) in accounts.accounts.iter() {
                 println!(
                     "[{}]: Access Token: {}; ID: {}",
                     i, profile.access_token, profile.id
@@ -88,11 +95,16 @@ async fn run_cli() -> Result<(), BackendError> {
             }
         }
         Commands::CurrentAccount => {
-            let accounts = PlayerAccounts::load()?;
-            log!("Current Account: {}", accounts.get_current().0);
+            let accounts = env.accounts();
+            let accounts = accounts.load().await?;
+
+            let (current_account, _) = accounts.get_current();
+            log!("Current Account: {}", current_account);
         }
         Commands::ListMinecraftVersions => {
-            for version in VERSION_MANIFEST.versions() {
+            let manifest = env.version_manifest().await;
+
+            for version in manifest.versions() {
                 println!("{}", version.id);
             }
         }
@@ -100,13 +112,15 @@ async fn run_cli() -> Result<(), BackendError> {
             instance_name,
             output,
         } => {
-            let (instance, _) = instances::get_existing(&instance_name)?;
-            let exporter = instance.exporter_to_path(&output)?;
+            let instances = env.instances();
+            let (instance, _) = instances.get_existing(&instance_name)?;
+            let exporter = instance.exporter_to_path(&instances, &output)?;
             exporter.export()?;
         }
         Commands::Import { path } => {
-            import_instance_from_path(&path)?;
-        },
+            let mut instances = env.instances();
+            instances.import_instance_from_path(&path).await?
+        }
         Commands::Test => {
             // let modpack_path = Path::new("./");
             // unzip_modpack(Path::new("/home/stierprogrammer/Desktop/synthlauncher/All the Mods 10-4.5.zip"), modpack_path).await?;
@@ -114,8 +128,8 @@ async fn run_cli() -> Result<(), BackendError> {
 
             // let modpack_files = manifest.files;
             // download_modpack_files(Path::new("./m"), modpack_files).await?;
-        
-            install_mod_with_deps("modmenu", "JY1tNj8H", Path::new("./")).await?;
+
+            install_mod_with_deps(env.requester(), "modmenu", "JY1tNj8H", Path::new("./")).await?;
         }
     }
 

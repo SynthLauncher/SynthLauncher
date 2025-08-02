@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sl_core::REQUESTER;
-use sl_utils::errors::BackendError;
+use sl_utils::{errors::BackendError, requester::Requester};
 
 use crate::{
     curseforge::api::{project::CurseforgeProject, MINECRAFT_GAME_ID},
@@ -21,6 +20,7 @@ pub struct CurseforgeSearchResponse {
 }
 
 pub async fn query_curseforge_search(
+    requester: &Requester,
     query: &str,
     class_id: u32,
     offset: u32,
@@ -29,7 +29,7 @@ pub async fn query_curseforge_search(
         "https://api.curseforge.com/v1/mods/search?gameId={MINECRAFT_GAME_ID}&classId={class_id}&searchFilter={query}&pageSize={PAGE_SIZE}&index={offset}&sortField=2&sortOrder=\"desc\"",
     );
 
-    let res: CurseforgeSearchResponse = REQUESTER.get_json(&url).await?;
+    let res: CurseforgeSearchResponse = requester.get_json(&url).await?;
 
     Ok(res)
 }
