@@ -241,11 +241,7 @@ impl<'a> InstanceManager<'a> {
             ));
         }
 
-        let new_instance_file_path = self
-            .instance_dir(&instance.name)
-            .join(&instance.name)
-            .join(INSTANCE_FILE_NAME);
-
+        let new_instance_file_path = self.instance_file(&instance.name);
         if let Some(parent) = new_instance_file_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
