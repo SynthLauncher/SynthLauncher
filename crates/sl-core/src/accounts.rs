@@ -13,18 +13,22 @@ impl<'a> AccountsManager<'a> {
     pub(crate) fn new(accounts_path: &'a Path) -> Self {
         AccountsManager { accounts_path }
     }
+
     /// Load player accounts that belongs to a given manager
     pub async fn load(&self) -> io::Result<PlayerAccounts> {
         PlayerAccounts::load_from(self.accounts_path).await
     }
+
     /// Add a new player account to the manager under a given name
     pub async fn add_account(&mut self, name: String, data: PlayerData) -> io::Result<()> {
         add_account(self.accounts_path, name, data).await
     }
+
     /// Remove a player account from the manager under a given name
     pub async fn remove_account(&mut self, name: &str) -> io::Result<()> {
         remove_account(self.accounts_path, name).await
     }
+
     /// Set the current player account in the manager under a given name
     pub async fn set_current_account(&mut self, name: String) -> io::Result<()> {
         set_current_account(self.accounts_path, name).await

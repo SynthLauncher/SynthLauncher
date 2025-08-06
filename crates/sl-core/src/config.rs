@@ -100,37 +100,6 @@ impl JavaConfig {
     }
 }
 
-/// Returns the default launcher directory path for the current platform.
-fn default_launcher_dir() -> PathBuf {
-    use std::env;
-
-    #[cfg(target_os = "windows")]
-    {
-        env::var("APPDATA")
-            .map(|appdata| PathBuf::from(appdata).join("SynthLauncher"))
-            .expect("%APPDATA% not found")
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        env::var("HOME")
-            .map(|home| {
-                PathBuf::from(home)
-                    .join("Library")
-                    .join("Application Support")
-                    .join("SynthLauncher")
-            })
-            .expect("$HOME not found")
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        env::var("HOME")
-            .map(|home| PathBuf::from(home).join(".synthlauncher"))
-            .expect("$HOME not found")
-    }
-}
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct InstanceConfig {
     #[serde(default)]

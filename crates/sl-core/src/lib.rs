@@ -16,7 +16,7 @@ pub const OS: OsName = if cfg!(target_os = "windows") {
 } else if cfg!(target_os = "macos") {
     OsName::Osx
 } else {
-    panic!("Unsupported OS")
+    panic!("Unsupported OS!")
 };
 
 /// The architecture this is compiled to
@@ -27,7 +27,7 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
 } else if cfg!(target_arch = "aarch64") {
     Arch::ARM64
 } else {
-    panic!("Unsupported Arch")
+    panic!("Unsupported Arch!")
 };
 
 // lazy_static! {

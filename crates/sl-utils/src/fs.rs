@@ -33,8 +33,7 @@ async fn partial_async_copy_dir_all(
         let dest_path = dst.as_ref().join(entry.file_name());
 
         if ty.is_dir() {
-            // FIXME: not async, this is the best I could come up with for now, because async functions cannot be called recursively
-            copy_dir_all(src_path, dest_path)?
+            Box::pin(partial_async_copy_dir_all(src_path, dest_path)).await?
         } else {
             tokio::fs::copy(src_path, dest_path).await?;
         }
@@ -57,8 +56,6 @@ pub async fn async_copy_dir_all(
         let dest_path = dst.as_ref().join(entry.file_name());
 
         if ty.is_dir() {
-            // FIXME: not async, this is the best I could come up with for now, because async functions cannot be called recursively
-            // js 2 levels of async
             partial_async_copy_dir_all(src_path, dest_path).await?
         } else {
             tokio::fs::copy(src_path, dest_path).await?;

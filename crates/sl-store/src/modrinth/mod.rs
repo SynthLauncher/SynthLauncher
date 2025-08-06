@@ -2,7 +2,7 @@ use std::{path::Path, str::FromStr};
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use sl_core::instances::{
-    instance_metadata::{InstanceMetadata, ModLoader},
+    instance_metadata::ModLoader,
     InstanceManager,
 };
 use sl_utils::{errors::BackendError, requester::Requester};

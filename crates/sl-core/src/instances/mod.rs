@@ -17,9 +17,7 @@ use sl_utils::{
 
 use crate::instances::instance_metadata::InstanceMetadata;
 
-pub mod game;
 pub mod instance_exporter;
-pub mod instance_game;
 pub mod instance_importer;
 pub mod instance_metadata;
 pub mod loaded_instance;
