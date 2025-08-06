@@ -17,7 +17,12 @@ use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::{
     launcher::{
-        instances::{self, instance_exporter::InstanceExporter, loaded_instance::LoadedInstance},
+        instances::{
+            self,
+            content_caching::{ModList, MOD_LIST_FILE_NAME},
+            instance_exporter::InstanceExporter,
+            loaded_instance::LoadedInstance,
+        },
         minecraft_version::MinecraftVersionID,
     },
     INSTANCES_DIR, REQUESTER, VERSION_MANIFEST,
@@ -244,5 +249,12 @@ impl InstanceMetadata {
             .open(path)?;
 
         Ok(Self::exporter(self, export_to_file))
+    }
+
+    pub async fn get_modlist(&self) -> std::io::Result<ModList> {
+        let path = &*INSTANCES_DIR.join(&self.name).join(MOD_LIST_FILE_NAME);
+        let bytes = tokio::fs::read(path).await?;
+        let modlist = serde_json::from_slice(&bytes)?;
+        Ok(modlist)
     }
 }

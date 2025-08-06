@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["crates/sl-frontend/src-tauri", "crates/sl-meta", "crates/sl-utils", "crates/sl-core", "crates/sl-store", "crates/sl-java-manager", "crates/sl-player"]
+members = ["crates/sl-meta", "crates/sl-utils", "crates/sl-core", "crates/sl-store", "crates/sl-java-manager", "crates/sl-player"]
 
 [dependencies]
 sl-meta = { path = "crates/sl-meta" }
@@ -17,4 +17,3 @@ tokio = { version = "1.46.1", features = ["rt-multi-thread", "io-std"]}
 clap = { version = "4.5.39", features = ["derive"] } 
 serde = "1.0.219"
 serde_json = "1.0.140"
-lazy_static = "1.5.0"

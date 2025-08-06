@@ -13,13 +13,12 @@ use crate::{
     launcher::instances::instance_metadata::InstanceMetadata, INSTANCES_DIR, VERSION_MANIFEST,
 };
 
-pub mod game;
 pub mod instance_config;
 pub mod instance_exporter;
 pub mod instance_importer;
 pub mod instance_metadata;
 pub mod loaded_instance;
-pub mod instance_game;
+pub mod content_caching;
 
 const INSTANCE_FILE_NAME: &str = "instance.json";
 

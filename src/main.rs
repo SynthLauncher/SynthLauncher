@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::{
@@ -13,7 +11,7 @@ use sl_core::{
     VERSION_MANIFEST,
 };
 use sl_player::PlayerData;
-use sl_store::modrinth::install_mod_with_deps;
+use sl_store::{curseforge::download_curseforge_modpack};
 use sl_utils::{dlog, elog, errors::BackendError, log};
 use tokio::io::{self};
 
@@ -115,7 +113,9 @@ async fn run_cli() -> Result<(), BackendError> {
             // let modpack_files = manifest.files;
             // download_modpack_files(Path::new("./m"), modpack_files).await?;
         
-            install_mod_with_deps("modmenu", "JY1tNj8H", Path::new("./")).await?;
+            // install_mod_with_deps("modmenu", "JY1tNj8H", Path::new("./")).await?;
+            // download_modpack("fabulously-optimized", "YEEXo8mO").await?;
+            download_curseforge_modpack(374528, 2925344).await?;
         }
     }
 

@@ -1,30 +1,36 @@
-use std::{fs::File, io::BufReader, path::Path};
+use std::{fs::File, io::BufReader, path::Path, str::FromStr};
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
-use sl_core::REQUESTER;
+use sl_core::{launcher::instances::instance_metadata::ModLoader, REQUESTER};
 use sl_utils::errors::BackendError;
 use zip::ZipArchive;
 
-use crate::curseforge::api::project::query_project_file;
+use crate::curseforge::api::project::get_curseforge_project_file;
 
 const MODPACK_MANIFEST_NAME: &str = "manifest.json";
 
 #[derive(Debug, Deserialize)]
-pub struct ModLoader {
+pub struct CurseforgeModLoader {
     pub id: String,
     pub primary: bool,
+}
+
+impl CurseforgeModLoader {
+    pub fn extract_mod_loader(&self) -> (ModLoader, &str) {
+        let (mod_loader, version) = self.id.rsplit_once("-").expect("ModLoader id must have a hyphen!");
+        (ModLoader::from_str(mod_loader).unwrap(), version)
+    }
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Minecraft {
     pub version: String,
-    pub mod_loaders: Vec<ModLoader>,
+    pub mod_loaders: Vec<CurseforgeModLoader>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct ModpackFile {
     #[serde(rename = "projectID")]
     pub project_id: u32,
@@ -62,23 +68,22 @@ pub async fn unzip_modpack(modpack: &Path, output_dir: &Path) -> Result<(), Back
 }
 
 pub async fn read_modpack_manifest(modpack_path: &Path) -> Result<ModpackManifest, BackendError> {
-    let json = tokio::fs::read_to_string(modpack_path.join(MODPACK_MANIFEST_NAME)).await?;
-    Ok(serde_json::from_str(&json)?)
+    let bytes = tokio::fs::read(modpack_path.join(MODPACK_MANIFEST_NAME)).await?;
+    Ok(serde_json::from_slice(&bytes)?)
 }
 
 async fn download_modpack_file(
     mods_folder: &Path,
     modpack_file: &ModpackFile,
 ) -> Result<(), BackendError> {
-    let project_file = query_project_file(modpack_file.project_id, modpack_file.file_id).await?;
-    let path = mods_folder.join(project_file.data.file_name);
+    let project_file =
+        get_curseforge_project_file(modpack_file.project_id, modpack_file.file_id).await?;
+    let mod_path = mods_folder.join(project_file.data.file_name);
 
-    if let Some(download_url) = project_file.data.download_url {
-        REQUESTER
-            .builder()
-            .download_to(&download_url, &path)
-            .await?;
-    }
+    REQUESTER
+        .builder()
+        .download_to(&project_file.data.download_url, &mod_path)
+        .await?;
 
     Ok(())
 }
@@ -87,18 +92,15 @@ pub async fn download_modpack_files(
     instance_path: &Path,
     modpack_files: Vec<ModpackFile>,
 ) -> Result<(), BackendError> {
-    let mut tasks = FuturesUnordered::new();
+    let tasks = FuturesUnordered::new();
 
-    for modpack_file in modpack_files {
-        let instance_path = instance_path.to_path_buf();
-
-        tasks.push(tokio::spawn(async move {
-            download_modpack_file(&instance_path, &modpack_file).await
-        }));
+    for modpack_file in &modpack_files {
+        tasks.push(download_modpack_file(&instance_path, &modpack_file));
     }
 
-    while let Some(result) = tasks.next().await {
-        result??;
+    let futures = tasks.collect::<Vec<_>>().await;
+    for result in futures {
+        result?;
     }
 
     Ok(())
