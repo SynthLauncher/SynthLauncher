@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sl_utils::{dlog, errors::BackendError, requester::Requester};
+use sl_utils::{errors::BackendError, requester::Requester};
 
 use crate::PAGE_SIZE;
 
@@ -33,8 +33,6 @@ pub async fn query_search(query: &str, project_type: &str, offset: u32) -> Resul
             offset,
             query
         );
-
-    dlog!("{}", url);
 
     let json = Requester::new().get_json(&url).await?;
     Ok(json)

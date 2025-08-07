@@ -20,17 +20,6 @@ pub struct LoaderInfo {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Imports an instance from a given path
-    Import {
-        path: PathBuf,
-    },
-    /// Exports an instance to a given path
-    Export {
-        instance_name: String,
-        #[arg(short, long)]
-        output: PathBuf,
-    },
-
     /// Creates a Minecraft instance
     Create {
         #[arg(required = true)]
@@ -45,6 +34,18 @@ pub enum Commands {
     Launch {
         #[arg(required = true)]
         instance_name: String,
+    },
+
+    /// Imports an instance from a given path
+    Import {
+        path: PathBuf,
+    },
+    
+    /// Exports an instance to a given path
+    Export {
+        instance_name: String,
+        #[arg(short, long)]
+        output: PathBuf,
     },
 
     /// Adds an offline player account
@@ -62,7 +63,7 @@ pub enum Commands {
         name: String,
     },
 
-    /// Lists all player instances
+    /// Lists all instances
     ListInstances,
 
     /// Lists all player accounts
@@ -73,5 +74,7 @@ pub enum Commands {
 
     /// Lists available Minecraft versions
     ListMinecraftVersions,
+
+
     Test,
 }

@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::File,
     io::BufReader,
     path::{Path, PathBuf},
@@ -7,79 +6,68 @@ use std::{
 
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
-use sl_utils::{errors::BackendError, requester::Requester};
+use sl_core::instances::instance_metadata::ModLoader;
+use sl_utils::{errors::BackendError, fs::copy_dir_all, requester::Requester};
 use zip::ZipArchive;
 
-const MODRINTH_INDEX_NAME: &'static str = "modrinth.index.json";
+const MODRINTH_INDEX_NAME: &str = "modrinth.index.json";
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum DependencyLoader {
+    Forge(String),
+    Neoforge(String),
+    FabricLoader(String),
+    QuiltLoader(String),
+}
+
+impl DependencyLoader {
+    pub const fn get_loader_info(&self) -> (ModLoader, &String) {
+        match self {
+            Self::Forge(v) => (ModLoader::Forge, v),
+            Self::FabricLoader(v) => (ModLoader::Fabric, v),
+            Self::Neoforge(v) => (ModLoader::NeoForge, v),
+            Self::QuiltLoader(v) => (ModLoader::Quilt, v),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Dependencies {
+    pub minecraft: String,
+    #[serde(flatten)]
+    pub loader: DependencyLoader,
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ModrinthPack {
-    pub dependencies: HashMap<DependencyID, String>,
-    pub files: Vec<ModrinthIndex>,
-    pub format_version: u32,
-    pub game: String,
+pub struct ModrinthIndex {
     pub name: String,
     pub version_id: String,
-    pub summary: Option<String>,
+    pub files: Vec<ModrinthIndexFile>,
+    pub dependencies: Dependencies,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ModrinthIndex {
+pub struct ModrinthIndexFile {
     pub path: PathBuf,
     pub hashes: FileHashes,
-    pub env: Option<Env>,
     pub downloads: Vec<String>,
-    pub file_size: u32,
+    // pub file_size: u32, // Maybe this will be needed for progress tracking?
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct FileHashes {
     pub sha1: String,
     pub sha512: String,
-    pub other_hashes: Option<HashMap<String, String>>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct Env {
-    pub client: EnvTypes,
-    pub server: EnvTypes,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[serde(rename_all = "kebab-case")]
-pub enum EnvTypes {
-    Required,
-    Optional,
-    Unsupported,
-}
-
-#[derive(Debug, Deserialize, Hash, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
-pub enum DependencyID {
-    Minecraft,
-    Forge,
-    Neoforge,
-    FabricLoader,
-    QuiltLoader,
-}
-
-impl From<&str> for DependencyID {
-    fn from(value: &str) -> Self {
-        match value {
-            "minecraft" => Self::Minecraft,
-            "fabric" | "fabric-loader" => Self::FabricLoader,
-            "neoforge" => Self::Neoforge,
-            "quilt" | "quilt-loader" => Self::QuiltLoader,
-            "forge" => Self::Forge,
-            _ => panic!("This type of dependency ID doesn't exist!"),
-        }
-    }
-}
-
-pub async fn unzip_modpack(mrpack: &Path, output_dir: &Path) -> Result<(), BackendError> {
-    let mut archive = ZipArchive::new(BufReader::new(File::open(mrpack)?))?;
+pub(in crate::modrinth) async fn unzip_modpack(
+    modpack_zip_path: &Path,
+    output_dir: &Path,
+) -> Result<(), BackendError> {
+    let mut archive = ZipArchive::new(BufReader::new(File::open(modpack_zip_path)?))?;
 
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
@@ -97,15 +85,26 @@ pub async fn unzip_modpack(mrpack: &Path, output_dir: &Path) -> Result<(), Backe
     Ok(())
 }
 
-pub async fn read_modrinth_index(modpack_path: &Path) -> Result<ModrinthPack, BackendError> {
-    let json = tokio::fs::read_to_string(modpack_path.join(MODRINTH_INDEX_NAME)).await?;
-    Ok(serde_json::from_str(&json)?)
+pub(in crate::modrinth) async fn read_modrinth_index(
+    modpack_path: &Path,
+) -> Result<ModrinthIndex, BackendError> {
+    let bytes = tokio::fs::read(modpack_path.join(MODRINTH_INDEX_NAME)).await?;
+    Ok(serde_json::from_slice(&bytes)?)
+}
+
+pub(in crate::modrinth) fn copy_overrides(
+    modpack_path: &Path,
+    instance_path: &Path,
+) -> Result<(), BackendError> {
+    let overrides = modpack_path.join("overrides");
+    copy_dir_all(overrides, instance_path)?;
+    Ok(())
 }
 
 async fn download_modpack_file(
     requester: &Requester,
     path: &Path,
-    modpack_file: &ModrinthIndex,
+    modpack_file: &ModrinthIndexFile,
 ) -> Result<(), BackendError> {
     let path = path.join(&modpack_file.path);
     if let Some(parent) = path.parent() {
@@ -120,25 +119,23 @@ async fn download_modpack_file(
     Ok(())
 }
 
-pub async fn download_modpack_files(
+pub(in crate::modrinth) async fn download_modpack_files(
     requester: &Requester,
     instance_path: &Path,
-    modpack_files: &[ModrinthIndex],
+    modpack_files: Vec<ModrinthIndexFile>,
 ) -> Result<(), BackendError> {
-    let modpack_files = modpack_files.to_vec();
     let tasks = FuturesUnordered::new();
 
     for modpack_file in &modpack_files {
         tasks.push(download_modpack_file(
             requester,
-            instance_path,
-            modpack_file,
+            &instance_path,
+            &modpack_file,
         ));
     }
 
-    let results = tasks.collect::<Vec<_>>().await;
-
-    for result in results {
+    let futures = tasks.collect::<Vec<_>>().await;
+    for result in futures {
         result?;
     }
 

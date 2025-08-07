@@ -19,7 +19,7 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Re
     Ok(())
 }
 
-/// Similar to [`copy_dir_all`], but async
+/// Similar to [`copy_dir_all`], but asynchronous
 pub async fn async_copy_dir_all(
     src: impl AsRef<Path>,
     dst: impl AsRef<Path>,

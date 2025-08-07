@@ -1,55 +1,45 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use sl_utils::{errors::BackendError, requester::Requester};
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CurseforgeProjectAsset {
-    pub url: Option<String>,
-}
+use crate::curseforge::api::{CurseforgeProjectFile, CurseforgeProjectVersion};
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CurseforgeProjectAuthor {
-    pub name: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CurseforgeFile {
-    pub file_name: String,
-    pub download_url: Option<String>,
-    pub game_versions: Vec<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CurseforgeProject {
-    pub id: u32,
-    pub game_id: u32,
-    pub name: String,
-    pub slug: String,
-    pub summary: String,
-    pub download_count: u64,
-    pub logo: CurseforgeProjectAsset,
-    pub authors: Vec<CurseforgeProjectAuthor>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct QueryProjectFileResponse {
-    pub data: CurseforgeFile,
-}
-
-pub async fn query_project_file(
+/// Fetches and returns a specific file from a CurseForge project,
+/// identified by the project (`mod_id`) and file (`file_id`) IDs.
+pub async fn get_curseforge_project_file(
     requester: &Requester,
     mod_id: u32,
     file_id: u32,
-) -> Result<QueryProjectFileResponse, BackendError> {
+) -> Result<CurseforgeProjectFile, BackendError> {
     let url = format!("https://api.curseforge.com/v1/mods/{mod_id}/files/{file_id}");
-
-    let res = requester.get_json(&url).await?;
-    Ok(res)
+    let res: ProjectFileResponse = requester.get_json(&url).await?;
+    Ok(res.data)
 }
 
-pub async fn download_project_file() -> Result<(), BackendError> {
-    Ok(())
+#[derive(Debug, Deserialize)]
+struct ProjectFileResponse {
+    pub data: CurseforgeProjectFile,
+}
+
+/// Fetches and returns all files for the given CurseForge project ID,
+/// filtered by mod loader and Minecraft game version.
+///
+/// `loader` values:
+/// - 1 = Forge
+/// - 4 = Fabric
+/// - 5 = Quilt
+/// - 6 = NeoForge
+pub async fn get_curseforge_project_files(
+    requester: &Requester,
+    mod_id: u32,
+    loader: u8,
+    game_version: &str,
+) -> Result<Vec<CurseforgeProjectVersion>, BackendError> {
+    let url = format!("https://api.curseforge.com/v1/mods/{mod_id}/files?modLoaderType={loader}&gameVersion={game_version}");
+    let res: ProjectVersionsResponse = requester.get_json(&url).await?;
+    Ok(res.data)
+}
+
+#[derive(Debug, Deserialize)]
+struct ProjectVersionsResponse {
+    pub data: Vec<CurseforgeProjectVersion>,
 }

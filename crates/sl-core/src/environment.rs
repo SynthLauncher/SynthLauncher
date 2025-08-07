@@ -5,13 +5,13 @@ use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::{elog, requester::Requester};
 
 use crate::{
-    accounts::AccountsManager, instances::InstanceManager, java, minecraft::version_manifest,
+    accounts::AccountsManager, config::CONFIG_FILE_NAME, instances::InstanceManager, java, minecraft::version_manifest
 };
 use std::env;
 use tokio::sync::OnceCell;
 
 /// Returns the default launcher directory location.
-pub fn default_launcher_dir() -> PathBuf {
+fn default_launcher_dir() -> PathBuf {
     #[cfg(target_os = "windows")]
     {
         return env::var("APPDATA")
@@ -59,7 +59,7 @@ pub struct LauncherEnv {
 
 impl LauncherEnv {
     pub fn new(root_launcher_dir: PathBuf) -> Self {
-        let config_path = root_launcher_dir.join("config.toml");
+        let config_path = root_launcher_dir.join(CONFIG_FILE_NAME);
         let config = crate::config::get_launcher_config(&config_path)
             .expect("failed to get the root config for the launcher");
 
@@ -102,8 +102,8 @@ impl LauncherEnv {
                 .await
                 {
                     Err(e) => {
-                        elog!("FATAL Failed to fetch version manifest: {e}");
-                        panic!("failed to fetch version manifest: {e:?}");
+                        elog!("[FATAL] Failed to fetch version manifest: {e}");
+                        panic!("Failed to fetch version manifest: {e:?}");
                     }
                     Ok(manifest) => manifest,
                 }
@@ -120,8 +120,8 @@ impl LauncherEnv {
                     .await
                 {
                     Err(e) => {
-                        elog!("FATAL Failed to fetch JRE manifest: {e}");
-                        panic!("failed to fetch JRE manifest: {e:?}");
+                        elog!("[FATAL] Failed to fetch JRE manifest: {e}");
+                        panic!("Failed to fetch JRE manifest: {e:?}");
                     }
                     Ok(manifest) => manifest,
                 }

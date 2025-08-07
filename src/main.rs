@@ -1,10 +1,7 @@
-use std::path::Path;
-
 use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::environment::LauncherEnv;
 use sl_player::PlayerData;
-use sl_store::modrinth::install_mod_with_deps;
 use sl_utils::{dlog, elog, errors::BackendError, log};
 use tokio::io::{self};
 
@@ -22,6 +19,7 @@ async fn run_cli() -> Result<(), BackendError> {
         } => {
             let loader = loader_info.loader.unwrap_or_default();
             let loader_version = loader_info.loader_version;
+            
             env.instances()
                 .create_instance(instance_name, &version, loader, loader_version, None)
                 .await?;
@@ -117,16 +115,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let mut instances = env.instances();
             instances.import_instance_from_path(&path).await?
         }
-        Commands::Test => {
-            // let modpack_path = Path::new("./");
-            // unzip_modpack(Path::new("/home/stierprogrammer/Desktop/synthlauncher/All the Mods 10-4.5.zip"), modpack_path).await?;
-            // let manifest = read_modpack_manifest(modpack_path).await?;
-
-            // let modpack_files = manifest.files;
-            // download_modpack_files(Path::new("./m"), modpack_files).await?;
-
-            install_mod_with_deps(env.requester(), "modmenu", "JY1tNj8H", Path::new("./")).await?;
-        }
+        Commands::Test => {}
     }
 
     Ok(())

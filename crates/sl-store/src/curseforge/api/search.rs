@@ -2,14 +2,31 @@ use serde::{Deserialize, Serialize};
 use sl_utils::{errors::BackendError, requester::Requester};
 
 use crate::{
-    curseforge::api::{project::CurseforgeProject, MINECRAFT_GAME_ID},
+    curseforge::api::{CurseforgePagination, CurseforgeProject},
     PAGE_SIZE,
 };
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CurseforgePagination {
-    pub total_count: u32,
+/// Searches CurseForge projects by filter, class ID, and pagination offset.
+/// 
+/// `class_id` values:
+/// - 6 = Mods  
+/// - 12 = Modpacks  
+/// - 4471 = Resource Packs  
+/// - 6552 = Shader Packs
+pub async fn get_curseforge_search(
+    requester: &Requester,
+    search_filter: &str,
+    class_id: u32,
+    offset: u32,
+) -> Result<CurseforgeSearchResponse, BackendError> {
+    let url = format!(
+        "https://api.curseforge.com/v1/mods/search?gameId=432&classId={}&searchFilter={}&pageSize={}&index={}&sortField=2&sortOrder=desc",
+        class_id,
+        search_filter,
+        PAGE_SIZE,
+        offset
+    );
+    Ok(requester.get_json(&url).await?)
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -17,19 +34,4 @@ pub struct CurseforgePagination {
 pub struct CurseforgeSearchResponse {
     pub data: Vec<CurseforgeProject>,
     pub pagination: CurseforgePagination,
-}
-
-pub async fn query_curseforge_search(
-    requester: &Requester,
-    query: &str,
-    class_id: u32,
-    offset: u32,
-) -> Result<CurseforgeSearchResponse, BackendError> {
-    let url = format!(
-        "https://api.curseforge.com/v1/mods/search?gameId={MINECRAFT_GAME_ID}&classId={class_id}&searchFilter={query}&pageSize={PAGE_SIZE}&index={offset}&sortField=2&sortOrder=\"desc\"",
-    );
-
-    let res: CurseforgeSearchResponse = requester.get_json(&url).await?;
-
-    Ok(res)
 }

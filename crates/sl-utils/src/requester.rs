@@ -61,7 +61,7 @@ impl<'a> RequestBuilder<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Requester {
-    pub client: Client,
+    client: Client,
 }
 
 impl Requester {

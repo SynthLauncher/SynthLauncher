@@ -18,10 +18,10 @@ use tokio::{io::AsyncRead, process::Command};
 // Represents a loaded instance of Minecraft with its configurations and things required for launching
 pub struct LoadedInstance<'a> {
     manager: &'a InstanceManager<'a>,
+    loaded_version: LoadedMinecraftVersion,
     instance_metadata: InstanceMetadata,
     config: InstanceConfig,
     instance_path: PathBuf,
-    loaded_version: LoadedMinecraftVersion,
 }
 
 impl<'a> LoadedInstance<'a> {
@@ -205,7 +205,6 @@ impl<'a> LoadedInstance<'a> {
         };
 
         fmt_args(&mut game_args);
-
         fmt_args(&mut jvm_args);
 
         // !!!DO NOT REMOVE!!!
