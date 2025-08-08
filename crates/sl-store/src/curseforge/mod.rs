@@ -1,5 +1,5 @@
 use sl_core::instances::{
-    content_caching::{ContentCachingManager, ContentSource, ModData},
+    content_caching::ContentCachingManager,
     InstanceManager,
 };
 use sl_utils::{errors::BackendError, requester::Requester};
@@ -67,14 +67,14 @@ pub async fn download_curseforge_project<'a>(
         .join("mods")
         .join(&project_file.file_name);
 
-    let mod_data = ModData::new(
-        project_file.file_name.clone(),
-        Some(project_file.hashes[0].value.clone()),
-        ContentSource::Curseforge,
-    );
-    content_caching_manager
-        .cache_mod(project_file.file_name, mod_data)
-        .await?;
+    // let mod_data = ModData::new(
+    //     project_file.file_name.clone(),
+    //     Some(project_file.hashes[0].value.clone()),
+    //     ContentSource::Curseforge,
+    // );
+    // content_caching_manager
+    //     .cache_mod(project_file.file_name, mod_data)
+    //     .await?;
 
     if let Some(parent) = path.parent() {
         tokio::fs::create_dir_all(parent).await?;

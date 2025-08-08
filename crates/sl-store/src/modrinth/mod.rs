@@ -1,10 +1,10 @@
-use sl_core::instances::{content_caching::{ContentCachingManager, ContentSource, ModData}, InstanceManager};
+use sl_core::instances::{content_caching::{ContentCachingManager, ContentData, ContentSource, ContentType}, InstanceManager};
 use sl_utils::{errors::BackendError, requester::Requester};
 use tempdir::TempDir;
 
 use crate::modrinth::{
     api::project::{
-        query_project_version, query_project_versions, ModrinthProjectVersion, ProjectType,
+        query_project_version, get_modrinth_project_versions, ModrinthProjectVersion, ProjectType,
     },
     mrpack::{
         copy_overrides, download_modpack_files, read_modrinth_index, unzip_modpack, 
@@ -58,17 +58,17 @@ pub async fn download_project<'a>(
 
     let path = match project_type {
         ProjectType::Mod => {
-            let mod_data = ModData::new(
+            let mod_data = ContentData::new(
                 project_version.name,
                 Some(project_version.files[0].hashes.sha512.clone()),
                 ContentSource::Modrinth,
             );
 
-            content_caching_manager.cache_mod(
-                project_version.files[0].filename.clone(),
-                mod_data,
-            )
-            .await?;
+            content_caching_manager.cache_content(
+                ContentType::Mod, 
+                project_version.files[0].filename.clone(), 
+                mod_data
+            ).await?;
 
             instance_path
                 .join("mods")
@@ -104,10 +104,10 @@ pub async fn get_projects_versions(
 ) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
     match project_type {
         ProjectType::Resourcepack | ProjectType::Shader => {
-            query_project_versions(requester, slug, Some(game_version), None).await
+            get_modrinth_project_versions(requester, slug, Some(game_version), None).await
         }
         ProjectType::Mod | ProjectType::Modpack => {
-            query_project_versions(requester, slug, Some(game_version), Some(loader)).await
+            get_modrinth_project_versions(requester, slug, Some(game_version), Some(loader)).await
         }
     }
 }

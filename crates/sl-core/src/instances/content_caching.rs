@@ -1,15 +1,22 @@
-use std::{collections::HashMap, fs::OpenOptions, path::Path};
+use std::{collections::HashMap, fs::OpenOptions, path::{Path, PathBuf}};
 
 use serde::{Deserialize, Serialize};
 
 const MOD_LIST_FILE_NAME: &str = "mod_list.json";
-
+const RESOURCEPACK_LIST_FILE_NAME: &str = "resourcepack_list.json";
+const SHADERPACK_LIST_FILE_NAME: &str = "shaderpack_list.json";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ContentSource {
     Modrinth,
     Curseforge,
     External,
+}
+
+pub enum ContentType {
+    Mod,
+    Resourcepack,
+    Shaderpack
 }
 
 pub struct ContentCachingManager<'a> {
@@ -25,55 +32,65 @@ impl<'a> ContentCachingManager<'a> {
         self.instance_path
     }
 
-    pub async fn get_mod_list(&self) -> tokio::io::Result<ModList> {
-        let path = self.instance_path.join(MOD_LIST_FILE_NAME);
-        let data = tokio::fs::read(path).await?;
-        Ok(serde_json::from_slice(&data).unwrap_or_else(|_| ModList::new()))
+    fn content_list_path(&self, content_type: &ContentType) -> PathBuf {
+        match content_type {
+            ContentType::Mod => self.instance_path.join(MOD_LIST_FILE_NAME),
+            ContentType::Resourcepack => self.instance_path.join(RESOURCEPACK_LIST_FILE_NAME),
+            ContentType::Shaderpack => self.instance_path.join(SHADERPACK_LIST_FILE_NAME)
+        }
     }
 
-    async fn save_mod_list(&self, new_mod_list: ModList) -> tokio::io::Result<()> {
+    pub async fn get_content_list(&self, content_type: &ContentType) -> tokio::io::Result<ContentList> {
+        let path = self.content_list_path(content_type);
+        let data = tokio::fs::read(path).await?;
+        Ok(serde_json::from_slice(&data).unwrap_or_else(|_| ContentList::new()))
+    }
+
+    fn save_content_list(&self, content_type: &ContentType, new_content_list: ContentList) -> std::io::Result<()> {
+        let path = self.content_list_path(content_type);
         let file = OpenOptions::new()
             .write(true)
             .truncate(true)
-            .open(self.instance_path.join(MOD_LIST_FILE_NAME))?;
-        serde_json::to_writer_pretty(file, &new_mod_list)?;
-
+            .open(path)?;
+        serde_json::to_writer_pretty(file, &new_content_list)?;
+        
         Ok(())
     }
 
-    pub async fn cache_mod(&self, filename: String, mod_data: ModData) -> tokio::io::Result<()> {
-        let mut mod_list = self.get_mod_list().await?;
-        mod_list.mods.insert(filename, mod_data);
-        self.save_mod_list(mod_list).await?;
+    pub async fn cache_content(&self,content_type: ContentType, file_name: String, content_data: ContentData) -> tokio::io::Result<()> {
+        let mut content_list = self.get_content_list(&content_type).await?;
+        content_list.list.insert(file_name, content_data);
+        self.save_content_list(&content_type, content_list)?;
+        
         Ok(())
     }
 }
+
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ModData {
+pub struct ContentData {
     pub name: String,
     pub hash: Option<String>,
-    pub source: ContentSource,
+    pub source: ContentSource
 }
 
-impl ModData {
+impl ContentData {
     pub fn new(name: String, hash: Option<String>, source: ContentSource) -> Self {
         Self { name, hash, source }
     }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ModList {
+pub struct ContentList {
     scheme_version: u32,
-    /// Key is the file name
-    pub mods: HashMap<String, ModData>,
+    pub list: HashMap<String, ContentData>
 }
 
-impl ModList {
-    pub fn new() -> Self {
+impl ContentList {
+     pub fn new() -> Self {
         Self {
             scheme_version: 0,
-            mods: HashMap::new(),
+            list: HashMap::new(),
         }
     }
 }

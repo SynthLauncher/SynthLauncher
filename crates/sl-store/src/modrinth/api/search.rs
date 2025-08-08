@@ -24,15 +24,14 @@ pub struct SearchResult {
     pub total_hits: u32
 }
 
-pub async fn query_search(query: &str, project_type: &str, offset: u32) -> Result<SearchResult, BackendError> {
-    let url = 
-        format!(
-            "https://api.modrinth.com/v2/search?facets=[[\"project_type:{}\"]]&limit={}&offset={}&query={}",
-            project_type,
-            PAGE_SIZE,
-            offset,
-            query
-        );
+pub async fn get_modrinth_search(query: &str, project_type: &str, offset: u32) -> Result<SearchResult, BackendError> {
+    let url = format!(
+        "https://api.modrinth.com/v2/search?facets=[[\"project_type:{}\"]]&limit={}&offset={}&query={}",
+        project_type,
+        PAGE_SIZE,
+        offset,
+        query
+    );
 
     let json = Requester::new().get_json(&url).await?;
     Ok(json)

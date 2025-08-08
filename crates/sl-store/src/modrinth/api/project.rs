@@ -29,15 +29,13 @@ pub struct ModrinthProject {
     pub downloads: u32,
     pub icon_url: Option<String>,
     pub followers: u32,
-    /// Project versions
     pub versions: Vec<String>,
-    /// Supported Minecraft versions
     pub game_versions: Vec<String>,
     pub loaders: Vec<String>,
 }
 
 #[must_use]
-pub async fn query_project(
+pub async fn get_modrinth_project(
     requester: &Requester,
     slug: &str,
 ) -> Result<ModrinthProject, BackendError> {
@@ -76,7 +74,7 @@ pub struct ModrinthProjectVersion {
 }
 
 #[must_use]
-pub async fn query_project_versions(
+pub async fn get_modrinth_project_versions(
     requester: &Requester,
     slug: &str,
     game_version: Option<&str>,
