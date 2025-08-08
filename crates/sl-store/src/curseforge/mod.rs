@@ -13,6 +13,7 @@ use crate::curseforge::{
 pub mod api;
 pub mod modpack;
 
+// FIXME: The function starts unzipping before the zip is even valid
 pub async fn download_curseforge_modpack<'a>(
     instance_manager: &mut InstanceManager<'a>,
     mod_id: u32,
