@@ -1,12 +1,12 @@
 <template>
   <nav
-    class="w-full flex h-[3.3rem] justify-between items-center p-1 bg-layout bg-neutral-800"
+    class="w-full flex h-[3.4rem] justify-between items-center p-2 bg-[#1b1d21]"
     data-tauri-drag-region
   >
-    <div class="flex items-center gap-2 ml-[0.75rem]">
+    <div class="flex items-center gap-2 ml-[0.4rem]">
       <img
-        width="35"
-        height="35"
+        width="37"
+        height="37"
         src="/images/synthlauncher-logo.png"
         alt="SynthLauncher Logo"
       />
