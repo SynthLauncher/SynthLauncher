@@ -15,18 +15,21 @@ const route = useRoute();
         label="Home"
         :icon="Home"
         :active="route.path === '/'"
+        :onClick="() => router.push('/')"
       />
       <NavigationSidebarItem
         id="instance"
         label="Instances"
         :icon="Library"
         :active="route.path === '/instances'"
+        :onClick="() => router.push('/instances')"
       />
       <NavigationSidebarItem
         id="store"
         label="Store"
         :icon="Store"
         :active="route.path === '/store'"
+        :onClick="() => router.push('/store')"
       />
     </div>
 

@@ -1,7 +1,8 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::environment::LauncherEnv;
+use sl_core::{environment::LauncherEnv, instances::content_caching::ContentCachingManager};
 use sl_player::PlayerData;
+use sl_store::modrinth::{api::project::ProjectType, download_project};
 use sl_utils::{dlog, elog, errors::BackendError, log};
 use tokio::io::{self};
 
@@ -115,7 +116,10 @@ async fn run_cli() -> Result<(), BackendError> {
             let mut instances = env.instances();
             instances.import_instance_from_path(&path).await?
         }
-        Commands::Test => {}
+        Commands::Test => {
+            let instances = env.instances();
+            download_project(instances.requester(), &ContentCachingManager::new(&instances.instance_dir("smp")), "vXRQfmPX", "CG90T2ig", ProjectType::Resourcepack).await?;
+        }
     }
 
     Ok(())

@@ -194,7 +194,7 @@ impl InstanceMetadata {
             mod_loader_version,
         ))
     }
-
+    
     /// Loads ('Upgrades' information to) an instance's in memory representation
     pub async fn load_init<'a>(
         self,
