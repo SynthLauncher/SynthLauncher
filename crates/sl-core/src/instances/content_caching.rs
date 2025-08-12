@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fs::OpenOptions, path::{Path, PathBuf}};
 
 use serde::{Deserialize, Serialize};
-use sl_utils::dlog;
 
 const MOD_LIST_FILE_NAME: &str = "mod_list.json";
 const RESOURCEPACK_LIST_FILE_NAME: &str = "resourcepack_list.json";
