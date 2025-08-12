@@ -1,10 +1,9 @@
-use std::{path::Path, sync::Arc};
+use std::path::Path;
 
 use sl_core::environment::LauncherEnv;
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
-use tokio::sync::RwLock;
-
+use tokio::sync::Mutex;
 #[tauri::command]
 pub fn open_folder(app_handle: AppHandle, folder_path: &Path) -> Result<(), String> {
     app_handle
@@ -14,8 +13,10 @@ pub fn open_folder(app_handle: AppHandle, folder_path: &Path) -> Result<(), Stri
 }
 
 #[tauri::command]
-pub async fn open_synthlauncher_root_folder(app_handle: AppHandle, shared_env: State<'_, Arc<RwLock<LauncherEnv>>>) -> Result<(), String> {
-    let guard = shared_env.read().await;
-    open_folder(app_handle, &guard.root())?;
+pub async fn open_synthlauncher_root_folder(
+    app_handle: AppHandle,
+    launcher_env: State<'_, Mutex<LauncherEnv>>,
+) -> Result<(), String> {
+    open_folder(app_handle, &launcher_env.lock().await.root())?;
     Ok(())
 }
