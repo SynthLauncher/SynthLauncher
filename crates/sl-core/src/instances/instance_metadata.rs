@@ -20,7 +20,7 @@ use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::{
     instances::{
-        instance_exporter::InstanceExporter, loaded_instance::LoadedInstance, InstanceManager,
+        instance_exporter::InstanceExporter, loaded_instance::LoadedInstance, InstanceManager
     },
     minecraft::minecraft_version::MinecraftVersionID,
 };
@@ -137,14 +137,12 @@ pub struct InstanceMetadata {
     pub mc_type: VersionType,
     pub mod_loader_version: String,
     pub mod_loader: ModLoader,
-    pub icon: Option<String>,
 }
 
 impl InstanceMetadata {
     /// Constructs a new instance metadata, without doing any version checks.
     pub(super) const fn new_unchecked(
         name: String,
-        icon: Option<String>,
         mc_version: String,
         mc_type: VersionType,
         mc_release_time: String,
@@ -154,7 +152,6 @@ impl InstanceMetadata {
         Self {
             scheme_version: 0,
             name,
-            icon,
             mc_version,
             mc_release_time,
             mc_type,
@@ -170,7 +167,6 @@ impl InstanceMetadata {
         mc_version: &str,
         mod_loader: ModLoader,
         mod_loader_version: Option<String>,
-        icon: Option<String>,
     ) -> Result<Self, BackendError> {
         let version =
             version_manifest
@@ -186,7 +182,6 @@ impl InstanceMetadata {
 
         Ok(Self::new_unchecked(
             name,
-            icon,
             version.id.clone(),
             version.r#type.clone(),
             version.release_time.clone(),
@@ -195,6 +190,14 @@ impl InstanceMetadata {
         ))
     }
     
+    // FIXME: When icon doesn't exist instance will not be passed to frontend
+    pub async fn get_instance_icon<'a>(&self, man: &'a InstanceManager<'a>) -> Result<Vec<u8>, BackendError> {
+        let instance_dir = man.instance_dir(&self.name);
+        let icon_path = instance_dir.join("icon.png");
+        let icon = tokio::fs::read(icon_path).await?;
+        Ok(icon)
+    }
+
     /// Loads ('Upgrades' information to) an instance's in memory representation
     pub async fn load_init<'a>(
         self,

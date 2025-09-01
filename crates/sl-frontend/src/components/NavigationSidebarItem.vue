@@ -5,12 +5,15 @@
       ? 'bg-[#1fc0fe]/20 hover:bg-[#1fc0fe]/30 text-[#59bbfe]'
       : 'bg-transparent text-[#b0b8c7] hover:bg-[#9eb0b8]/20 hover:text-[#c2cbcf]',
   ]" @click="onClick?.()">
-    <component :is="icon" :size="24" />
+      <component v-if="isComponent" :is="icon" :size="24" />
+      <img v-else :src="icon" :alt="label" class="w-6 h-6" />
   </button>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue';
+
+const props = defineProps<{
   id: string;
   label: string;
   icon: any;
@@ -18,4 +21,6 @@ defineProps<{
   onClick?: () => void;
 }
 >();
+
+const isComponent = computed(() => typeof props.icon === 'object' || typeof props.icon === 'function')
 </script>

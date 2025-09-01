@@ -44,7 +44,6 @@ pub async fn download_curseforge_modpack<'a>(
             &mc_version,
             mod_loader,
             Some(mod_loader_version.to_string()),
-            None,
         )
         .await?;
 

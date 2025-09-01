@@ -74,6 +74,10 @@ impl Requester {
         }
     }
 
+    pub const fn client(&self) -> &Client {
+        &self.client
+    }
+
     pub fn builder(&self) -> RequestBuilder {
         RequestBuilder::new(&self)
     }

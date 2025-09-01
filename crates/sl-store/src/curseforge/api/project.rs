@@ -23,7 +23,7 @@ struct ProjectFileResponse {
 /// Fetches and returns all files for the given CurseForge project ID,
 /// filtered by mod loader and Minecraft game version.
 ///
-/// `loader` values:
+/// `mod_loader` values:
 /// - 1 = Forge
 /// - 4 = Fabric
 /// - 5 = Quilt
@@ -31,10 +31,10 @@ struct ProjectFileResponse {
 pub async fn get_curseforge_project_files(
     requester: &Requester,
     mod_id: u32,
-    loader: u8,
+    mod_loader: u8,
     game_version: &str,
 ) -> Result<Vec<CurseforgeProjectVersion>, BackendError> {
-    let url = format!("https://api.curseforge.com/v1/mods/{mod_id}/files?modLoaderType={loader}&gameVersion={game_version}");
+    let url = format!("https://api.curseforge.com/v1/mods/{mod_id}/files?modLoaderType={mod_loader}&gameVersion={game_version}");
     let res: ProjectVersionsResponse = requester.get_json(&url).await?;
     Ok(res.data)
 }

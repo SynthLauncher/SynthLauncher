@@ -42,7 +42,6 @@ impl<'a> InstanceManager<'a> {
         version: &str,
         mod_loader: ModLoader,
         mod_loader_version: Option<String>,
-        icon: Option<String>,
     ) -> Result<InstanceMetadata, BackendError> {
         let instance = InstanceMetadata::new(
             self.requester(),
@@ -51,7 +50,6 @@ impl<'a> InstanceManager<'a> {
             version,
             mod_loader,
             mod_loader_version,
-            icon,
         )
         .await?;
         self.add_new(&instance)?;
@@ -182,7 +180,6 @@ impl<'a> InstanceManager<'a> {
 
         let new_metadata = InstanceMetadata::new_unchecked(
             instance_metadata.name,
-            instance_metadata.icon,
             mc_version.to_string(),
             mc_release_type,
             mc_release_time.to_string(),

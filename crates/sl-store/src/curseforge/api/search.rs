@@ -7,12 +7,6 @@ use crate::{
 };
 
 /// Searches CurseForge projects by filter, class ID, and pagination offset.
-/// 
-/// `class_id` values:
-/// - 6 = Mods  
-/// - 12 = Modpacks  
-/// - 4471 = Resource Packs  
-/// - 6552 = Shader Packs
 pub async fn get_curseforge_search(
     requester: &Requester,
     search_filter: &str,
@@ -24,7 +18,7 @@ pub async fn get_curseforge_search(
         class_id,
         search_filter,
         PAGE_SIZE,
-        offset
+        offset * PAGE_SIZE
     );
     Ok(requester.get_json(&url).await?)
 }

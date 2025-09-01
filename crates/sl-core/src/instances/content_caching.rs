@@ -42,13 +42,15 @@ impl<'a> ContentCachingManager<'a> {
 
     pub async fn get_content_list(&self, content_type: &ContentType) -> tokio::io::Result<ContentList> {
         let path = self.content_list_path(content_type);
-        let data = tokio::fs::read(path).await?;
-        Ok(serde_json::from_slice(&data).unwrap_or_else(|_| ContentList::new()))
+        let data = tokio::fs::read(path).await.unwrap_or_default();
+        Ok(serde_json::from_slice(&data).unwrap_or_default())
     }
+
 
     fn save_content_list(&self, content_type: &ContentType, new_content_list: ContentList) -> std::io::Result<()> {
         let path = self.content_list_path(content_type);
         let file = OpenOptions::new()
+            .create(true)
             .write(true)
             .truncate(true)
             .open(path)?;
@@ -94,3 +96,10 @@ impl ContentList {
         }
     }
 }
+
+impl Default for ContentList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+

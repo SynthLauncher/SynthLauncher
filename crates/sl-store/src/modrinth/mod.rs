@@ -15,7 +15,7 @@ use crate::modrinth::{
 pub mod api;
 pub mod mrpack;
 
-pub async fn download_modpack<'a>(
+pub async fn download_modrinth_modpack<'a>(
     instance_manager: &mut InstanceManager<'a>,
     slug: &str,
     version: &str,
@@ -43,7 +43,6 @@ pub async fn download_modpack<'a>(
             &mc_version,
             mod_loader,
             Some(mod_loader_version.to_string()),
-            None,
         )
         .await?;
 
@@ -59,7 +58,7 @@ pub async fn download_modpack<'a>(
     Ok(())
 }
 
-pub async fn download_project<'a>(
+pub async fn download_modrinth_project<'a>(
     requester: &Requester,
     content_caching_manager: &ContentCachingManager<'a>,
     slug: &str,
@@ -127,9 +126,7 @@ pub async fn download_project<'a>(
                 .join("resourcepacks")
                 .join(&project_version.files[0].filename)
         }
-
-        // TODO: Maybe do not panic?
-        ProjectType::Modpack => panic!("Modpack doesn't have a path!"),
+        ProjectType::Modpack => todo!(),
     };
 
     if let Some(parent) = path.parent() {

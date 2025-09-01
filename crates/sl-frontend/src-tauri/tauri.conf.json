@@ -12,12 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "sl-frontend",
-        "width": 800,
-        "height": 600,
+        "title": "SynthLaucher",
+        "width": 1200,
+        "height": 800,
         "devtools": true,
         "minimizable": true,
-        "maximizable": true
+        "maximizable": true,
+        "decorations": false
       }
     ],
     "security": {

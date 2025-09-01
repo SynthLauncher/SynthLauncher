@@ -1,8 +1,10 @@
 <template>
   <nav class="bg-[#1b1d21] w-full h-[3.4rem] p-2 flex justify-between items-center" data-tauri-drag-region>
-    <div class="flex items-center gap-2 ml-[0.4rem] select-none">
-      <img width="37" height="37" src="/images/synthlauncher-logo.png" alt="SynthLauncher Logo" />
-      <h1 class="text-xl font-bold text-white">SynthLauncher</h1>
+    <div class="flex gap-6">
+      <div class="flex items-center gap-1 ml-[0.4rem] select-none">
+        <img width="37" height="37" src="/images/synthlauncher-logo.png" alt="SynthLauncher Logo" />
+        <h1 class="text-xl font-bold text-white">SynthLauncher</h1>
+      </div>
     </div>
 
     <div class="flex gap-[0.1rem]">
@@ -23,4 +25,6 @@ import {
   handleWindowMaximize,
   handleWindowClose,
 } from '../lib/commands/window'
+
+
 </script>

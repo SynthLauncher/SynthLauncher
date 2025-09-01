@@ -1,8 +1,10 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::{environment::LauncherEnv, instances::content_caching::ContentCachingManager};
-use sl_player::PlayerData;
-use sl_store::modrinth::{api::project::ProjectType, download_project};
+use sl_core::{environment::LauncherEnv};
+use sl_player::{
+    api::{auth::AuthFlow, player_info::get_premium_account_name},
+    PlayerData,
+};
 use sl_utils::{dlog, elog, errors::BackendError, log};
 use tokio::io::{self};
 
@@ -20,9 +22,9 @@ async fn run_cli() -> Result<(), BackendError> {
         } => {
             let loader = loader_info.loader.unwrap_or_default();
             let loader_version = loader_info.loader_version;
-            
+
             env.instances()
-                .create_instance(instance_name, &version, loader, loader_version, None)
+                .create_instance(instance_name, &version, loader, loader_version)
                 .await?;
         }
         Commands::Launch { instance_name } => {
@@ -52,21 +54,21 @@ async fn run_cli() -> Result<(), BackendError> {
             let data = PlayerData::offline(&name);
             accounts.add_account(name, data).await?;
         }
-        // FIXME
+        // TOOD: Improve this
         Commands::AddPremiumAccount => {
-            // let mut profiles = PlayerProfiles::load()?;
-            // let mut auth = AuthFlow::new("74909cec-49b6-4fee-aa60-1b2a57ef72e1");
-            // let code_res = auth.request_code().await.unwrap();
+            let mut auth = AuthFlow::new("74909cec-49b6-4fee-aa60-1b2a57ef72e1");
+            let code_res = auth.request_code().await.unwrap();
 
-            // log!("Open this link in your browser {} and enter the following code: {}\nWaiting authentication...", code_res.verification_uri, code_res.user_code);
+            log!("Open this link in your browser {} and enter the following code: {}\nWaiting authentication...", code_res.verification_uri, code_res.user_code);
 
-            // auth.wait_for_login().await.unwrap();
-            // auth.login_in_xbox_live().await.unwrap();
-            // let minecraft = auth.login_in_minecraft().await.unwrap();
-            // let profile = PlayerProfile::premium_account(minecraft.access_token.clone())
-            //     .await
-            //     .unwrap();
-            // profiles.add(profile)?;
+            auth.wait_for_login().await.unwrap();
+            auth.login_in_xbox_live().await.unwrap();
+            let minecraft = auth.login_in_minecraft().await.unwrap();
+
+            env.accounts().add_account(
+                get_premium_account_name(env.requester(), &minecraft.access_token).await?,
+                PlayerData::new(minecraft.username.clone(), minecraft.access_token.clone()),
+            ).await?;
         }
         Commands::SetCurrentAccount { name } => {
             let mut accounts = env.accounts();
@@ -116,10 +118,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let mut instances = env.instances();
             instances.import_instance_from_path(&path).await?
         }
-        Commands::Test => {
-            let instances = env.instances();
-            download_project(instances.requester(), &ContentCachingManager::new(&instances.instance_dir("smp")), "vXRQfmPX", "CG90T2ig", ProjectType::Resourcepack).await?;
-        }
+        Commands::Test => todo!()
     }
 
     Ok(())

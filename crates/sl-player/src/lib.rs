@@ -12,6 +12,13 @@ pub struct PlayerData {
 }
 
 impl PlayerData {
+    pub fn new(id: String, access_token: String) -> Self {
+        Self {
+            id: id,
+            access_token: access_token
+        }
+    }
+    
     pub fn offline(name: &str) -> Self {
         Self {
             id: Uuid::new_v3(&NS, format!("OfflinePlayer:{name}").as_bytes()).to_string(),

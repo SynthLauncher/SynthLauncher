@@ -29,18 +29,3 @@ pub const ARCH: Arch = if cfg!(target_arch = "x86") {
 } else {
     panic!("Unsupported Arch!")
 };
-
-// lazy_static! {
-//     pub static ref LAUNCHER_DIR: PathBuf = get_launcher_dir();
-//     pub static ref ASSETS_DIR: PathBuf = LAUNCHER_DIR.join("assets");
-//     pub static ref LIBS_DIR: PathBuf = LAUNCHER_DIR.join("libs");
-//     pub static ref INSTANCES_DIR: PathBuf = LAUNCHER_DIR.join("instances");
-//     pub static ref VERSIONS_DIR: PathBuf = LAUNCHER_DIR.join("versions");
-//     pub static ref JAVAS_DIR: PathBuf = LAUNCHER_DIR.join("javas");
-//     pub static ref ADDONS_DIR: PathBuf = LAUNCHER_DIR.join("addons");
-//     pub static ref JRE_MANIFEST_PATH: PathBuf = LAUNCHER_DIR.join("jre_manifest.json");
-//     pub static ref PROFILES_PATH: PathBuf = LAUNCHER_DIR.join("profiles.json");
-//     pub static ref JRE_MANIFEST: JreManifest = read_jre_manifest();
-//     pub static ref VERSION_MANIFEST: VersionManifest = read_version_manifest();
-//     pub static ref REQUESTER: Requester = Requester::new();
-// }
