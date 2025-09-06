@@ -57,6 +57,7 @@ pub async fn download_curseforge_modpack<'a>(
     Ok(())
 }
 
+// TODO: Content caching manager only caches mods
 pub async fn download_curseforge_project<'a>(
     requester: &Requester,
     content_caching_manager: &ContentCachingManager<'a>,
