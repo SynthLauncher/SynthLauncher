@@ -85,6 +85,8 @@ pub enum InstanceImportErr {
 
 #[derive(Debug, Error)]
 pub enum BackendError {
+    #[error("Launcher failed to initialize")]
+    LauncherFailedToInitialize,
     #[error("Error while Importing instance '{0}'")]
     InstanceImportError(#[from] InstanceImportErr),
     #[error("Zip error: {0}")]

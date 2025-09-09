@@ -1,5 +1,6 @@
 export type StoreCategoryType = "modpacks" | "mods" | "resourcepacks" | "shaderpacks"
 export type StoreType = "modrinth" | "curseforge"
+export type StoreSearch = { hits: ModrinthContentMetadata[] } | { data: CurseforgeContentMetadata[] };
 
 export interface StoreContentMetadata {
     source: StoreType,
@@ -26,5 +27,3 @@ interface ModrinthContentMetadata {
     author: string,
     followers: number
 }
-
-export type StoreSearch = { hits: ModrinthContentMetadata[] } | { data: CurseforgeContentMetadata[] };

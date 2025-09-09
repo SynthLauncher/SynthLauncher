@@ -1,6 +1,6 @@
 use clap::Parser;
 use cli::{Cli, Commands};
-use sl_core::{environment::LauncherEnv};
+use sl_core::environment::LauncherEnv;
 use sl_player::{
     api::{auth::AuthFlow, player_info::get_premium_account_name},
     PlayerData,
@@ -12,6 +12,7 @@ mod cli;
 
 async fn run_cli() -> Result<(), BackendError> {
     let env = LauncherEnv::new_at_default();
+
     let cli = Cli::parse();
 
     match cli.command {
@@ -65,10 +66,12 @@ async fn run_cli() -> Result<(), BackendError> {
             auth.login_in_xbox_live().await.unwrap();
             let minecraft = auth.login_in_minecraft().await.unwrap();
 
-            env.accounts().add_account(
-                get_premium_account_name(env.requester(), &minecraft.access_token).await?,
-                PlayerData::new(minecraft.username.clone(), minecraft.access_token.clone()),
-            ).await?;
+            env.accounts()
+                .add_account(
+                    get_premium_account_name(env.requester(), &minecraft.access_token).await?,
+                    PlayerData::new(minecraft.username.clone(), minecraft.access_token.clone()),
+                )
+                .await?;
         }
         Commands::SetCurrentAccount { name } => {
             let mut accounts = env.accounts();
@@ -118,7 +121,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let mut instances = env.instances();
             instances.import_instance_from_path(&path).await?
         }
-        Commands::Test => todo!()
+        Commands::Test => todo!(),
     }
 
     Ok(())

@@ -78,7 +78,7 @@ impl Requester {
         &self.client
     }
 
-    pub fn builder(&self) -> RequestBuilder {
+    pub fn builder(&self) -> RequestBuilder<'_> {
         RequestBuilder::new(&self)
     }
 

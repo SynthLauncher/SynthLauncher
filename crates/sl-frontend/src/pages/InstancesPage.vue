@@ -16,7 +16,7 @@
         :mc_version="instance.mc_version"
         :mod_loader="instance.mod_loader" 
         :mod_loader_version="instance.mod_loader_version"
-        :icon="bytesToImageUrl(instance.icon)"
+        :icon="instance.icon ? bytesToImageUrl(instance.icon) : ''"
 
       />
 
@@ -28,6 +28,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { getAllInstances } from '../lib/commands/instances';
+import { InstanceMetadata } from '../types/instances';
 import OptionSelector from '../components/OptionSelector.vue';
 import InstancesSearhBar from '../components/InstancesSearhBar.vue';
 import InstanceCard from '../components/InstanceCard.vue';

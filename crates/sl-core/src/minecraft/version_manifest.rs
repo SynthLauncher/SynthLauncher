@@ -2,8 +2,7 @@ use std::{io, path::Path};
 
 use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::{
-    errors::{BackendError, HttpError, InstanceError},
-    requester::Requester,
+    errors::{BackendError, HttpError, InstanceError}, requester::Requester
 };
 
 const VERSION_MANIFEST_DOWNLOAD_URL: &str =
@@ -21,6 +20,10 @@ async fn fetch_version_manifest_to(
     requester: &Requester,
     path: &Path,
 ) -> Result<VersionManifest, HttpError> {
+    if let Some(parent) = path.parent() {
+        tokio::fs::create_dir_all(parent).await?;
+    }
+
     requester
         .builder()
         .download_to(VERSION_MANIFEST_DOWNLOAD_URL, path)

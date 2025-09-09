@@ -190,12 +190,10 @@ impl InstanceMetadata {
         ))
     }
     
-    // FIXME: When icon doesn't exist instance will not be passed to frontend
-    pub async fn get_instance_icon<'a>(&self, man: &'a InstanceManager<'a>) -> Result<Vec<u8>, BackendError> {
+    pub async fn get_instance_icon<'a>(&self, man: &'a InstanceManager<'a>) -> Option<Vec<u8>> {
         let instance_dir = man.instance_dir(&self.name);
         let icon_path = instance_dir.join("icon.png");
-        let icon = tokio::fs::read(icon_path).await?;
-        Ok(icon)
+        tokio::fs::read(icon_path).await.ok()
     }
 
     /// Loads ('Upgrades' information to) an instance's in memory representation

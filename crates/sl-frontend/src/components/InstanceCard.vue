@@ -15,7 +15,7 @@
     </div>
 
     <button class="cursor-pointer flex items-center
- justify-center size-10 rounded-full bg-sky-500 hover:bg-sky-600 transition-colors" @click="">
+ justify-center size-10 rounded-full bg-sky-500 hover:bg-sky-600 transition-colors" @click="() => {}">
       <PlayIcon class="size-5 text-white" />
     </button>
   </div>
@@ -23,6 +23,7 @@
 
 <script lang="ts" setup>
 import { PlayIcon } from 'lucide-vue-next';
+import { ModLoader } from '../types/instances'
 
 defineProps<{
   icon?: string,

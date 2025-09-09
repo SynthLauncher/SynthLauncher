@@ -1,5 +1,4 @@
-
-enum ModLoader {
+export enum ModLoader {
     Vanilla,
     Fabric,
     Quilt,
@@ -7,11 +6,11 @@ enum ModLoader {
     NeoForge
 }
 
-interface InstanceMetadata {
+export interface InstanceMetadata {
     scheme_version: number,
     name: string,
     mc_version: string,
     mod_loader_version: string
     mod_loader: ModLoader
-    icon: Uint8Array
+    icon?: Uint8Array
 }

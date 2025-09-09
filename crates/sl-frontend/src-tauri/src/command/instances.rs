@@ -7,7 +7,7 @@ use tokio::sync::RwLock;
 pub struct Instance {
     #[serde(flatten)]
     metadata: InstanceMetadata,
-    icon: Vec<u8>,
+    icon: Option<Vec<u8>>,
 }
 
 #[tauri::command]
@@ -24,8 +24,7 @@ pub async fn get_instance(
         .0;
     let icon = instance_metadata
         .get_instance_icon(&env.instances())
-        .await
-        .map_err(|e| e.to_string())?;
+        .await;
 
     Ok(Instance {
         metadata: instance_metadata,
@@ -49,8 +48,7 @@ pub async fn get_all_instances(
     for metadata in instance_metadatas {
         let icon = metadata
             .get_instance_icon(&env.instances())
-            .await
-            .map_err(|e| e.to_string())?;
+            .await;
         instances.push(Instance {
             metadata: metadata,
             icon: icon,
