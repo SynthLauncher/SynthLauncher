@@ -1,3 +1,26 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { getInstance } from '../lib/commands/instances';
+import { bytesToImageUrl } from '../lib/utils';
+import { InstanceMetadata } from '../types/instances';
+
+const route = useRoute()
+const instanceName = route.params.instance_name as string
+const instanceMetadata = ref<InstanceMetadata>();
+
+const loadInstances = async () => {
+  const result = await getInstance(instanceName);
+  instanceMetadata.value = result as InstanceMetadata;
+}
+
+onMounted(async () => {
+  await loadInstances()
+  console.log(instanceMetadata.value)
+})
+</script>
+
+
 <template>
   <div class="h-full w-full p-6">
     <div class="bg-[#232529] w-full flex gap-4 p-4">
@@ -22,24 +45,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { getInstance } from '../lib/commands/instances';
-import { bytesToImageUrl } from '../lib/utils';
-
-const route = useRoute()
-const instanceName = route.params.instance_name as string
-const instanceMetadata = ref<InstanceMetadata>();
-
-const loadInstances = async () => {
-  const result = await getInstance(instanceName);
-  instanceMetadata.value = result as InstanceMetadata;
-}
-
-onMounted(async () => {
-  await loadInstances()
-  console.log(instanceMetadata.value)
-})
-</script>

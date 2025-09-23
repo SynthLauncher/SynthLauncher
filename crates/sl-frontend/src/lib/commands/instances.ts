@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core"
+import { InstanceMetadata } from "../../types/instances";
 
 export const getAllInstances = async () => {
     try {
