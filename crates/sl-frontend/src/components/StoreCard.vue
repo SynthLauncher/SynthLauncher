@@ -24,7 +24,8 @@
 
         <Dialog v-model:isOpen="isOpen" class="">
             <template #trigger>
-                <button class="cursor-pointer text-white rounded-lg 
+                <button 
+                    class="cursor-pointer text-white rounded-lg 
             border-2 border-sky-500 hover:bg-sky-500 transition-colors py-2 px-4"
                     @click='isOpen = true'>
                     Install

@@ -14,8 +14,10 @@
       </div>
     </div>
 
-    <button class="cursor-pointer flex items-center
- justify-center size-10 rounded-full bg-sky-500 hover:bg-sky-600 transition-colors" @click="() => {}">
+    <button
+    @click="async () => await launchInstance(name)" 
+    class="cursor-pointer flex items-center
+ justify-center size-10 rounded-full bg-sky-500 hover:bg-sky-600 transition-colors">
       <PlayIcon class="size-5 text-white" />
     </button>
   </div>
@@ -24,6 +26,7 @@
 <script lang="ts" setup>
 import { PlayIcon } from 'lucide-vue-next';
 import { ModLoader } from '../types/instances'
+import { launchInstance } from '../lib/commands/instances';
 
 defineProps<{
   icon?: string,

@@ -2,7 +2,7 @@ use sl_core::environment::LauncherEnv;
 use tokio::sync::RwLock;
 
 use crate::command::{
-    instances::{get_all_instances, get_instance}, launcher::open_synthlauncher_root_folder,
+    instances::{get_all_instances, get_instance, launch_instance}, launcher::open_synthlauncher_root_folder,
     store::fetch_store_search,
 };
 
@@ -22,6 +22,7 @@ pub fn run() {
             fetch_store_search,
             get_all_instances,
             get_instance,
+            launch_instance
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

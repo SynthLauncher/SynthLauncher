@@ -58,22 +58,21 @@ pub async fn get_all_instances(
     Ok(instances)
 }
 
-// FIXME: This doens't work
-// #[tauri::command]
-// pub async fn launch_instance(
-//     name: &str,
-//     launcher_env: State<'_, RwLock<LauncherEnv>>,
-// ) -> Result<(), String> {
-//     let env = launcher_env.read().await;
+#[tauri::command]
+pub async fn launch_instance(
+    name: &str,
+    launcher_env: State<'_, RwLock<LauncherEnv>>,
+) -> Result<(), String> {
+    let env = launcher_env.read().await;
 
-//     let instance_metadata = env.instances()
-//         .get_existing(name)
-//         .map_err(|e| e.to_string())?
-//         .0;
+    let instance_metadata = env.instances()
+        .get_existing(name)
+        .map_err(|e| e.to_string())?
+        .0;
 
-//     instance_metadata.load_init(&env.instances())
-//         .await.map_err(|e| e.to_string())?
-//         .execute().await.map_err(|e| e.to_string())?;
+    instance_metadata.load_init(&env.instances())
+        .await.map_err(|e| e.to_string())?
+        .execute().await.map_err(|e| e.to_string())?;
 
-//     Ok(())
-// }
+    Ok(())
+}

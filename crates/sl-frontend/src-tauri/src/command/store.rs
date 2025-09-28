@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use sl_core::{environment::LauncherEnv, instances::content_caching::ContentCachingManager};
 use sl_store::{
-    curseforge::api::search::{get_curseforge_search, CurseforgeSearchResponse},
+    curseforge::api::{search::{get_curseforge_search, CurseforgeSearchResponse}, CurseforgeProjectVersion},
     modrinth::{
-        api::{project::ProjectType, search::{get_modrinth_search, SearchResult}}, download_modrinth_project,
+        api::{project::{get_modrinth_project_versions, ModrinthProjectVersion, ProjectType}, search::{get_modrinth_search, ModrinthSearchResult}}, download_modrinth_project,
     },
 };
 use tauri::State;
@@ -28,9 +28,16 @@ pub enum StoreCategory {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum StoreSearch {
-    Modrinth(SearchResult),
+    Modrinth(ModrinthSearchResult),
     Curseforge(CurseforgeSearchResponse),
 }
+
+// #[derive(Debug, Deserialize, Serialize)]
+// #[serde(untagged)]
+// pub enum ContentVersions {
+//     Modrinth(Vec<ModrinthProjectVersion>),
+//     Curseforge(Vec<CurseforgeProjectVersion>)
+// }
 
 const CURSEFORGE_MODPACK_CLASS_ID: u32 = 4471;
 const CURSEFORGE_MOD_CLASS_ID: u32 = 6;
@@ -78,6 +85,32 @@ pub async fn fetch_store_search(
         }
     }
 }
+
+// #[tauri::command]
+// pub async fn get_content_versions(
+//     slug: &str,
+//     store_type: StoreType,
+//     store_category: StoreCategory,
+//     launcher_env: State<'_, RwLock<LauncherEnv>>,
+// ) -> Result<ContentVersion, String> {
+//     let env = launcher_env.read().await;
+//     let requester = env.requester();
+    
+//     match store_type {
+//         StoreType::Modrinth => {
+//             let versions = match store_category {
+//                 StoreCategory::Modpacks => get_projects_versions(requester, slug, None, None, ProjectType::Modpack),
+//                 StoreCategory::Mods => get_projects_versions(requester, slug, None, None, ProjectType::Mod),
+//                 StoreCategory::Resourcepacks => get_projects_versions(requester, slug, None, None, ProjectType::Resourcepack),
+//                 StoreCategory::Shaderpacks => get_projects_versions(requester, slug, None, None, ProjectType::Shader)  
+//             }.await?;
+
+//         },
+//         StoreType::Curseforge => {
+
+//         }
+//     }
+// }
 
 // TODO: Finish the Curseforge store and make this work properly in frontend
 #[tauri::command]

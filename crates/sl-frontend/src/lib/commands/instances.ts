@@ -18,3 +18,11 @@ export const getInstance = async (name: string) => {
         console.log(`getInstance error: ${error}`)
     }
 }
+
+export const launchInstance = async (name: string) => {
+    try {
+        await invoke("launch_instance", { name: name })
+    } catch (error) {
+        console.log(`launchInstance error: ${error}`)    
+    }
+}

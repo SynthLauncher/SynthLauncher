@@ -141,19 +141,19 @@ pub async fn download_modrinth_project<'a>(
     Ok(())
 }
 
-pub async fn get_projects_versions(
-    requester: &Requester,
-    slug: &str,
-    game_version: &str,
-    loader: &str,
-    project_type: ProjectType,
-) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
-    match project_type {
-        ProjectType::Resourcepack | ProjectType::Shader => {
-            get_modrinth_project_versions(requester, slug, Some(game_version), None).await
-        }
-        ProjectType::Mod | ProjectType::Modpack => {
-            get_modrinth_project_versions(requester, slug, Some(game_version), Some(loader)).await
-        }
-    }
-}
+// pub async fn get_projects_versions(
+//     requester: &Requester,
+//     slug: &str,
+//     game_version: Option<&str>,
+//     loader: Option<&str>,
+//     project_type: ProjectType,
+// ) -> Result<Vec<ModrinthProjectVersion>, BackendError> {
+//     match project_type {
+//         ProjectType::Resourcepack | ProjectType::Shader => {
+//             get_modrinth_project_versions(requester, slug, Some(game_version), None).await
+//         }
+//         ProjectType::Mod | ProjectType::Modpack => {
+//             get_modrinth_project_versions(requester, slug, Some(game_version), Some(loader)).await
+//         }
+//     }
+// }

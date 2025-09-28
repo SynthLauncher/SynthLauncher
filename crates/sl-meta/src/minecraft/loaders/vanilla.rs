@@ -254,4 +254,8 @@ impl Client {
     pub fn libraries(&self) -> impl Iterator<Item = &Library> {
         self.libraries.iter().filter(|x| x.is_allowed())
     }
+
+    pub fn libraries_len_hint(&self) -> usize {
+        self.libraries.len()
+    }
 }

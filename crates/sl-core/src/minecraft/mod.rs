@@ -5,7 +5,7 @@ use std::{
 };
 
 use bytes::Bytes;
-use futures::{stream::FuturesUnordered, StreamExt};
+use futures::StreamExt;
 
 use sl_meta::minecraft::loaders::vanilla::{AssetIndex, AssetObject, Client, Download, Library};
 use sl_utils::{
@@ -105,49 +105,13 @@ async fn download_to(
     Ok(())
 }
 
-#[inline(always)]
-async fn download_futures<T, F, R, I>(
-    mut to_download: I,
-    download_max: usize,
-    download: F,
-) -> Vec<R>
-where
-    T: Send,
-    I: Send,
-    F: Send,
-    R: Send,
-    I: Iterator<Item = T>,
-    F: AsyncFn(T) -> R,
-{
-    let (size_0, size_1) = to_download.size_hint();
-    let size_hint = size_1.unwrap_or(size_0);
-
-    let mut outputs = Vec::with_capacity(size_hint.min(10));
-    let to_download_ref = to_download.by_ref();
-
-    loop {
-        let futures = FuturesUnordered::new();
-
-        for item in to_download_ref.take(download_max) {
-            futures.push(download(item));
-        }
-
-        let collected_outputs = futures.collect::<Vec<_>>().await;
-
-        if collected_outputs.is_empty() {
-            break outputs;
-        }
-
-        outputs.extend(collected_outputs);
-    }
-}
-
 // This could be made faster maybe
 async fn install_assets(
     requester: &Requester,
     assets_root_path: &Path,
     client: &Client,
 ) -> Result<(), BackendError> {
+    const MAX_DOWNLOADS: usize = 5;
     log!("Downloading assets!");
     let assets = &client.assets;
 
@@ -187,10 +151,20 @@ async fn install_assets(
         Ok(())
     };
 
+    let len = objects.len();
     let iter = objects.into_iter();
     let iter = iter.map(|(_, object)| object);
-    let outputs = download_futures(iter, 5, download_object).await;
-    for (i, output) in outputs.into_iter().enumerate() {
+
+    let mut downloads = Vec::with_capacity(len);
+    for obj in iter {
+        downloads.push(download_object(obj));
+    }
+
+    let results = futures::stream::iter(downloads)
+        .buffer_unordered(MAX_DOWNLOADS)
+        .collect::<Vec<_>>()
+        .await;
+    for (i, output) in results.into_iter().enumerate() {
         if let Err(err) = output {
             elog!("Failed to download object indexed {i}: {err:?}");
             return Err(BackendError::HttpError(err));
@@ -207,8 +181,8 @@ async fn install_libs(
     libs_dir: &Path,
     path: &Path,
 ) -> Result<(), BackendError> {
+    const MAX_DOWNLOADS: usize = 10;
     log!("Downloading libraries...");
-    let path = path.to_path_buf();
 
     let download_lib = async move |lib: &Library| -> Result<(), BackendError> {
         if let Some(ref artifact) = lib.downloads.artifact {
@@ -234,8 +208,17 @@ async fn install_libs(
         Ok(())
     };
 
-    let outputs = download_futures(client.libraries(), 10, download_lib).await;
-    for (i, output) in outputs.into_iter().enumerate() {
+    let len = client.libraries_len_hint();
+    let mut downloads = Vec::with_capacity(len);
+
+    for lib in client.libraries() {
+        downloads.push(download_lib(lib));
+    }
+    let results = futures::stream::iter(downloads)
+        .buffer_unordered(MAX_DOWNLOADS)
+        .collect::<Vec<_>>()
+        .await;
+    for (i, output) in results.into_iter().enumerate() {
         if let Err(err) = output {
             elog!("Failed to download library indexed {i}: {err:?}");
             return Err(err);

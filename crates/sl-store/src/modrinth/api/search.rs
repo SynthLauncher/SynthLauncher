@@ -19,12 +19,12 @@ pub struct ModrinthSearchHit {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct SearchResult {
+pub struct ModrinthSearchResult {
     pub hits: Vec<ModrinthSearchHit>,
     pub total_hits: u32
 }
 
-pub async fn get_modrinth_search(requester: &Requester, query: &str, project_type: &str, offset: u32) -> Result<SearchResult, BackendError> {
+pub async fn get_modrinth_search(requester: &Requester, query: &str, project_type: &str, offset: u32) -> Result<ModrinthSearchResult, BackendError> {
     let url = format!(
         "https://api.modrinth.com/v2/search?facets=[[\"project_type:{}\"]]&limit={}&offset={}&query={}",
         project_type,
