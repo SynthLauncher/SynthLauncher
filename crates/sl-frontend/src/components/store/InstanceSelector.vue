@@ -1,22 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { InstanceMetadata } from '@/types/instances'
 import { instancesManager } from '@/lib/managers/instances'
 import { storeManager } from '@/lib/managers/store'
 
 const open = ref(false)
-const instances = computed(() => instancesManager.instances.filter(instance => instance.mod_loader != 'Vanilla'))
 
 function selectInstance(instance: InstanceMetadata) {
   storeManager.selectedInstance = instance
   open.value = false
 }
 
-onMounted(() => storeManager.selectedInstance = instances.value[0])
+onMounted(() => storeManager.selectedInstance = instancesManager.instances[0])
 </script>
 
 <template>
-  <div class="relative w-64">
+  <div class="relative">
     <button
       class="w-full flex justify-between items-center rounded-xl border border-gray-300 bg-white px-4 py-2
              shadow-sm text-sm text-gray-800
@@ -35,7 +34,7 @@ onMounted(() => storeManager.selectedInstance = instances.value[0])
              shadow-lg max-h-60 overflow-auto text-sm"
     >
       <li
-        v-for="instance in instances"
+        v-for="instance in instancesManager.instances"
         :key="instance.name"
         @click="selectInstance(instance)"
         class="px-4 py-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-700"

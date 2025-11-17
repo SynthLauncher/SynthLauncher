@@ -42,16 +42,24 @@ pub struct MinecraftConfig {}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JavaConfig {
     #[serde(default = "default_min_memory")]
-    pub min_ram: usize,
+    min_ram: usize,
     #[serde(default = "default_max_memory")]
-    pub max_ram: usize,
+    max_ram: usize,
     // default is going to be set by another part of the code
     // please give everything a default value somewhere
-    pub path: PathBuf,
-    pub javac_path: Option<PathBuf>,
+    path: PathBuf,
+    javac_path: Option<PathBuf>,
 }
 
 impl JavaConfig {
+    pub const fn min_ram(&self) -> &usize {
+        &self.min_ram
+    }
+
+    pub const fn max_ram(&self) -> &usize {
+        &self.max_ram
+    }
+
     pub fn java(&self) -> &Path {
         // If the configured path exists, use it
         if self.path.exists() {

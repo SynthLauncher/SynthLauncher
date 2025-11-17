@@ -11,40 +11,60 @@ use std::collections::HashMap;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AuthCodeResponse {
-    pub user_code: String,
-    pub device_code: String,
-    pub verification_uri: String,
-    pub expires_in: i64,
-    pub interval: u64,
-    pub message: String,
+    user_code: String,
+    device_code: String,
+    verification_uri: String,
+    expires_in: i64,
+    interval: u64,
+    message: String,
+}
+
+impl AuthCodeResponse {
+    pub const fn verification_uri(&self) -> &String {
+        &self.verification_uri
+    }
+
+    pub const fn user_code(&self) -> &String {
+        &self.user_code
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AuthTokenResponse {
-    pub token_type: String,
-    pub scope: String,
-    pub expires_in: i64,
-    pub ext_expires_in: i64,
-    pub access_token: String,
-    pub refresh_token: String,
+    token_type: String,
+    scope: String,
+    expires_in: i64,
+    ext_expires_in: i64,
+    access_token: String,
+    refresh_token: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct XboxLiveAuthResponse {
-    pub issue_instant: String,
-    pub not_after: String,
-    pub token: String,
-    pub display_claims: HashMap<String, Vec<HashMap<String, String>>>,
+    issue_instant: String,
+    not_after: String,
+    token: String,
+    display_claims: HashMap<String, Vec<HashMap<String, String>>>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct MinecraftAuthResponse {
-    pub username: String,
-    pub roles: Vec<String>,
-    pub access_token: String,
-    pub expires_in: u32,
-    pub token_type: String,
+    username: String,
+    roles: Vec<String>,
+    access_token: String,
+    expires_in: u32,
+    token_type: String,
+}
+
+impl MinecraftAuthResponse {
+    pub const fn username(&self) -> &String {
+        &self.username
+    }
+
+    pub const fn access_token(&self) -> &String {
+        &self.access_token
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

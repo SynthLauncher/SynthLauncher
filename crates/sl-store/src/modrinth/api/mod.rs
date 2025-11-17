@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::StoreCategory;
+
 pub mod project;
 pub mod search;
 
@@ -12,56 +14,98 @@ pub enum ProjectType {
     Shader,
 }
 
+impl From<StoreCategory> for ProjectType {
+    fn from(value: StoreCategory) -> Self {
+        match value {
+            StoreCategory::Modpacks => ProjectType::Modpack,
+            StoreCategory::Mods => ProjectType::Mod,
+            StoreCategory::Resourcepacks => ProjectType::Resourcepack,
+            StoreCategory::Shaderpacks => ProjectType::Shader
+        }
+    }
+}
+
+impl From<ProjectType> for &'static str {
+    fn from(value: ProjectType) -> Self {
+        match value {
+            ProjectType::Modpack => "modpack",
+            ProjectType::Mod => "mod",
+            ProjectType::Resourcepack => "resourcepack",
+            ProjectType::Shader => "shader",
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthSearchHit {
-    pub slug: String,
-    pub title: String,
-    pub description: String,
-    pub project_id: String,
-    pub project_type: ProjectType,
-    pub downloads: u32,
-    pub icon_url: Option<String>,
-    pub author: String,
+    slug: String,
+    title: String,
+    description: String,
+    project_id: String,
+    project_type: ProjectType,
+    downloads: u32,
+    icon_url: Option<String>,
+    author: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthSearchResult {
-    pub hits: Vec<ModrinthSearchHit>,
-    pub total_hits: u32,
+    hits: Vec<ModrinthSearchHit>,
+    total_hits: u32,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthProjectDependency {
-    pub project_id: Option<String>,
-    pub version_id: Option<String>,
-    pub dependency_type: String, // TODO: Maybe make this an enum
+    project_id: Option<String>,
+    version_id: Option<String>,
+    dependency_type: String, // TODO: Maybe make this an enum
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthProjectFileHashes {
-    pub sha1: String,
-    pub sha512: String,
+    sha1: String,
+    sha512: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthProjectFile {
-    pub hashes: ModrinthProjectFileHashes,
-    pub url: String,
-    pub filename: String,
-    pub primary: bool,
-    pub size: u32,
-    pub file_type: Option<String>,
+    // hashes: ModrinthProjectFileHashes,
+    url: String,
+    filename: String,
+    // primary: bool,
+    // size: u32,
+    // file_type: Option<String>,
+}
+
+impl ModrinthProjectFile {
+    pub const fn url(&self) ->  &String {
+        &self.url
+    }
+
+    pub const fn filename(&self) -> &String {
+        &self.filename
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModrinthProject {
-    pub id: String,
-    pub project_id: String,
-    pub name: String,
-    pub game_versions: Vec<String>,
-    pub loaders: Vec<String>,
-    pub version_number: String,
-    pub downloads: u32,
-    pub files: Vec<ModrinthProjectFile>,
-    pub dependencies: Vec<ModrinthProjectDependency>,
+    id: String,
+    project_id: String,
+    name: String,
+    game_versions: Vec<String>,
+    loaders: Vec<String>,
+    version_number: String,
+    downloads: u32,
+    files: Vec<ModrinthProjectFile>,
+    dependencies: Vec<ModrinthProjectDependency>,
+}
+
+impl ModrinthProject {
+    pub const fn id(&self) -> &String {
+        &self.id
+    }
+
+    pub const fn files(&self) -> &Vec<ModrinthProjectFile> {
+        &self.files
+    }
 }

@@ -249,8 +249,8 @@ impl<'a> LoadedInstance<'a> {
 
         log!("Using Java path: {}", current_java_path.display());
 
-        let max_ram = self.config.java.max_ram;
-        let min_ram = self.config.java.min_ram;
+        let max_ram = self.config.java.max_ram();
+        let min_ram = self.config.java.min_ram();
 
         dlog!("min_ram: {}, max_ram: {}", min_ram, max_ram);
 

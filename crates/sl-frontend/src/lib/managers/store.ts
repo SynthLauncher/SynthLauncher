@@ -1,42 +1,46 @@
 import { reactive } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { StoreCategoryType, StoreContentVersions, StoreSearch, StoreType } from "@/types/store";
-import { instancesManager } from "@/lib/managers/instances";
+import { StoreCategoryType, StoreContentVersion, StoreSearch, StoreType } from "@/types/store";
 import { InstanceMetadata } from "@/types/instances";
+import { setIfNotPresent } from "../utils";
 
-export interface SelectedContentState
-{
+export interface SelectedContentState {
     slug: string,
-    versions: StoreContentVersions,
+    versions: StoreContentVersion[],
     loading: boolean
 }
 
 export const storeManager = reactive({
-    storeType: "modrinth" as StoreType,
-    storeCategory: "modpacks" as StoreCategoryType,
+    storeType: 'modrinth' as StoreType,
+    storeCategory: 'modpacks' as StoreCategoryType,
     searchQuery: "",
     page: 1,
 
     items: undefined as StoreSearch | undefined,
     loading: false,
 
-    selectedContent: {
+    selectedContent: reactive<SelectedContentState>({
         slug: "",
-        versions: undefined as StoreContentVersions | undefined,
+        versions: [],
         loading: false
-    } as SelectedContentState,
+    }),
+    selectedContents: new Map<string, StoreContentVersion | undefined>,
 
-    selectedContents: new Set<string>,
     selectedInstance: undefined as InstanceMetadata | undefined,
 
     selectContent: async (slug: string) => {
-        if (storeManager.selectedContents.has(slug) && storeManager.selectedContent.slug == slug)
-        {
-            storeManager.selectedContents.delete(slug)     
-            storeManager.selectedContent.slug = ""
-        } else {
+        if (storeManager.storeCategory === 'modpacks') {
+            storeManager.selectedContents.clear()
             storeManager.selectedContent.slug = slug
-            storeManager.selectedContents.add(slug)
+            setIfNotPresent(storeManager.selectedContents, slug, undefined)
+        } else {
+            if (storeManager.selectedContents.has(slug) && storeManager.selectedContent.slug == slug) {
+                storeManager.selectedContents.delete(slug)
+                storeManager.selectedContent.slug = ""
+            } else {
+                storeManager.selectedContent.slug = slug
+                setIfNotPresent(storeManager.selectedContents, slug, undefined)
+            }
         }
     },
 
@@ -47,17 +51,43 @@ export const storeManager = reactive({
         storePage: number
     ) => {
         const result = await invoke<StoreSearch>("fetch_store_search", {
-                searchQuery: searchQuery,
-                storeType: storeType,
-                storeCategory: storeCategory,
-                storePage: (storePage - 1)
-            });
+            searchQuery: searchQuery,
+            storeType: storeType,
+            storeCategory: storeCategory,
+            storePage: (storePage - 1)
+        });
 
         return result
     },
 
+    loadSearch: async () => {
+        storeManager.loading = true
+        try {
+            storeManager.items = await storeManager.fetchSearch(
+                storeManager.searchQuery,
+                storeManager.storeType,
+                storeManager.storeCategory,
+                storeManager.page
+            )
+        } catch (e) {
+            console.error("storeManager.loadSearch error: ", e);
+        } finally {
+            storeManager.loading = false
+        }
+    },
+
     fetchContentVersions: async () => {
-        const result = await invoke<StoreContentVersions>("fetch_content_versions",  {
+        if (storeManager.storeCategory === 'modpacks') {
+            const result = await invoke<StoreContentVersion[]>("fetch_content_versions", {
+                storeType: storeManager.storeType,
+                slug: storeManager.selectedContent.slug,
+                gameVersion: undefined,
+                loader: undefined
+            })
+            return result
+        }
+
+        const result = await invoke<StoreContentVersion[]>("fetch_content_versions", {
             storeType: storeManager.storeType,
             slug: storeManager.selectedContent.slug,
             gameVersion: storeManager.selectedInstance?.mc_version,
@@ -71,27 +101,26 @@ export const storeManager = reactive({
         storeManager.selectedContent.loading = true;
         try {
             storeManager.selectedContent.versions = await storeManager.fetchContentVersions()
+            setIfNotPresent(storeManager.selectedContents, storeManager.selectedContent.slug, storeManager.selectedContent.versions[0])
         } catch (error) {
-            
         } finally {
             storeManager.selectedContent.loading = false;
         }
     },
 
-    loadSearch: async () => {
-        storeManager.loading = true
+    installContent: async () => {
         try {
-            storeManager.items = await storeManager.fetchSearch(
-                storeManager.searchQuery,
-                storeManager.storeType,
-                storeManager.storeCategory,
-                storeManager.page
-            )
+            // await invoke("install_modpack", {
+            //     slug: storeManager.selectedContent.slug,
+            //     version: storeManager.selectedContents.get(storeManager.selectedContent.slug)?.id
+            // })
+            await invoke("install_content", {
+                instanceName: storeManager.selectedInstance?.name,
+                files: Array.from(storeManager.selectedContents.values()).map(val => val?.files[0])
+            })
+            console.log("StoreManager.installContent log: Successfully installed")
         } catch (error) {
-
-        } finally {
-            storeManager.loading = false
+            console.error("StoreManager.installContent error: ", error)
         }
-    }
-
+    },
 })

@@ -26,7 +26,7 @@ defineProps<{
     </div>
 
     <button
-    @click="async () => await instancesManager.launch_instance(name)" 
+    @click.stop="async () => await instancesManager.launch_instance(name)" 
     class="cursor-pointer flex items-center
  justify-center size-10 rounded-full bg-sky-500 hover:bg-sky-600 transition-colors">
       <PlayIcon class="size-5 text-white" />

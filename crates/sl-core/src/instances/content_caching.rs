@@ -24,7 +24,7 @@ pub struct ContentCachingManager<'a> {
 }
 
 impl<'a> ContentCachingManager<'a> {
-    pub fn new(instance_path: &'a Path) -> Self {
+    pub const fn new(instance_path: &'a Path) -> Self {
         Self { instance_path }
     }
 
@@ -45,7 +45,6 @@ impl<'a> ContentCachingManager<'a> {
         let data = tokio::fs::read(path).await.unwrap_or_default();
         Ok(serde_json::from_slice(&data).unwrap_or_default())
     }
-
 
     fn save_content_list(&self, content_type: &ContentType, new_content_list: ContentList) -> std::io::Result<()> {
         let path = self.content_list_path(content_type);
@@ -71,21 +70,23 @@ impl<'a> ContentCachingManager<'a> {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContentData {
-    pub name: String,
-    pub hash: Option<String>,
-    pub source: ContentSource
+    name: String,
+    hash: Option<String>,
+    source: ContentSource
 }
 
 impl ContentData {
-    pub fn new(name: String, hash: Option<String>, source: ContentSource) -> Self {
+    pub const fn new(name: String, hash: Option<String>, source: ContentSource) -> Self {
         Self { name, hash, source }
     }
 }
 
+type Filename = String;
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContentList {
     scheme_version: u32,
-    pub list: HashMap<String, ContentData>
+    list: HashMap<Filename, ContentData>
 }
 
 impl ContentList {

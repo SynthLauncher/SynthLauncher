@@ -13,7 +13,7 @@ const instanceMetadata = instancesManager.get(instanceName)
   <div class="h-full w-full p-6">
     <div class="bg-[#232529] w-full flex gap-4 p-4">
       <div class="bg-neutral-700/70 p-2 rounded-lg">
-        <img :src="bytesToImageUrl(instanceMetadata?.icon as Uint8Array)" alt="Instance Icon" class="size-32">
+        <img :src="bytesToImageUrl(instanceMetadata?.icon as Uint8Array)" class="size-32">
       </div>
       
       <div class="flex flex-col gap-2">

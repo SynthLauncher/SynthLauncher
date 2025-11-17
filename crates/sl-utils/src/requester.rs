@@ -114,33 +114,6 @@ impl Requester {
 }
 
 impl Requester {
-    async fn retry<T, F, Fut>(
-        &self,
-        mut f: F,
-        max_retries: u32,
-        delay: Duration,
-        on_retry: impl Fn(u32),
-    ) -> Result<T, HttpError>
-    where
-        F: FnMut() -> Fut,
-        Fut: std::future::Future<Output = Result<T, HttpError>>,
-    {
-        let mut attempts = 0;
-        loop {
-            match f().await {
-                Ok(val) => return Ok(val),
-                Err(e) => {
-                    attempts += 1;
-                    on_retry(attempts);
-                    if attempts >= max_retries {
-                        return Err(e);
-                    }
-                    sleep(delay).await;
-                }
-            }
-        }
-    }
-
     async fn download_to_inner(
         &self,
         url: &str,
@@ -180,31 +153,36 @@ impl Requester {
         Ok(())
     }
 
+    async fn download_inner(&self, url: &str) -> Result<Bytes, HttpError> {
+        let res = self.get(&url).await?;
+        if !res.status().is_success() {
+            return Err(HttpError::Status(res.status()));
+        }
+
+        let bytes = res.bytes().await?;
+        Ok(bytes)
+    }
+
     async fn download(
         &self,
         url: &str,
         max_retries: u32,
         delay: Duration,
     ) -> Result<Bytes, HttpError> {
-        self.retry(
-            || {
-                let url = url.to_string();
-                let client = self.clone();
-                async move {
-                    let res = client.get(&url).await?;
-                    if !res.status().is_success() {
-                        return Err(HttpError::Status(res.status()));
+        let mut attempts = 0;
+        loop {
+            match self.download_inner(url).await {
+                Ok(val) => return Ok(val),
+                Err(e) => {
+                    attempts += 1;
+                    log!("Retrying '{}', attempt {}", url, attempts);
+                    if attempts >= max_retries {
+                        return Err(e);
                     }
-
-                    let bytes = res.bytes().await?;
-                    Ok(bytes)
+                    sleep(delay).await;
                 }
-            },
-            max_retries,
-            delay,
-            |attempt| log!("Retrying '{}', attempt {}", url, attempt),
-        )
-        .await
+            }
+        }
     }
 
     async fn download_to<'a>(

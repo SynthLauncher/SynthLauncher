@@ -12,3 +12,10 @@ export async function openDiscordLink() {
     console.error('Failed to open link:', e)
   }
 }
+
+export function setIfNotPresent<K, V>(map: Map<K, V>, key: K, value: V): V {
+  if (!map.has(key) || map.get(key) === undefined) {
+    map.set(key, value);
+  }
+  return map.get(key)!;
+}

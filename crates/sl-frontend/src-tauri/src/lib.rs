@@ -2,12 +2,15 @@ use sl_core::environment::LauncherEnv;
 use tokio::sync::RwLock;
 
 use crate::command::{
-    instances::{create_instance, get_all_instances, get_instance, launch_instance},
+
     launcher::open_synthlauncher_root_folder,
-    store::{fetch_content_versions, fetch_store_search},
+    store::{fetch_content_versions, fetch_store_search, install_content, install_modpack},
 };
 
-pub mod command;
+use crate::instances::commands::{create_instance, get_all_instances, get_instance, launch_instance};
+
+mod command;
+mod instances;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -25,7 +28,9 @@ pub fn run() {
             get_instance,
             launch_instance,
             fetch_content_versions,
-            create_instance
+            create_instance,
+            install_content,
+            install_modpack
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

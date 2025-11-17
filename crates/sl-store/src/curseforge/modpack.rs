@@ -3,9 +3,8 @@ use std::{fs::File, io::BufReader, path::Path, str::FromStr};
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
 use sl_core::instances::{instance_metadata::ModLoader, InstanceManager};
-use sl_utils::{errors::BackendError, requester::Requester};
+use sl_utils::{errors::BackendError, requester::Requester, zip::ZipExtractor};
 use tempdir::TempDir;
-use zip::ZipArchive;
 
 use crate::curseforge::api::project::get_curseforge_project_file;
 
@@ -13,7 +12,7 @@ const MODPACK_MANIFEST_NAME: &str = "manifest.json";
 
 #[derive(Debug, Deserialize)]
 struct CurseforgeModLoader {
-    pub id: String,
+    id: String,
     // pub primary: bool,
 }
 
@@ -27,45 +26,25 @@ impl CurseforgeModLoader {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Minecraft {
-    pub version: String,
-    pub mod_loaders: Vec<CurseforgeModLoader>,
+    version: String,
+    mod_loaders: Vec<CurseforgeModLoader>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 struct ModpackFile {
     #[serde(rename = "projectID")]
-    pub project_id: u32,
+    project_id: u32,
     #[serde(rename = "fileID")]
-    pub file_id: u32,
+    file_id: u32,
     // pub required: bool,
 }
 
 #[derive(Debug, Deserialize)]
 struct ModpackManifest {
-    pub minecraft: Minecraft,
-    pub name: String,
+    minecraft: Minecraft,
+    name: String,
     // pub author: String,
-    pub files: Vec<ModpackFile>,
-}
-
-async fn unzip_modpack(modpack: &Path, output_dir: &Path) -> Result<(), BackendError> {
-    let mut archive = ZipArchive::new(BufReader::new(File::open(modpack)?))?;
-
-    for i in 0..archive.len() {
-        let mut file = archive.by_index(i)?;
-        let out_path = output_dir.join(file.name());
-
-        if file.is_dir() {
-            tokio::fs::create_dir_all(&out_path).await?;
-        } else {
-            if let Some(parent) = out_path.parent() {
-                tokio::fs::create_dir_all(parent).await?;
-            }
-            std::io::copy(&mut file, &mut File::create(&out_path)?)?;
-        }
-    }
-
-    Ok(())
+    files: Vec<ModpackFile>,
 }
 
 async fn read_modpack_manifest(modpack_path: &Path) -> Result<ModpackManifest, BackendError> {
@@ -80,11 +59,11 @@ async fn download_modpack_file(
 ) -> Result<(), BackendError> {
     let project_file =
         get_curseforge_project_file(requester, modpack_file.project_id, modpack_file.file_id).await?;
-    let mod_path = mods_folder.join(project_file.file_name);
+    let mod_path = mods_folder.join(&project_file.file_name());
 
     requester
         .builder()
-        .download_to(&project_file.download_url, &mod_path)
+        .download_to(&project_file.download_url(), &mod_path)
         .await?;
 
     Ok(())
@@ -117,16 +96,17 @@ pub async fn download_curseforge_modpack<'a>(
 ) -> Result<(), BackendError> {
     let project_file =
         get_curseforge_project_file(instance_manager.requester(), mod_id, file_id).await?;
-    let tmp_dir = TempDir::new(&project_file.file_name)?;
-    let modpack_zip_path = tmp_dir.path().join(project_file.file_name);
+    let tmp_dir = TempDir::new(&project_file.file_name())?;
+    let modpack_zip_path = tmp_dir.path().join(project_file.file_name());
 
     instance_manager
         .requester()
         .builder()
-        .download_to(&project_file.download_url, &modpack_zip_path)
+        .download_to(&project_file.download_url(), &modpack_zip_path)
         .await?;
 
-    unzip_modpack(&modpack_zip_path, &tmp_dir.path()).await?;
+    let extractor = ZipExtractor::new(BufReader::new(File::open(modpack_zip_path)?));
+    extractor.extract(tmp_dir.path())?;
 
     let manifest = read_modpack_manifest(&tmp_dir.path()).await?;
     let (mod_loader, mod_loader_version) = manifest.minecraft.mod_loaders[0].extract_mod_loader();

@@ -1,7 +1,8 @@
 use sl_core::environment::LauncherEnv;
 use sl_store::{
-    get_content_versions, get_store_search, StoreCategory, StoreProjectVersions, StoreSearchResult,
-    StoreType,
+    download_content, get_content_versions, get_store_search,
+    modrinth::modpack::download_modrinth_modpack, ContentFile, StoreCategory, StoreProjectVersions,
+    StoreSearchResult, StoreType,
 };
 use tauri::State;
 use tokio::sync::RwLock;
@@ -39,10 +40,44 @@ pub async fn fetch_content_versions(
 ) -> Result<StoreProjectVersions, String> {
     let launcher_env = launcher_env_state.read().await;
     let requester = launcher_env.requester();
-    
+
     let result = get_content_versions(store_type, slug, game_version, loader, requester)
         .await
         .map_err(|e| e.to_string())?;
 
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn install_content(
+    instance_name: &str,
+    files: Vec<ContentFile>,
+    launcher_env_state: State<'_, RwLock<LauncherEnv>>,
+) -> Result<(), String> {
+    let launcher_env = launcher_env_state.read().await;
+
+    download_content(
+        &launcher_env.requester(),
+        &launcher_env.instances(),
+        instance_name,
+        files,
+    )
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn install_modpack(
+    slug: &str,
+    version: &str,
+    launcher_env_state: State<'_, RwLock<LauncherEnv>>,
+) -> Result<(), String> {
+    let env = launcher_env_state.write().await;
+    download_modrinth_modpack(&mut env.instances(), slug, version)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
 }

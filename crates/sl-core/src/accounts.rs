@@ -10,7 +10,7 @@ pub struct AccountsManager<'a> {
 }
 
 impl<'a> AccountsManager<'a> {
-    pub(crate) fn new(accounts_path: &'a Path) -> Self {
+    pub(crate) const fn new(accounts_path: &'a Path) -> Self {
         AccountsManager { accounts_path }
     }
 
@@ -35,11 +35,13 @@ impl<'a> AccountsManager<'a> {
     }
 }
 
+type PlayerName = String;
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerAccounts {
-    pub scheme_version: u32,
-    pub current_account: String,
-    pub accounts: HashMap<String, PlayerData>,
+    scheme_version: u32,
+    current_account: String,
+    accounts: HashMap<PlayerName, PlayerData>,
 }
 
 impl PlayerAccounts {
@@ -49,6 +51,10 @@ impl PlayerAccounts {
             accounts: HashMap::new(),
             scheme_version: 0,
         }
+    }
+
+    pub const fn accounts(&self) -> &HashMap<PlayerName, PlayerData> {
+        &self.accounts
     }
 
     pub fn get(&self, name: &str) -> &PlayerData {

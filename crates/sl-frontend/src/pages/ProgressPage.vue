@@ -74,20 +74,14 @@ onMounted(onInit);
 
 <template>
     <div>
-        <h1>
+        <h2 class="text-white">
             {{ progressMessage }}
-        </h1>
+        </h2>
         <ul>
-            <li v-for="[url, progress] in currentProgresses" :key="url">
+            <li class="text-white" v-for="[url, progress] in currentProgresses" :key="url">
                 {{ url }}: {{ displayTotal(progress) }}
             </li>
         </ul>
     </div>
 </template>
 
-<style scoped>
-h1,
-li {
-    color: white;
-}
-</style>

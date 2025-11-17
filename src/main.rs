@@ -62,7 +62,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let mut auth = AuthFlow::new("74909cec-49b6-4fee-aa60-1b2a57ef72e1");
             let code_res = auth.request_code().await.unwrap();
 
-            log!("Open this link in your browser {} and enter the following code: {}\nWaiting authentication...", code_res.verification_uri, code_res.user_code);
+            log!("Open this link in your browser {} and enter the following code: {}\nWaiting authentication...", code_res.verification_uri(), code_res.user_code());
 
             auth.wait_for_login().await.unwrap();
             auth.login_in_xbox_live().await.unwrap();
@@ -70,8 +70,8 @@ async fn run_cli() -> Result<(), BackendError> {
 
             env.accounts()
                 .add_account(
-                    get_premium_account_name(env.requester(), &minecraft.access_token).await?,
-                    PlayerData::new(minecraft.username.clone(), minecraft.access_token.clone()),
+                    get_premium_account_name(env.requester(), &minecraft.access_token()).await?,
+                    PlayerData::new(minecraft.username().clone(), minecraft.access_token().clone()),
                 )
                 .await?;
         }
@@ -89,7 +89,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let accounts = env.accounts();
             let accounts = accounts.load().await?;
 
-            for (i, profile) in accounts.accounts.iter() {
+            for (i, profile) in accounts.accounts().iter() {
                 println!(
                     "[{}]: Access Token: {}; ID: {}",
                     i, profile.access_token, profile.id

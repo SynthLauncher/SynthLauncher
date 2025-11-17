@@ -7,9 +7,10 @@ use std::{
 use futures_util::{stream::FuturesUnordered, StreamExt};
 use serde::Deserialize;
 use sl_core::instances::{instance_metadata::ModLoader, InstanceManager};
-use sl_utils::{errors::BackendError, fs::copy_dir_all, requester::Requester};
+use sl_utils::{
+    errors::BackendError, fs::async_copy_dir_all, requester::Requester, zip::ZipExtractor,
+};
 use tempdir::TempDir;
-use zip::ZipArchive;
 
 use crate::modrinth::api::project::get_modrinth_project;
 
@@ -37,9 +38,9 @@ impl DependencyLoader {
 
 #[derive(Debug, Deserialize)]
 struct Dependencies {
-    pub minecraft: String,
+    minecraft: String,
     #[serde(flatten)]
-    pub loader: DependencyLoader,
+    loader: DependencyLoader,
 }
 
 #[derive(Debug, Deserialize)]
@@ -47,16 +48,16 @@ struct Dependencies {
 struct ModrinthIndex {
     // pub name: String,
     // pub version_id: String,
-    pub files: Vec<ModrinthIndexFile>,
-    pub dependencies: Dependencies,
+    files: Vec<ModrinthIndexFile>,
+    dependencies: Dependencies,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct ModrinthIndexFile {
-    pub path: PathBuf,
+    path: PathBuf,
     // pub hashes: FileHashes,
-    pub downloads: Vec<String>,
+    downloads: Vec<String>,
     // pub file_size: u32, // Maybe this will be needed for progress tracking?
 }
 
@@ -66,41 +67,13 @@ struct ModrinthIndexFile {
 //     pub sha512: String,
 // }
 
-async fn unzip_modpack(
-    modpack_zip_path: &Path,
-    output_dir: &Path,
-) -> Result<(), BackendError> {
-    let mut archive = ZipArchive::new(BufReader::new(File::open(modpack_zip_path)?))?;
-
-    for i in 0..archive.len() {
-        let mut file = archive.by_index(i)?;
-        let out_path = output_dir.join(file.name());
-
-        if file.is_dir() {
-            tokio::fs::create_dir_all(&out_path).await?;
-        } else {
-            if let Some(parent) = out_path.parent() {
-                tokio::fs::create_dir_all(parent).await?;
-            }
-            std::io::copy(&mut file, &mut File::create(&out_path)?)?;
-        }
-    }
-    Ok(())
-}
-
-async fn read_modrinth_index(
-    modpack_path: &Path,
-) -> Result<ModrinthIndex, BackendError> {
+async fn read_modrinth_index(modpack_path: &Path) -> Result<ModrinthIndex, BackendError> {
     let bytes = tokio::fs::read(modpack_path.join(MODRINTH_INDEX_NAME)).await?;
     Ok(serde_json::from_slice(&bytes)?)
 }
 
-fn copy_overrides(
-    modpack_path: &Path,
-    instance_path: &Path,
-) -> Result<(), BackendError> {
-    let overrides = modpack_path.join("overrides");
-    copy_dir_all(overrides, instance_path)?;
+async fn copy_overrides(modpack_path: &Path, instance_path: &Path) -> Result<(), BackendError> {
+    async_copy_dir_all(modpack_path.join("overrides"), instance_path).await?;
     Ok(())
 }
 
@@ -153,15 +126,16 @@ pub async fn download_modrinth_modpack<'a>(
     let project = get_modrinth_project(instance_manager.requester(), slug, version).await?;
 
     let tmp_dir = TempDir::new(slug)?;
-    let zip_path = tmp_dir.path().join(project.id);
+    let zip_path = tmp_dir.path().join(project.id());
 
     instance_manager
         .requester()
         .builder()
-        .download_to(&project.files[0].url, &zip_path)
+        .download_to(&project.files()[0].url(), &zip_path)
         .await?;
 
-    unzip_modpack(&zip_path, &tmp_dir.path()).await?;
+    let extractor = ZipExtractor::new(BufReader::new(File::open(zip_path)?));
+    extractor.extract(tmp_dir.path())?;
 
     let index = read_modrinth_index(&tmp_dir.path()).await?;
     let (mod_loader, mod_loader_version) = index.dependencies.loader.get_loader_info();
@@ -183,7 +157,7 @@ pub async fn download_modrinth_modpack<'a>(
     )
     .await?;
 
-    copy_overrides(tmp_dir.path(), &instance_manager.instance_dir(slug))?;
+    copy_overrides(tmp_dir.path(), &instance_manager.instance_dir(slug)).await?;
 
     Ok(())
 }
