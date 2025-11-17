@@ -17,11 +17,11 @@ use sl_utils::{
 
 use crate::instances::instance_metadata::InstanceMetadata;
 
+pub mod content_caching;
 pub mod instance_exporter;
 pub mod instance_importer;
 pub mod instance_metadata;
 pub mod loaded_instance;
-pub mod content_caching;
 
 const INSTANCE_FILE_NAME: &str = "instance.json";
 

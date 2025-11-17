@@ -6,7 +6,7 @@ use crate::{
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::{minecraft::loaders::vanilla::Client, minecraft::version_manifest::VersionType};
 use sl_player::PlayerData;
-use sl_utils::{dlog, errors::BackendError, log, wlog};
+use sl_utils::{dlog, errors::BackendError, log, progress::ProgressReceiver, wlog};
 
 use chrono::DateTime;
 use std::{
@@ -69,10 +69,11 @@ impl<'a> LoadedInstance<'a> {
     ///
     /// the reason why the download operation is not a part of the init, is because this operation results is not part of the instance's memory representation
     /// so i think splitting them makes the code more maintainable
-    async fn download_minecraft(&self) -> Result<(), BackendError> {
+    async fn download_minecraft(&self, progress: &ProgressReceiver) -> Result<(), BackendError> {
         // will automatically perform hash verification and only re install corrupted files
         install_client(
             self.manager.requester(),
+            progress,
             &self.loaded_version.client_json(),
             &self.loaded_version.client_jar_path(),
             &self.instance_path,
@@ -225,11 +226,14 @@ impl<'a> LoadedInstance<'a> {
     /// # Returns
     /// - Ok((child, reader)) reader is a pipe reader that can be used to read the output of the instance (stderr and stdout)
     /// - Err(BackendError) if the instance could not be executed
-    pub async fn execute(self) -> Result<(tokio::process::Child, impl AsyncRead), BackendError> {
+    pub async fn execute(
+        self,
+        progress: ProgressReceiver,
+    ) -> Result<(tokio::process::Child, impl AsyncRead), BackendError> {
         // the reason why the download operation is done here is to ensure that the files are available before executing the instance.
         // AND THE REASON WHY YOU DON'T LEAVE CALLING THIS TO THE CALLER OF THE EXECUTE METHOD is because it is just better and cleaner,
         // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
-        self.download_minecraft().await?;
+        self.download_minecraft(&progress).await?;
 
         let accounts = self.manager.try_load_accounts().await?;
         let (name, data) = accounts.get_current();
