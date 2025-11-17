@@ -89,7 +89,7 @@ If you have any questions or need further assistance, feel free to reach out to 
 
 ## Disclaimers
 
-We are not affiliated with Mojang AB, Microsoft Corporation, and/or its affiliates.
+We are not affiliated with Mojang AB, Microsoft Corporation, and/or their affiliates.
 
 ## Privacy Policy (Updated November 17, 2025)
 
