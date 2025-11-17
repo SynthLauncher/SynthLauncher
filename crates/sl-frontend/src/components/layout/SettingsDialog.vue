@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Settings, X } from 'lucide-vue-next'
-import NavigationSidebarItem from './NavigationSidebarItem.vue'
-import Dialog from '../ui/Dialog.vue'
+import NavigationSidebarItem from '@/components/layout/NavigationSidebarItem.vue'
+import Dialog from '@/components/ui/Dialog.vue'
 
 const isOpen = ref(false)
 const showContent = ref(false)

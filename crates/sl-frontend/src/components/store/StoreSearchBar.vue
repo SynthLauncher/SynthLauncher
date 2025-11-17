@@ -1,3 +1,17 @@
+<script setup lang="ts">
+import { Search, X } from "lucide-vue-next";
+import { StoreCategoryType } from "@/types/store";
+
+defineProps<{
+  searchQuery: string;
+  category: StoreCategoryType;
+}>();
+
+const emit = defineEmits<{
+  (e: "update:searchQuery", value: string): void;
+}>();
+</script>
+
 <template>
   <div class="relative w-full">
     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
@@ -19,17 +33,3 @@
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-import { Search, X } from "lucide-vue-next";
-import { StoreCategoryType } from "../../types/store";
-
-defineProps<{
-  searchQuery: string;
-  category: StoreCategoryType;
-}>();
-
-const emit = defineEmits<{
-  (e: "update:searchQuery", value: string): void;
-}>();
-</script>

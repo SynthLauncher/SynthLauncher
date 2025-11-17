@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { storeManager } from '../../lib/managers/store'
+import { storeManager } from '@/lib/managers/store'
 
 const open = ref(false)
 

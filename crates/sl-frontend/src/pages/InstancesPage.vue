@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { bytesToImageUrl } from '../lib/utils';
-import { instancesManager } from '../lib/managers/instances';
-import Dialog from '../components/ui/Dialog.vue';
-import InstanceCard from '../components/instances/InstanceCard.vue';
-import CreateInstanceButton from '../components/instances/CreateInstanceButton.vue';
 import { useRouter } from 'vue-router';
+import { bytesToImageUrl } from '@/lib/utils';
+import { instancesManager } from '@/lib/managers/instances';
+import Dialog from '@/components/ui/Dialog.vue';
+import InstanceCard from '@/components/instances/InstanceCard.vue';
+import CreateInstanceButton from '@/components/instances/CreateInstanceButton.vue';
 
 const router = useRouter()
 

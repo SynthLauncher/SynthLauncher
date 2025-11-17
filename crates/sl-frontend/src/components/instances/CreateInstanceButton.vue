@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next';
 import { ref } from 'vue';
-import Dialog from '../ui/Dialog.vue';
+import Dialog from '@/components/ui/Dialog.vue';
 
 const isOpen = ref(false)
 </script>

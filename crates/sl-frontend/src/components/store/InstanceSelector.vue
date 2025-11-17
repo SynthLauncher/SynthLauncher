@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { InstanceMetadata } from '../../types/instances'
-import { instancesManager } from '../../lib/managers/instances'
-import { storeManager } from '../../lib/managers/store'
+import { InstanceMetadata } from '@/types/instances'
+import { instancesManager } from '@/lib/managers/instances'
+import { storeManager } from '@/lib/managers/store'
 
 const open = ref(false)
 const instances = computed(() => instancesManager.instances.filter(instance => instance.mod_loader != 'Vanilla'))

@@ -1,8 +1,8 @@
 import { reactive } from "vue";
-import { StoreCategoryType, StoreContentVersions, StoreSearch, StoreType } from "../../types/store";
 import { invoke } from "@tauri-apps/api/core";
-import { instancesManager } from "./instances";
-import { InstanceMetadata } from "../../types/instances";
+import { StoreCategoryType, StoreContentVersions, StoreSearch, StoreType } from "@/types/store";
+import { instancesManager } from "@/lib/managers/instances";
+import { InstanceMetadata } from "@/types/instances";
 
 export interface SelectedContentState
 {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { bytesToImageUrl } from '../lib/utils';
-import { instancesManager } from '../lib/managers/instances';
+import { bytesToImageUrl } from '@/lib/utils';
+import { instancesManager } from '@/lib/managers/instances';
 
 const route = useRoute()
 const instanceName = route.params.instance_name as string

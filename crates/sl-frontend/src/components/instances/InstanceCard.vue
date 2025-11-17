@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { PlayIcon } from 'lucide-vue-next';
-import { instancesManager } from '../../lib/managers/instances';
-import { ModLoader } from '../../types/instances';
+import { instancesManager } from '@/lib/managers/instances';
+import { ModLoader } from '@/types/instances';
 
 defineProps<{
   icon?: string,

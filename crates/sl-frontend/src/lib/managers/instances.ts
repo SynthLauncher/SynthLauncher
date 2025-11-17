@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { InstanceMetadata, ModLoader } from '../../types/instances';
+import { InstanceMetadata, ModLoader } from '@/types/instances';
 import { invoke } from '@tauri-apps/api/core';
 
 export const instancesManager = reactive({

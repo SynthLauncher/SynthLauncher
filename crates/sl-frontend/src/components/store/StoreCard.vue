@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DownloadIcon } from 'lucide-vue-next';
-import { storeManager } from '../../lib/managers/store';
+import { storeManager } from '@/lib/managers/store';
 
 withDefaults(defineProps<{
     icon?: string,
