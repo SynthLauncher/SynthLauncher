@@ -87,7 +87,16 @@ The GUI is built using a frontend framework managed by `pnpm` and Tauri.
 
 If you have any questions or need further assistance, feel free to reach out to us via the project's issue tracker, Email: [STierProgrammer@gmail.com](mailto:stierprogrammer@gmail.com) or Discord: `stierprogrammer`.
 
-### Inspired by:
+## Disclaimers
+
+We are not affiliated with Mojang AB, Microsoft Corporation, and/or its affiliates.
+
+## Privacy Policy (Updated November 17, 2025)
+
+The launcher does **not** collect any data including but not limited to; usage analytics, personal information, etc. 
+GitHub may, however, collect certain data (cookies) if you are navigating the site to download our launcher. 
+
+## Inspired by:
 
 1. [CrabLauncher](https://github.com/safiworks/CrabLauncher)
 2. [QuantumLauncher](https://github.com/Mrmayman/quantum-launcher)
