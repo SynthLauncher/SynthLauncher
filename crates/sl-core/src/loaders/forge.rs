@@ -4,6 +4,7 @@ use sl_utils::{
     dlog, elog,
     errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
     log,
+    progress::{ProgressReceiver, ProgressSender},
     requester::Requester,
 };
 use std::{
@@ -35,11 +36,13 @@ struct ForgeInstaller<'a> {
     cache_dir: TempDir,
     // ForgeInstaller.java
     java_forge_installer: PathBuf,
+    progress_recv: &'a ProgressReceiver,
 }
 
 impl<'a> ForgeInstaller<'a> {
     async fn new(
         requester: &'a Requester,
+        progress_recv: &'a ProgressReceiver,
         libs_dir: &'a Path,
         mc_version: &'a str,
         forge_version: &'a str,
@@ -96,6 +99,7 @@ impl<'a> ForgeInstaller<'a> {
             java_path,
             javac_path,
             output_loader_json_path,
+            progress_recv,
         })
     }
 
@@ -123,6 +127,9 @@ impl<'a> ForgeInstaller<'a> {
     async fn download(&self) -> Result<PathBuf, HttpError> {
         let (file_type, file_type_flipped) = (self.file_type(), self.file_type_flipped());
         dlog!("Forge: downloading the installer, file_type: {file_type}, file_type_flipped: {file_type_flipped}...");
+        let sender = self
+            .progress_recv
+            .begin_sending("Downloading Forge installer");
 
         let installer_path = self
             .cache_dir
@@ -130,7 +137,7 @@ impl<'a> ForgeInstaller<'a> {
             .join(format!("forge-{}-{file_type}.jar", self.short_version));
         let file = tokio::fs::File::create_new(&installer_path).await?;
 
-        self.try_downloading_from_urls(&[
+        self.try_downloading_from_urls(&sender, &[
             &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type}.jar", ver = self.short_version),
             &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type}.jar", ver = self.norm_version),
             &format!("https://files.minecraftforge.net/maven/net/minecraftforge/forge/{ver}/forge-{ver}-{file_type_flipped}.jar", ver = self.short_version),
@@ -141,9 +148,19 @@ impl<'a> ForgeInstaller<'a> {
         Ok(installer_path)
     }
 
-    async fn try_downloading_from_urls(&self, urls: &[&str], path: &Path) -> Result<(), HttpError> {
+    async fn try_downloading_from_urls(
+        &self,
+        progress_sender: &ProgressSender<'_>,
+        urls: &[&str],
+        path: &Path,
+    ) -> Result<(), HttpError> {
         for url in urls {
-            let downloaded = self.requester.builder().download_to(&url, &path).await;
+            let downloaded = self
+                .requester
+                .builder()
+                .progress(Some(progress_sender))
+                .download_to(&url, &path)
+                .await;
 
             match downloaded {
                 Ok(_) => {
@@ -207,6 +224,8 @@ impl<'a> ForgeInstaller<'a> {
 
     async fn install_to_cache(&self) -> Result<(), ForgeInstallerErr> {
         let (classpath, compiled_path) = self.compile_installer().await?;
+        let _guard = self.progress_recv.begin_sending("Installing Forge");
+
         // Create files to trick forge into thinking the cache dir is the launcher root
         let mut launcher_profiles =
             tokio::fs::File::create_new(self.cache_dir.path().join("launcher_profiles.json"))
@@ -297,6 +316,7 @@ impl<'a> ForgeInstaller<'a> {
 
 pub async fn install_forge_loader(
     requester: &Requester,
+    progress_recv: &ProgressReceiver,
     libs_dir: &Path,
     mc_version: &str,
     forge_version: &str,
@@ -306,6 +326,7 @@ pub async fn install_forge_loader(
 ) -> Result<ForgeLoaderProfile, BackendError> {
     ForgeInstaller::new(
         requester,
+        progress_recv,
         libs_dir,
         mc_version,
         forge_version,

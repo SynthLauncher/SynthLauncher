@@ -14,13 +14,14 @@ use sl_meta::minecraft::{
 };
 use sl_utils::{
     errors::{BackendError, HttpError, InstanceError},
+    progress::ProgressReceiver,
     requester::Requester,
 };
 use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::{
     instances::{
-        instance_exporter::InstanceExporter, loaded_instance::LoadedInstance, InstanceManager
+        instance_exporter::InstanceExporter, loaded_instance::LoadedInstance, InstanceManager,
     },
     minecraft::minecraft_version::MinecraftVersionID,
 };
@@ -189,7 +190,7 @@ impl InstanceMetadata {
             mod_loader_version,
         ))
     }
-    
+
     pub async fn get_instance_icon<'a>(&self, man: &'a InstanceManager<'a>) -> Option<Vec<u8>> {
         let instance_dir = man.instance_dir(&self.name);
         let icon_path = instance_dir.join("icon.png");
@@ -200,6 +201,7 @@ impl InstanceMetadata {
     pub async fn load_init<'a>(
         self,
         man: &'a InstanceManager<'a>,
+        progress_recv: ProgressReceiver,
     ) -> Result<LoadedInstance<'a>, BackendError> {
         let instance_dir = man.instance_dir(&self.name);
 
@@ -209,7 +211,9 @@ impl InstanceMetadata {
             self.mc_version.clone(),
         );
 
-        let (loaded_version, config) = version_id.load_init(man, &instance_dir).await?;
+        let (loaded_version, config) = version_id
+            .load_init(man, &progress_recv, &instance_dir)
+            .await?;
 
         Ok(LoadedInstance::new(
             man,
@@ -217,6 +221,7 @@ impl InstanceMetadata {
             instance_dir,
             loaded_version,
             config,
+            progress_recv,
         ))
     }
 

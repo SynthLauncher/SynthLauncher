@@ -22,6 +22,7 @@ pub struct LoadedInstance<'a> {
     instance_metadata: InstanceMetadata,
     config: InstanceConfig,
     instance_path: PathBuf,
+    progress_recv: ProgressReceiver,
 }
 
 impl<'a> LoadedInstance<'a> {
@@ -31,6 +32,7 @@ impl<'a> LoadedInstance<'a> {
         instance_dir: PathBuf,
         loaded_version: LoadedMinecraftVersion,
         config: InstanceConfig,
+        progress_recv: ProgressReceiver,
     ) -> Self {
         Self {
             manager,
@@ -38,6 +40,7 @@ impl<'a> LoadedInstance<'a> {
             config,
             instance_path: instance_dir,
             loaded_version,
+            progress_recv,
         }
     }
 
@@ -226,14 +229,11 @@ impl<'a> LoadedInstance<'a> {
     /// # Returns
     /// - Ok((child, reader)) reader is a pipe reader that can be used to read the output of the instance (stderr and stdout)
     /// - Err(BackendError) if the instance could not be executed
-    pub async fn execute(
-        self,
-        progress: ProgressReceiver,
-    ) -> Result<(tokio::process::Child, impl AsyncRead), BackendError> {
+    pub async fn execute(self) -> Result<(tokio::process::Child, impl AsyncRead), BackendError> {
         // the reason why the download operation is done here is to ensure that the files are available before executing the instance.
         // AND THE REASON WHY YOU DON'T LEAVE CALLING THIS TO THE CALLER OF THE EXECUTE METHOD is because it is just better and cleaner,
         // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
-        self.download_minecraft(&progress).await?;
+        self.download_minecraft(&self.progress_recv).await?;
 
         let accounts = self.manager.try_load_accounts().await?;
         let (name, data) = accounts.get_current();

@@ -12,7 +12,7 @@ use crate::{
 
 use crate::instances::instance_metadata::ModLoader;
 use sl_meta::minecraft::{loaders::vanilla::Client, version_manifest::VersionManifest};
-use sl_utils::{dlog, errors::BackendError, requester::Requester};
+use sl_utils::{dlog, errors::BackendError, progress::ProgressReceiver, requester::Requester};
 use std::{
     fs::OpenOptions,
     io::BufReader,
@@ -108,6 +108,7 @@ impl MinecraftVersionID {
     async fn reinit_modloader(
         &self,
         manager: &InstanceManager<'_>,
+        progress_recv: &ProgressReceiver,
         modloader_json_path: &Path,
         java_path: &Path,
         javac_path: &Path,
@@ -119,6 +120,7 @@ impl MinecraftVersionID {
             ModLoader::Vanilla => Ok(Loaders::Vanilla),
             ModLoader::NeoForge => install_neoforge_loader(
                 manager.requester(),
+                progress_recv,
                 manager.libs_root(),
                 &self.vanilla_version,
                 loader_version,
@@ -140,6 +142,7 @@ impl MinecraftVersionID {
             }
             ModLoader::Forge => install_forge_loader(
                 manager.requester(),
+                progress_recv,
                 manager.libs_root(),
                 &self.vanilla_version,
                 loader_version,
@@ -161,6 +164,7 @@ impl MinecraftVersionID {
     async fn init_mod_loader(
         &mut self,
         manager: &InstanceManager<'_>,
+        progress_recv: &ProgressReceiver,
         modloader_json_path: &Path,
         java_path: &Path,
         javac_path: &Path,
@@ -172,8 +176,14 @@ impl MinecraftVersionID {
         match self.try_get_modloader(modloader_json_path) {
             Some(results) => Ok(results),
             None => {
-                self.reinit_modloader(manager, &modloader_json_path, java_path, javac_path)
-                    .await
+                self.reinit_modloader(
+                    manager,
+                    progress_recv,
+                    &modloader_json_path,
+                    java_path,
+                    javac_path,
+                )
+                .await
             }
         }
     }
@@ -213,6 +223,7 @@ impl MinecraftVersionID {
     pub async fn load_init(
         mut self,
         man: &InstanceManager<'_>,
+        progress_recv: &ProgressReceiver,
         instance_dir: &Path,
     ) -> Result<(LoadedMinecraftVersion, InstanceConfig), BackendError> {
         let dir_path = self.dir_path(man.versions_root());
@@ -237,7 +248,13 @@ impl MinecraftVersionID {
         let javac_path = &config.java.get_javac();
 
         let mod_loader = self
-            .init_mod_loader(man, &modloader_json_path, java_path, javac_path)
+            .init_mod_loader(
+                man,
+                progress_recv,
+                &modloader_json_path,
+                java_path,
+                javac_path,
+            )
             .await?;
 
         let minecraft_client_json = mod_loader.concat(vanilla_client);

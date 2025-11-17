@@ -10,6 +10,7 @@ use sl_utils::{
     dlog,
     errors::{BackendError, ForgeInstallerErr, HttpError, InstanceError},
     log,
+    progress::ProgressReceiver,
     requester::Requester,
 };
 use tempfile::TempDir;
@@ -32,11 +33,13 @@ pub struct NeoForgeInstaller<'a> {
     cache_dir: TempDir,
     // ForgeInstaller.java
     java_forge_installer: PathBuf,
+    progress_recv: &'a ProgressReceiver,
 }
 
 impl<'a> NeoForgeInstaller<'a> {
     pub async fn new(
         requester: &'a Requester,
+        progress_recv: &'a ProgressReceiver,
         libs_dir: &'a Path,
         minecraft_version: &'a str,
         neoforge_version: &str,
@@ -56,6 +59,7 @@ impl<'a> NeoForgeInstaller<'a> {
         tokio::fs::write(&java_forge_installer, NEOFORGE_JAVA_INSTALLER_SRC).await?;
 
         Ok(Self {
+            progress_recv,
             requester,
             libs_dir,
             minecraft_version,
@@ -76,9 +80,13 @@ impl<'a> NeoForgeInstaller<'a> {
             "downloading neoforge installer from '{url}' to '{}'",
             installer_path.display()
         );
+        let sender = self
+            .progress_recv
+            .begin_sending("Downloading NeoForge installer");
 
         self.requester
             .builder()
+            .progress(Some(&sender))
             .download_to(&url, &installer_path)
             .await?;
 
@@ -127,6 +135,7 @@ impl<'a> NeoForgeInstaller<'a> {
 
     async fn install_to_cache(&self) -> Result<(), ForgeInstallerErr> {
         let (classpath, compiled_installer_path) = self.compile_installer().await?;
+        let _guard = self.progress_recv.begin_sending("Installing NeoForge");
 
         // Create files to trick forge into thinking the cache dir is the launcher root
         let mut launcher_profiles =
@@ -222,6 +231,7 @@ impl<'a> NeoForgeInstaller<'a> {
 
 pub async fn install_neoforge_loader(
     requester: &Requester,
+    progress_recv: &ProgressReceiver,
     libs_dir: &Path,
 
     minecraft_version: &str,
@@ -232,6 +242,7 @@ pub async fn install_neoforge_loader(
 ) -> Result<NeoForgeLoaderProfile, BackendError> {
     NeoForgeInstaller::new(
         requester,
+        progress_recv,
         libs_dir,
         minecraft_version,
         neoforge_version,

@@ -33,10 +33,10 @@ async fn run_cli() -> Result<(), BackendError> {
             let (instance, _) = instances.get_existing(&instance_name)?;
 
             dlog!("Instance found!");
-            let loaded_instance = instance.load_init(&instances).await?;
-            let (mut child, mut reader) = loaded_instance
-                .execute(ProgressReceiver::new(|_| {}))
+            let loaded_instance = instance
+                .load_init(&instances, ProgressReceiver::new(|_| {}))
                 .await?;
+            let (mut child, mut reader) = loaded_instance.execute().await?;
             let mut stdout = io::stdout();
             loop {
                 tokio::io::copy(&mut reader, &mut stdout).await?;
@@ -57,7 +57,7 @@ async fn run_cli() -> Result<(), BackendError> {
             let data = PlayerData::offline(&name);
             accounts.add_account(name, data).await?;
         }
-        // TOOD: Improve this
+        // TODO: Improve this
         Commands::AddPremiumAccount => {
             let mut auth = AuthFlow::new("74909cec-49b6-4fee-aa60-1b2a57ef72e1");
             let code_res = auth.request_code().await.unwrap();
@@ -71,7 +71,10 @@ async fn run_cli() -> Result<(), BackendError> {
             env.accounts()
                 .add_account(
                     get_premium_account_name(env.requester(), &minecraft.access_token()).await?,
-                    PlayerData::new(minecraft.username().clone(), minecraft.access_token().clone()),
+                    PlayerData::new(
+                        minecraft.username().clone(),
+                        minecraft.access_token().clone(),
+                    ),
                 )
                 .await?;
         }

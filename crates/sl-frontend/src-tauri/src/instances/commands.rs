@@ -25,10 +25,12 @@ pub async fn create_instance(
 ) -> Result<InstanceMetadata, String> {
     let env = launcher_env.read().await;
 
-    let instance = env.instances()
+    let instance = env
+        .instances()
         .create_instance(instance_name, &game_version, loader, loader_version)
-        .await.map_err(|e| e.to_string())?;
-    
+        .await
+        .map_err(|e| e.to_string())?;
+
     Ok(instance)
 }
 
@@ -93,10 +95,10 @@ pub async fn launch_instance(
     let window = create_progress_window(&app_handle).await;
     let receiver = progress_receiver(window);
     instance_metadata
-        .load_init(&env.instances())
+        .load_init(&env.instances(), receiver)
         .await
         .map_err(|e| e.to_string())?
-        .execute(receiver)
+        .execute()
         .await
         .map_err(|e| e.to_string())?;
 
