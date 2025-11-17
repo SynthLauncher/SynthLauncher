@@ -95,7 +95,7 @@ We are not affiliated with Mojang AB, Microsoft Corporation, and/or their affili
 
 The launcher does **not** collect any data including but not limited to; usage analytics, personal information, etc.\
 
-GitHub may, however, collect certain data (cookies) if you are navigating the site to download our launcher. We do not store or have access to any data that GitHub collects, and you may need to read [Github's privacy policies](https://docs.github.com/en/site-policy/privacy-policies) if you have any concerns.
+GitHub may, however, collect certain data (cookies) if you are navigating the site to download our launcher. We do not store or have access to any data that GitHub collects, and you may need to read [GitHub's privacy policies](https://docs.github.com/en/site-policy/privacy-policies) if you have any concerns.
 
 ## Inspired by:
 
