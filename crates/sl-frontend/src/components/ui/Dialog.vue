@@ -19,6 +19,7 @@ defineProps<{
     isOpen: boolean,
     showContent?: boolean
 }>()
+
 const emit = defineEmits(['update:isOpen', 'update:showContent'])
 
 const onKeyDown = (e: KeyboardEvent) => {

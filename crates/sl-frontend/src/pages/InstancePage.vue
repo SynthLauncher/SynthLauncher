@@ -1,23 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { getInstance } from '../lib/commands/instances';
 import { bytesToImageUrl } from '../lib/utils';
-import { InstanceMetadata } from '../types/instances';
+import { instancesManager } from '../lib/managers/instances';
 
 const route = useRoute()
 const instanceName = route.params.instance_name as string
-const instanceMetadata = ref<InstanceMetadata>();
-
-const loadInstances = async () => {
-  const result = await getInstance(instanceName);
-  instanceMetadata.value = result as InstanceMetadata;
-}
-
-onMounted(async () => {
-  await loadInstances()
-  console.log(instanceMetadata.value)
-})
+const instanceMetadata = instancesManager.get(instanceName)
 </script>
 
 

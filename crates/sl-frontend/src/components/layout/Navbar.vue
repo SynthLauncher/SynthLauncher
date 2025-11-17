@@ -1,3 +1,13 @@
+<script setup lang="ts">
+import { Minus as MinusIcon, Maximize as MaximizeIcon, X as XIcon } from 'lucide-vue-next'
+import WindowControl from '@/components/layout/WindowControl.vue'
+import {
+  handleWindowMinimize,
+  handleWindowMaximize,
+  handleWindowClose,
+} from '@/lib/commands/window'
+</script>
+
 <template>
   <nav class="bg-[#1b1d21] w-full h-[3.4rem] p-2 flex justify-between items-center" data-tauri-drag-region>
     <div class="flex gap-6">
@@ -17,14 +27,3 @@
   </nav>
 </template>
 
-<script setup lang="ts">
-import { Minus as MinusIcon, Maximize as MaximizeIcon, X as XIcon } from 'lucide-vue-next'
-import WindowControl from './WindowControl.vue'
-import {
-  handleWindowMinimize,
-  handleWindowMaximize,
-  handleWindowClose,
-} from '../lib/commands/window'
-
-
-</script>

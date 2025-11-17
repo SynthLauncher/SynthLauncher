@@ -6,7 +6,6 @@ use crate::{
     PAGE_SIZE,
 };
 
-/// Searches CurseForge projects by filter, class ID, and pagination offset.
 pub async fn get_curseforge_search(
     requester: &Requester,
     search_filter: &str,
@@ -20,7 +19,10 @@ pub async fn get_curseforge_search(
         PAGE_SIZE,
         offset * PAGE_SIZE
     );
-    Ok(requester.get_json(&url).await?)
+
+    let json = requester.get_json(&url).await?;
+
+    Ok(json)
 }
 
 #[derive(Debug, Deserialize, Serialize)]

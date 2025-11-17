@@ -1,10 +1,16 @@
 use serde::Deserialize;
 use sl_utils::{errors::BackendError, requester::Requester};
 
-use crate::curseforge::api::{CurseforgeProjectFile, CurseforgeProjectVersion};
+use crate::curseforge::{
+    api::{CurseforgeProjectFile, CurseforgeProjectVersion},
+    CurseforgeModLoader,
+};
 
-/// Fetches and returns a specific file from a CurseForge project,
-/// identified by the project (`mod_id`) and file (`file_id`) IDs.
+#[derive(Debug, Deserialize)]
+struct ProjectFileResponse {
+    pub data: CurseforgeProjectFile,
+}
+
 pub async fn get_curseforge_project_file(
     requester: &Requester,
     mod_id: u32,
@@ -15,25 +21,13 @@ pub async fn get_curseforge_project_file(
     Ok(res.data)
 }
 
-#[derive(Debug, Deserialize)]
-struct ProjectFileResponse {
-    pub data: CurseforgeProjectFile,
-}
-
-/// Fetches and returns all files for the given CurseForge project ID,
-/// filtered by mod loader and Minecraft game version.
-///
-/// `mod_loader` values:
-/// - 1 = Forge
-/// - 4 = Fabric
-/// - 5 = Quilt
-/// - 6 = NeoForge
 pub async fn get_curseforge_project_files(
     requester: &Requester,
     mod_id: u32,
-    mod_loader: u8,
+    mod_loader: CurseforgeModLoader,
     game_version: &str,
 ) -> Result<Vec<CurseforgeProjectVersion>, BackendError> {
+    let mod_loader = mod_loader as u8;
     let url = format!("https://api.curseforge.com/v1/mods/{mod_id}/files?modLoaderType={mod_loader}&gameVersion={game_version}");
     let res: ProjectVersionsResponse = requester.get_json(&url).await?;
     Ok(res.data)

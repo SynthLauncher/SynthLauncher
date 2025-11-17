@@ -1,42 +1,27 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
-import StoreCard from '../components/StoreCard.vue';
-import StoreSearchBar from '../components/StoreSearchBar.vue';
-import { StoreCategoryType, StoreSearch, StoreType } from '../types/store';
-import { fetchStoreSearch } from '../lib/commands/store';
-import StoreLoadingState from '../components/StoreLoadingState.vue';
-import OptionSelector from '../components/OptionSelector.vue';
+import { computed, onMounted, watch } from 'vue';
+import HorizontalOptionSelector from '../components/ui/HorizontalOptionSelector.vue';
+import { storeManager } from '../lib/managers/store';
+import StoreCard from '../components/store/StoreCard.vue';
+import StoreSearchBar from '../components/store/StoreSearchBar.vue';
+import StoreLoadingState from '../components/store/StoreLoadingState.vue';
+import InstanceSelector from '../components/store/InstanceSelector.vue';
+import ContentVersionSelector from '../components/store/ContentVersionSelector.vue';
 
-const storeType = ref<StoreType>('modrinth');
-const storeCategory = ref<StoreCategoryType>("modpacks");
+onMounted(storeManager.loadSearch);
 
-const searchQuery = ref("");
-const storeItems = ref<StoreSearch>();
-
-const storePage = ref(1);
-const loading = ref(false);
-
-const loadStoreItems = async () => {
-  loading.value = true;
-  try {
-    const result = await fetchStoreSearch(searchQuery.value, storeType.value, storeCategory.value, storePage.value);
-    storeItems.value = result;
-  } catch (e) {
-    console.error(e);
-    storeItems.value = undefined;
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(loadStoreItems);
-watch([searchQuery, storeCategory, storeType], loadStoreItems)
+watch([
+  () => storeManager.searchQuery, 
+  () => storeManager.storeCategory, 
+  () => storeManager.storeType
+], storeManager.loadSearch)
+watch([() => storeManager.selectedContent.slug, () => storeManager.selectedInstance], storeManager.loadContentVersions)
 
 const combinedItems = computed(() => {
-  if (!storeItems.value) return [];
+  if (!storeManager.items) return [];
 
-  if ('hits' in storeItems.value) {
-    return storeItems.value.hits.map(item => ({
+  if ('hits' in storeManager.items) {
+    return storeManager.items.hits.map(item => ({
       id: item.id,
       title: item.title,
       slug: item.slug,
@@ -46,13 +31,13 @@ const combinedItems = computed(() => {
       icon: item.icon_url || 'https://cdn.modrinth.com/placeholder.svg'
     }));
   }
-  if ('data' in storeItems.value) {
-    return storeItems.value.data.map(item => ({
+  if ('data' in storeManager.items) {
+    return storeManager.items.data.map(item => ({
       id: item.id,
       title: item.name,
       slug: item.slug,
       description: item.summary,
-      downloads: 0,
+      downloads: item.downloadCount,
       author: item.authors[0].name,
       icon: item.logo?.url || 'https://cdn.modrinth.com/placeholder.svg'
     }));
@@ -63,18 +48,22 @@ const combinedItems = computed(() => {
 
 <template>
   <main class="flex flex-col gap-3 p-6 pb-18 overflow-y-auto overflow-x-hidden">
-    <div class="flex gap-2">
-      <OptionSelector v-model:selectedValue="storeType" :values="['modrinth', 'curseforge']" />
-      <OptionSelector v-model:selectedValue="storeCategory" :values="['modpacks', 'mods', 'shaderpacks', 'resourcepacks']" />
+    <div class="flex items-center gap-2">
+      <HorizontalOptionSelector v-model:selectedValue="storeManager.storeType" :values="['modrinth', 'curseforge']" />
+      <HorizontalOptionSelector v-model:selectedValue="storeManager.storeCategory"
+        :values="['modpacks', 'mods', 'shaderpacks', 'resourcepacks']" />
+      <InstanceSelector v-show="storeManager.storeCategory != 'modpacks'" />
+      <ContentVersionSelector />
     </div>
-    
-    <StoreSearchBar v-model:searchQuery="searchQuery" :category="storeCategory" />
 
-    <StoreLoadingState v-if="loading" :storeType="storeType" :category="storeCategory" />
+    <StoreSearchBar v-model:searchQuery="storeManager.searchQuery" :category="storeManager.storeCategory" />
+    <StoreLoadingState v-if="storeManager.loading" :storeType="storeManager.storeType" :category="storeManager.storeCategory" />
 
     <div v-else class="flex flex-col gap-3">
       <StoreCard v-for="item in combinedItems" :key="item.id" :title="item.title" :description="item.description"
-        :downloads="item.downloads" :author="item.author" :icon="item.icon" :slug="item.slug" />
+        :downloads="item.downloads" :author="item.author" :icon="item.icon" :slug="item.slug"
+      />
     </div>
+
   </main>
 </template>

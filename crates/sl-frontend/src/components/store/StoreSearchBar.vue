@@ -4,12 +4,12 @@
       <Search class="w-4 h-4" />
     </span>
 
-    <input type="text" :value="searchQuery" :placeholder="`Search instances...`" maxlength="50"
+    <input type="text" :value="searchQuery" :placeholder="`Search ${category}...`" maxlength="50"
       @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)" class="text-sm w-full bg-neutral-700/50 
            text-white border-2 border-neutral-700
-           placeholder-neutral-300 focus:border-sky-500 
+           placeholder-neutral-300 focus:border-blue-500 
            focus:bg-neutral-800/70 focus:outline-none 
-             transition-all duration-300 h-10 rounded-full 
+             transition-all duration-300 h-12 rounded-lg 
              pl-10 pr-12" />
 
     <button v-if="searchQuery" @click="emit('update:searchQuery', '')" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full 
@@ -22,9 +22,11 @@
 
 <script setup lang="ts">
 import { Search, X } from "lucide-vue-next";
+import { StoreCategoryType } from "../../types/store";
 
 defineProps<{
   searchQuery: string;
+  category: StoreCategoryType;
 }>();
 
 const emit = defineEmits<{
