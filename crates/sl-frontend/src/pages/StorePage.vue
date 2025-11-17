@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue';
-import HorizontalOptionSelector from '../components/ui/HorizontalOptionSelector.vue';
-import { storeManager } from '../lib/managers/store';
-import StoreCard from '../components/store/StoreCard.vue';
-import StoreSearchBar from '../components/store/StoreSearchBar.vue';
-import StoreLoadingState from '../components/store/StoreLoadingState.vue';
-import InstanceSelector from '../components/store/InstanceSelector.vue';
-import ContentVersionSelector from '../components/store/ContentVersionSelector.vue';
+import HorizontalOptionSelector from '@/components/ui/HorizontalOptionSelector.vue';
+import { storeManager } from '@/lib/managers/store';
+import StoreCard from '@/components/store/StoreCard.vue';
+import StoreSearchBar from '@/components/store/StoreSearchBar.vue';
+import StoreLoadingState from '@/components/store/StoreLoadingState.vue';
+import InstanceSelector from '@/components/store/InstanceSelector.vue';
+import ContentVersionSelector from '@/components/store/ContentVersionSelector.vue';
 
 onMounted(storeManager.loadSearch);
 

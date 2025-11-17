@@ -7,6 +7,7 @@ pub mod instances;
 pub(crate) mod java;
 pub mod loaders;
 pub(crate) mod minecraft;
+pub use sl_utils;
 
 /// The OS this is compiled to
 pub const OS: OsName = if cfg!(target_os = "windows") {

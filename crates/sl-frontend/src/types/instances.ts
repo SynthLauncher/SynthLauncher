@@ -8,3 +8,9 @@ export interface InstanceMetadata {
     mod_loader: ModLoader,
     icon?: Uint8Array
 }
+
+export type Progress = {
+  url: string;
+  current_bytes: number;
+  total_bytes: number;
+};

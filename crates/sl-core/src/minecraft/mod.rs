@@ -12,6 +12,7 @@ use sl_utils::{
     elog,
     errors::{BackendError, HttpError},
     log,
+    progress::{ProgressReceiver, ProgressSender},
     requester::Requester,
     zip::ZipExtractor,
 };
@@ -41,6 +42,7 @@ pub(crate) mod version_manifest;
 #[inline]
 async fn download_and_verify(
     requester: &Requester,
+    prog_sender: &ProgressSender<'_>,
     download: &Download,
     path: &Path,
 ) -> Result<(), HttpError> {
@@ -65,6 +67,7 @@ async fn download_and_verify(
 
     requester
         .builder()
+        .progress(Some(prog_sender))
         .download_to(&download.url, &path)
         .await?;
 
@@ -73,6 +76,7 @@ async fn download_and_verify(
 
 async fn download_and_read_file(
     requester: &Requester,
+    prog_sender: &ProgressSender<'_>,
     download: &Download,
     path: &Path,
 ) -> Result<Bytes, HttpError> {
@@ -82,12 +86,13 @@ async fn download_and_read_file(
         path
     };
 
-    download_and_verify(requester, download, full_path).await?;
+    download_and_verify(requester, prog_sender, download, full_path).await?;
     Ok(Bytes::from(tokio::fs::read(full_path).await?))
 }
 
 async fn download_to(
     requester: &Requester,
+    prog_sender: &ProgressSender<'_>,
     download: &Download,
     path: &Path,
 ) -> Result<(), HttpError> {
@@ -101,18 +106,20 @@ async fn download_to(
         path
     };
 
-    download_and_verify(requester, download, full_path).await?;
+    download_and_verify(requester, prog_sender, download, full_path).await?;
     Ok(())
 }
 
 // This could be made faster maybe
 async fn install_assets(
     requester: &Requester,
+    prog_recv: &ProgressReceiver,
     assets_root_path: &Path,
     client: &Client,
 ) -> Result<(), BackendError> {
     const MAX_DOWNLOADS: usize = 5;
     log!("Downloading assets!");
+    let sender = prog_recv.begin_sending("Downloading assets");
     let assets = &client.assets;
 
     let indexes_dir = assets_root_path.join("indexes");
@@ -120,7 +127,8 @@ async fn install_assets(
 
     let indexes_path = indexes_dir.join(format!("{}.json", assets));
 
-    let download = download_and_read_file(requester, &client.asset_index, &indexes_path).await?;
+    let download =
+        download_and_read_file(requester, &sender, &client.asset_index, &indexes_path).await?;
 
     let index: AssetIndex = serde_json::from_slice(&download)?;
     let objects = index.objects;
@@ -139,6 +147,7 @@ async fn install_assets(
 
         requester
             .builder()
+            .progress(Some(&sender))
             .download_to(
                 &format!(
                     "https://resources.download.minecraft.net/{dir_name}/{}",
@@ -177,21 +186,23 @@ async fn install_assets(
 
 async fn install_libs(
     requester: &Requester,
+    prog_recv: &ProgressReceiver,
     client: &Client,
     libs_dir: &Path,
     path: &Path,
 ) -> Result<(), BackendError> {
     const MAX_DOWNLOADS: usize = 10;
     log!("Downloading libraries...");
+    let sender = prog_recv.begin_sending("Downloading libraries");
 
     let download_lib = async move |lib: &Library| -> Result<(), BackendError> {
         if let Some(ref artifact) = lib.downloads.artifact {
-            download_to(requester, artifact, libs_dir).await?;
+            download_to(requester, &sender, artifact, libs_dir).await?;
         }
 
         if let Some(native) = lib.native_from_platform() {
             // FIXME: this is so terrible just download and return a reader at least
-            let bytes = download_and_read_file(requester, native, libs_dir).await?;
+            let bytes = download_and_read_file(requester, &sender, native, libs_dir).await?;
 
             if let Some(ref extract_rules) = lib.extract {
                 let natives_dir = path.join(".natives");
@@ -231,6 +242,7 @@ async fn install_libs(
 
 pub(crate) async fn install_client(
     requester: &Requester,
+    prog_recv: &ProgressReceiver,
     client: &Client,
     client_jar_path: &Path,
     instance_path: &Path,
@@ -238,13 +250,20 @@ pub(crate) async fn install_client(
     libs_root_path: &Path,
 ) -> Result<(), BackendError> {
     let start = Instant::now();
-    install_assets(requester, assets_root_path, client).await?;
+    install_assets(requester, prog_recv, assets_root_path, client).await?;
     println!("Assets download time: {:?}", start.elapsed());
 
-    install_libs(requester, client, libs_root_path, instance_path).await?;
+    install_libs(requester, prog_recv, client, libs_root_path, instance_path).await?;
 
     log!("Downloading {}", client_jar_path.display());
-    download_to(requester, &client.downloads.client, &client_jar_path).await?;
+    let client_sender = prog_recv.begin_sending("Downloading minecraft client");
+    download_to(
+        requester,
+        &client_sender,
+        &client.downloads.client,
+        &client_jar_path,
+    )
+    .await?;
     log!("Done downloading {}", client_jar_path.display());
 
     Ok(())

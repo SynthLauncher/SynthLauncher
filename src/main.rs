@@ -5,7 +5,7 @@ use sl_player::{
     api::{auth::AuthFlow, player_info::get_premium_account_name},
     PlayerData,
 };
-use sl_utils::{dlog, elog, errors::BackendError, log};
+use sl_utils::{dlog, elog, errors::BackendError, log, progress::ProgressReceiver};
 use tokio::io::{self};
 
 mod cli;
@@ -34,7 +34,9 @@ async fn run_cli() -> Result<(), BackendError> {
 
             dlog!("Instance found!");
             let loaded_instance = instance.load_init(&instances).await?;
-            let (mut child, mut reader) = loaded_instance.execute().await?;
+            let (mut child, mut reader) = loaded_instance
+                .execute(ProgressReceiver::new(|_| {}))
+                .await?;
             let mut stdout = io::stdout();
             loop {
                 tokio::io::copy(&mut reader, &mut stdout).await?;

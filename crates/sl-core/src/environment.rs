@@ -5,7 +5,8 @@ use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::{elog, requester::Requester};
 
 use crate::{
-    accounts::AccountsManager, config::CONFIG_FILE_NAME, instances::InstanceManager, java, minecraft::version_manifest
+    accounts::AccountsManager, config::CONFIG_FILE_NAME, instances::InstanceManager, java,
+    minecraft::version_manifest,
 };
 use std::env;
 use tokio::sync::OnceCell;

@@ -2,17 +2,21 @@ use std::{path::Path, time::Duration};
 
 use bytes::Bytes;
 use reqwest::{header::HeaderValue, Client, Response};
-use tokio::{io::AsyncWriteExt, sync::mpsc::Sender, time::sleep};
+use tokio::{io::AsyncWriteExt, time::sleep};
 use tokio_stream::StreamExt;
 use url::Url;
 
-use crate::{errors::HttpError, log};
+use crate::{
+    errors::HttpError,
+    log,
+    progress::{ProgressReport, ProgressSender},
+};
 
 pub struct RequestBuilder<'a> {
     requester: &'a Requester,
     retries: u32,
     retry_timeout: Duration,
-    progress_tx: Option<Sender<f32>>,
+    progress_sender: Option<&'a ProgressSender<'a>>,
 }
 
 impl<'a> RequestBuilder<'a> {
@@ -21,7 +25,7 @@ impl<'a> RequestBuilder<'a> {
             requester,
             retries: 3,
             retry_timeout: Duration::from_secs(1),
-            progress_tx: None,
+            progress_sender: None,
         }
     }
 
@@ -35,8 +39,9 @@ impl<'a> RequestBuilder<'a> {
         self
     }
 
-    pub fn progress_tx(mut self, progress_tx: Option<Sender<f32>>) -> Self {
-        self.progress_tx = progress_tx;
+    /// Set the progress sender for the request.
+    pub fn progress(mut self, progress_sender: Option<&'a ProgressSender<'a>>) -> Self {
+        self.progress_sender = progress_sender;
         self
     }
 
@@ -53,7 +58,7 @@ impl<'a> RequestBuilder<'a> {
                 path,
                 self.retries,
                 self.retry_timeout,
-                self.progress_tx.clone(),
+                self.progress_sender,
             )
             .await
     }
@@ -136,6 +141,45 @@ impl Requester {
         }
     }
 
+    async fn download_to_inner(
+        &self,
+        url: &str,
+        path: &Path,
+        mut progress_sender: Option<&ProgressSender<'_>>,
+    ) -> Result<(), HttpError> {
+        let response = self.get(url).await?;
+        if !response.status().is_success() {
+            return Err(HttpError::Status(response.status()));
+        }
+
+        let mut file = tokio::fs::File::create(&path).await?;
+        let total_size = response.content_length().unwrap_or(0);
+        let mut downloaded = 0u64;
+        let mut stream = response.bytes_stream();
+
+        let progress = ProgressReport::new(url, total_size, downloaded);
+        if let Some(ref mut tx) = progress_sender {
+            tx.send(progress);
+        }
+
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk?;
+            file.write_all(&chunk).await?;
+            downloaded += chunk.len() as u64;
+
+            if let Some(ref mut tx) = progress_sender {
+                tx.send(progress.with_current(downloaded));
+            }
+        }
+
+        if let Some(ref mut tx) = progress_sender {
+            tx.send(progress.with_current(total_size));
+            tx.stop_url(url);
+        }
+
+        Ok(())
+    }
+
     async fn download(
         &self,
         url: &str,
@@ -163,60 +207,28 @@ impl Requester {
         .await
     }
 
-    async fn download_to(
+    async fn download_to<'a>(
         &self,
         url: &str,
         path: &Path,
         max_retries: u32,
         delay: Duration,
-        progress_tx: Option<Sender<f32>>,
+        progress_sender: Option<&'a ProgressSender<'a>>,
     ) -> Result<(), HttpError> {
-        self.retry(
-            || {
-                let url = url.to_string();
-                let path = path.to_path_buf();
-                let progress_tx = progress_tx.clone();
-                let client = self.clone();
-
-                async move {
-                    let response = client.get(&url).await?;
-                    if !response.status().is_success() {
-                        return Err(HttpError::Status(response.status()));
+        let mut attempts = 0;
+        // Generics sucks when it come to async
+        loop {
+            match self.download_to_inner(url, path, progress_sender).await {
+                Ok(val) => return Ok(val),
+                Err(e) => {
+                    attempts += 1;
+                    log!("Retrying '{}', attempt {}", url, attempts);
+                    if attempts >= max_retries {
+                        return Err(e);
                     }
-
-                    let mut file = tokio::fs::File::create(&path).await?;
-                    let total_size = response.content_length().unwrap_or(0);
-                    let mut downloaded = 0u64;
-                    let mut stream = response.bytes_stream();
-
-                    if let Some(tx) = &progress_tx {
-                        let _ = tx.send(0.0).await;
-                    }
-
-                    while let Some(chunk) = stream.next().await {
-                        let chunk = chunk?;
-                        file.write_all(&chunk).await?;
-                        downloaded += chunk.len() as u64;
-
-                        if let Some(tx) = &progress_tx {
-                            if total_size > 0 {
-                                let percent = (downloaded as f32 / total_size as f32) * 100.0;
-                                let _ = tx.send(percent).await;
-                            }
-                        }
-                    }
-
-                    if let Some(tx) = &progress_tx {
-                        let _ = tx.send(100.0).await;
-                    }
-
-                    Ok(())
+                    sleep(delay).await;
                 }
-            },
-            max_retries,
-            delay,
-            |attempt| log!("Retrying '{}', attempt {}", url, attempt),
-        )
-        .await
+            }
+        }
     }
 }

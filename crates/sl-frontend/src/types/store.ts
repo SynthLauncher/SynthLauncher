@@ -3,7 +3,6 @@ export type StoreType = "modrinth" | "curseforge"
 export type StoreSearch = { hits: ModrinthProjectSearch[] } | { data: CurseforgeContentMetadata[] };
 export type StoreContentVersions = ModrinthProject[]
 
-
 interface CurseforgeContentMetadata 
 {
     id: number,
