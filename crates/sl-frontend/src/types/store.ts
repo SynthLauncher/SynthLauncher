@@ -4,8 +4,12 @@ export type StoreSearch = { hits: ModrinthProjectSearch[] } | { data: Curseforge
 export type StoreContentVersion = ModrinthProject
 export type ContentFile = ModrinthFile
 
-interface CurseforgeContentMetadata 
-{
+export type StoreSearchResult = {
+    source: StoreType,
+    data: { hits: ModrinthProjectSearch[] } | { data: CurseforgeContentMetadata[] }
+}
+
+interface CurseforgeContentMetadata {
     id: number,
     name: string,
     slug: string,
@@ -15,8 +19,7 @@ interface CurseforgeContentMetadata
     authors: { name: string }[]
 }
 
-interface ModrinthProjectSearch 
-{
+interface ModrinthProjectSearch {
     id: string,
     slug: string,
     title: string,
@@ -26,14 +29,12 @@ interface ModrinthProjectSearch
     author: string,
 }
 
-interface ModrinthFile
-{
+interface ModrinthFile {
     filename: string,
     url: string
 }
 
-interface ModrinthProject 
-{
+interface ModrinthProject {
     id: string,
     name: string,
     game_versions: string[],

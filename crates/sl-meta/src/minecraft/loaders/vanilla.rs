@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
+use strum_macros::{AsRefStr, Display, EnumString};
 
 use crate::minecraft::{version_manifest::VersionType, JavaClassName, Os, OsName};
 
@@ -152,7 +152,7 @@ impl Arguments {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Copy, Display, EnumString)]
+#[derive(Debug, Deserialize, Clone, Copy, Display, EnumString, AsRefStr)]
 #[strum(serialize_all = "kebab-case")]
 #[serde(rename_all = "kebab-case")]
 pub enum JavaComponent {
@@ -164,6 +164,7 @@ pub enum JavaComponent {
     JreLegacy,
     MinecraftJavaExe,
 }
+
 
 #[derive(Debug, Deserialize, Clone, Copy)]
 #[serde(rename_all = "camelCase")]

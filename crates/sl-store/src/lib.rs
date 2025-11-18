@@ -9,7 +9,7 @@ use crate::{
     },
     modrinth::api::{
         project::get_modrinth_project_versions, search::get_modrinth_search, ModrinthProject,
-        ModrinthProjectFile, ModrinthSearchResult,
+        ModrinthProjectFile, ModrinthSearchResponse,
     },
 };
 
@@ -37,8 +37,15 @@ pub enum StoreCategory {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum StoreSearchResult {
-    Modrinth(ModrinthSearchResult),
+    Modrinth(ModrinthSearchResponse),
     Curseforge(CurseforgeSearchResponse),
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(tag = "source", content = "data")]
+pub enum StoreSearch {
+    Modrinth(ModrinthSearchResponse),
+    Cursefore(CurseforgeSearchResponse)
 }
 
 #[derive(Debug, Deserialize, Serialize)]

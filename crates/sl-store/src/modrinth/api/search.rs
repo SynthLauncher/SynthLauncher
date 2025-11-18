@@ -1,13 +1,13 @@
 use sl_utils::{errors::BackendError, requester::Requester};
 
-use crate::{modrinth::api::{ModrinthSearchResult, ProjectType}, PAGE_SIZE};
+use crate::{modrinth::api::{ModrinthSearchResponse, ProjectType}, PAGE_SIZE};
 
 pub async fn get_modrinth_search(
     requester: &Requester,
     query: &str,
     project_type: ProjectType,
     offset: u32,
-) -> Result<ModrinthSearchResult, BackendError> {
+) -> Result<ModrinthSearchResponse, BackendError> {
     let url = format!(
         "https://api.modrinth.com/v2/search?facets=[[\"project_type:{}\"]]&limit={}&offset={}&query={}",
         <&'static str>::from(project_type),

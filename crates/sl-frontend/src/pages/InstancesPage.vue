@@ -15,16 +15,14 @@ const showContent = ref(false)
 
 <template>
   <main class="h-full w-full p-6 flex flex-col gap-3 overflow-y-auto overflow-x-hidden">
-    <div class="grid grid-cols-4 gap-3">
-      <InstanceCard
-        v-for="instance in instancesManager.instances" 
-        :name="instance.name" 
-        :mc_version="instance.mc_version"
-        :mod_loader="instance.mod_loader" 
-        :mod_loader_version="instance.mod_loader_version"
-        :icon="instance.icon ? bytesToImageUrl(instance.icon) : ''"
-        @click="router.push(`/instance/${instance.name}`)"
-      />
+    <div class="grid             
+            grid-cols-1 
+            sm:grid-cols-2 
+            xl:grid-cols-4  gap-3">
+      <InstanceCard v-for="instance in instancesManager.instances" :name="instance.name"
+        :mc_version="instance.mc_version" :mod_loader="instance.mod_loader"
+        :mod_loader_version="instance.mod_loader_version" :icon="instance.icon ? bytesToImageUrl(instance.icon) : ''"
+        @click="router.push(`/instance/${instance.name}`)" />
 
       <Dialog v-model:isOpen="isOpen" v-model:showContent="showContent">
         <template #trigger>
@@ -36,5 +34,5 @@ const showContent = ref(false)
         </template>
       </Dialog>
     </div>
-</main>
+  </main>
 </template>

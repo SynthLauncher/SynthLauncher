@@ -11,11 +11,19 @@ use crate::{JAVA_BINARY, MULTI_PATH_SEPARATOR};
 
 #[derive(Debug)]
 pub struct JavaInstallation {
-    pub version: String,
-    pub path: PathBuf,
+    version: String,
+    path: PathBuf,
 }
 
 impl JavaInstallation {
+    pub const fn version(&self) -> &String {
+        &self.version
+    }
+
+    pub const fn path(&self) -> &PathBuf {
+        &self.path
+    }
+
     fn extract_java_version(java_path: &Path) -> Result<Option<String>, BackendError> {
         let output = Command::new(java_path).arg("-version").output()?;
         let stderr = String::from_utf8_lossy(&output.stderr);

@@ -5,37 +5,37 @@ pub mod installer;
 
 #[derive(Debug, Deserialize)]
 pub struct ManifestDownload {
-    pub sha1: String,
-    pub url: String,
-    pub size: usize,
+    // sha1: String,
+    url: String,
+    // size: usize,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct JreVersion {
-    pub name: String,
-    pub released: String,
-}
+// #[derive(Debug, Deserialize)]
+// pub struct JreVersion {
+//     name: String,
+//     released: String,
+// }
 
 #[derive(Debug, Deserialize)]
 pub struct JreDownload {
-    pub manifest: ManifestDownload,
-    pub version: JreVersion,
+    manifest: ManifestDownload,
+    // version: JreVersion,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct JreDownloads {
-    pub java_runtime_alpha: Vec<JreDownload>,
-    pub java_runtime_beta: Vec<JreDownload>,
-    pub java_runtime_delta: Vec<JreDownload>,
-    pub java_runtime_gamma: Vec<JreDownload>,
-    pub java_runtime_gamma_snapshot: Vec<JreDownload>,
-    pub jre_legacy: Vec<JreDownload>,
-    pub minecraft_java_exe: Vec<JreDownload>,
+    java_runtime_alpha: Vec<JreDownload>,
+    java_runtime_beta: Vec<JreDownload>,
+    java_runtime_delta: Vec<JreDownload>,
+    java_runtime_gamma: Vec<JreDownload>,
+    java_runtime_gamma_snapshot: Vec<JreDownload>,
+    jre_legacy: Vec<JreDownload>,
+    minecraft_java_exe: Vec<JreDownload>,
 }
 
 impl JreDownloads {
-    pub fn get_by_component(&self, component: &JavaComponent) -> &[JreDownload] {
+    fn get_by_component(&self, component: &JavaComponent) -> &[JreDownload] {
         match component {
             JavaComponent::JavaRuntimeAlpha => &self.java_runtime_alpha,
             JavaComponent::JavaRuntimeBeta => &self.java_runtime_beta,
@@ -51,18 +51,18 @@ impl JreDownloads {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct JreManifest {
-    pub gamecore: JreDownloads,
-    pub linux: JreDownloads,
-    pub linux_i386: JreDownloads,
-    pub mac_os: JreDownloads,
-    pub mac_os_arm64: JreDownloads,
-    pub windows_arm64: JreDownloads,
-    pub windows_x64: JreDownloads,
-    pub windows_x86: JreDownloads,
+    // gamecore: JreDownloads,
+    linux: JreDownloads,
+    linux_i386: JreDownloads,
+    mac_os: JreDownloads,
+    mac_os_arm64: JreDownloads,
+    windows_arm64: JreDownloads,
+    windows_x64: JreDownloads,
+    windows_x86: JreDownloads,
 }
 
 impl JreManifest {
-    pub fn get_current_platform_download(&self) -> &JreDownloads {
+    fn get_current_platform_download(&self) -> &JreDownloads {
         use super::Platform::*;
 
         match super::Platform::detect() {
@@ -76,7 +76,7 @@ impl JreManifest {
         }
     }
 
-    pub fn get_component_downloads(&self, component: &JavaComponent) -> &[JreDownload] {
+    fn get_component_downloads(&self, component: &JavaComponent) -> &[JreDownload] {
         self.get_current_platform_download()
             .get_by_component(component)
     }

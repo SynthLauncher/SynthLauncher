@@ -49,7 +49,7 @@ pub struct ModrinthSearchHit {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ModrinthSearchResult {
+pub struct ModrinthSearchResponse {
     hits: Vec<ModrinthSearchHit>,
     total_hits: u32,
 }
