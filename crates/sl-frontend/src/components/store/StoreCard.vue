@@ -34,7 +34,7 @@ withDefaults(defineProps<{
                     </span>
                 </h1>
 
-                <p class="text-gray-400 text-sm mb-1 line-clamp-1">{{ description }}</p>
+                <p class="text-gray-400 text-sm mb-1 line-clamp-2">{{ description }}</p>
 
                 <div class="flex gap-1 text-gray-400 text-sm items-center">
                     <DownloadIcon class="w-4 h-4" />

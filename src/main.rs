@@ -68,13 +68,14 @@ async fn run_cli() -> Result<(), BackendError> {
             auth.login_in_xbox_live().await.unwrap();
             let minecraft = auth.login_in_minecraft().await.unwrap();
 
+
+            let name = get_premium_account_name(env.requester(), &minecraft.access_token()).await?;
+            let data = PlayerData::online(env.requester(), name.as_str(), minecraft.access_token().clone()).await?;
+
             env.accounts()
                 .add_account(
-                    get_premium_account_name(env.requester(), &minecraft.access_token()).await?,
-                    PlayerData::new(
-                        minecraft.username().clone(),
-                        minecraft.access_token().clone(),
-                    ),
+                    name,
+                    data
                 )
                 .await?;
         }

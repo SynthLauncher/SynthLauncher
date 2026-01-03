@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
-use uuid::{uuid, Uuid};
+use sl_utils::{errors::HttpError, requester::Requester};
+use uuid::{Uuid, uuid};
+
+use crate::api::player_info::get_uuid;
 
 pub mod api;
 
@@ -12,13 +15,15 @@ pub struct PlayerData {
 }
 
 impl PlayerData {
-    pub fn new(id: String, access_token: String) -> Self {
-        Self {
-            id: id,
-            access_token: access_token
-        }
+    pub async fn online(requester: &Requester, name: &str, access_token: String) -> Result<Self, HttpError> {
+        let uuid = get_uuid(requester, name).await?;
+        
+        Ok(Self {
+            id: uuid,
+            access_token
+        })
     }
-    
+
     pub fn offline(name: &str) -> Self {
         Self {
             id: Uuid::new_v3(&NS, format!("OfflinePlayer:{name}").as_bytes()).to_string(),

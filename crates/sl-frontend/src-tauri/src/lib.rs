@@ -3,7 +3,7 @@ use tokio::sync::RwLock;
 
 use crate::command::{
 
-    launcher::open_synthlauncher_root_folder,
+    launcher::{get_minecraft_versions, open_synthlauncher_root_folder},
     store::{fetch_content_versions, fetch_store_search, install_content, install_modpack},
 };
 
@@ -30,8 +30,10 @@ pub fn run() {
             fetch_content_versions,
             create_instance,
             install_content,
-            install_modpack
+            install_modpack,
+            get_minecraft_versions
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
 }

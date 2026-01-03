@@ -49,7 +49,7 @@ export const instancesManager = reactive({
                 loader: mod_loader,
                 loaderVersion: mod_loader_version
             })
-
+            
             instancesManager.add(new_instance)
         } catch (error) {
         }

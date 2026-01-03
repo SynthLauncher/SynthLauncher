@@ -20,3 +20,18 @@ pub async fn open_synthlauncher_root_folder(
     open_folder(app_handle, &launcher_env.read().await.root())?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn get_minecraft_versions(
+    launcher_env: State<'_, RwLock<LauncherEnv>>
+) -> Result<Vec<String>, String>
+{
+    let env = launcher_env.read().await;
+    let versions = env.version_manifest()
+        .await
+        .version_ids()
+        .map(str::to_owned)
+        .collect();
+
+    Ok(versions)
+}

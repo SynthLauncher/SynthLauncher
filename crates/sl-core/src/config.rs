@@ -14,11 +14,11 @@ use crate::instances::InstanceManager;
 pub const CONFIG_FILE_NAME: &str = "config.toml";
 
 const fn default_min_memory() -> usize {
-    1024
+    2048
 }
 
 const fn default_max_memory() -> usize {
-    2048
+    8192
 }
 
 async fn try_get_java_path_or_fetch(

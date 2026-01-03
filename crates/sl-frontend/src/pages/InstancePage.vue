@@ -8,12 +8,11 @@ const instanceName = route.params.instance_name as string
 const instanceMetadata = instancesManager.get(instanceName)
 </script>
 
-
 <template>
   <div class="h-full w-full p-6">
     <div class="bg-[#232529] w-full flex gap-4 p-4">
       <div class="bg-neutral-700/70 p-2 rounded-lg">
-        <img :src="bytesToImageUrl(instanceMetadata?.icon as Uint8Array)" class="size-32">
+        <img :src="instanceMetadata?.icon ? bytesToImageUrl(instanceMetadata.icon as Uint8Array) : '/default_instance_icon.png'" class="size-32">
       </div>
       
       <div class="flex flex-col gap-2">

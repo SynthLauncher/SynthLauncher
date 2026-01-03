@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { SkinView3d } from 'vue-skinview3d';
+import PlayerHead from './PlayerHead.vue';
 </script>
 
 <template>
-    <main class="w-80 h-full border-neutral-700 border-t-2 border-l-2 flex flex-col shrink-0 justify-between p-4">
-        <SkinView3d :width="300" :height="400"
+    <main class="min-w-2/12 h-full border-neutral-700 border-t-2 border-l-2 flex flex-col shrink-0 justify-between p-4">
+        <PlayerHead />
+
+        <!-- <SkinView3d :width="300" :height="400"
             skin-url="https://textures.minecraft.net/texture/ebff9a96d423d5d74c96905b0493a4c9b4e3a48cdffed145ab53a7c5487061d4"
-            :global-light="3" />
+            :global-light="3" :enable-zoom="false" /> -->
     </main>
 </template>

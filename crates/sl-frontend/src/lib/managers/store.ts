@@ -110,14 +110,14 @@ export const storeManager = reactive({
 
     installContent: async () => {
         try {
-            // await invoke("install_modpack", {
-            //     slug: storeManager.selectedContent.slug,
-            //     version: storeManager.selectedContents.get(storeManager.selectedContent.slug)?.id
-            // })
-            await invoke("install_content", {
-                instanceName: storeManager.selectedInstance?.name,
-                files: Array.from(storeManager.selectedContents.values()).map(val => val?.files[0])
+            await invoke("install_modpack", {
+                slug: storeManager.selectedContent.slug,
+                version: storeManager.selectedContents.get(storeManager.selectedContent.slug)?.id
             })
+            // await invoke("install_content", {
+            //     instanceName: storeManager.selectedInstance?.name,
+            //     files: Array.from(storeManager.selectedContents.values()).map(val => val?.files[0])
+            // })
             console.log("StoreManager.installContent log: Successfully installed")
         } catch (error) {
             console.error("StoreManager.installContent error: ", error)

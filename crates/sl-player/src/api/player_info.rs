@@ -7,6 +7,11 @@ struct QueryPlayerUsernameResponse {
     name: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct  QueryPlayerUUIDResponse {
+    uuid: String
+}
+
 pub async fn get_premium_account_name(requester: &Requester, access_token: &str) -> Result<String, BackendError> {
     let res = requester
         .client()
@@ -25,4 +30,11 @@ pub async fn get_premium_account_name(requester: &Requester, access_token: &str)
     let json: QueryPlayerUsernameResponse = res.json().await?;
 
     Ok(json.name)
+}
+
+pub async fn get_uuid(requester: &Requester, name: &str) -> Result<String, HttpError> {
+    let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", name);
+    let res = requester.client().get(url).send().await?;
+    let json: QueryPlayerUUIDResponse = res.json().await?;
+    Ok(json.uuid)
 }

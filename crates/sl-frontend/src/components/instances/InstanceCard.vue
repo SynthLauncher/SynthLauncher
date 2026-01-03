@@ -13,15 +13,14 @@ defineProps<{
 </script>
 
 <template>
-  <div class="min-w-[250px] flex items-center justify-between hover:bg-[#26546c]/50 hover:border-sky-500 bg-[#1b1d21] border-2 border-[#2c2f34] py-3 px-4 rounded-lg transition-colors duration-300 hover:cursor-pointer">
+  <div class="flex items-center justify-between hover:bg-[#26546c]/50 hover:border-sky-500 bg-[#1b1d21] border-2 border-[#2c2f34] py-3 px-4 rounded-lg transition-colors duration-300 hover:cursor-pointer">
 
-    <div class="flex items-center gap-4 whitespace-nowrap">
+    <div class="flex items-center gap-4 whitespace-nowrap min-w-0">
       <img :src="icon" class="shrink-0 object-cover size-16 rounded-md border-2 border-[#525261] bg-[#2a2a31]" alt="Instance Icon">
 
-      <div class="leading-tight">
-        <h1 class="text-white text-lg">{{ name }}</h1>
-        <p class="text-gray-400 text-sm">Version: {{ mc_version }}</p>
-        <p class="text-gray-400 text-sm">Mod Loader: {{ mod_loader }} {{ mod_loader_version }}</p>
+      <div class="leading-tight min-w-0">
+        <h1 class="text-white text-lg whitespace-nowrap truncate">{{ name }}</h1>
+        <p class="text-gray-400 text-sm whitespace-nowrap truncate">{{ mc_version }} {{ mod_loader }} {{ mod_loader_version }}</p>
       </div>
     </div>
 

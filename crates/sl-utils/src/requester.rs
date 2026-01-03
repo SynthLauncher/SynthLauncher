@@ -194,7 +194,6 @@ impl Requester {
         progress_sender: Option<&'a ProgressSender<'a>>,
     ) -> Result<(), HttpError> {
         let mut attempts = 0;
-        // Generics sucks when it come to async
         loop {
             match self.download_to_inner(url, path, progress_sender).await {
                 Ok(val) => return Ok(val),

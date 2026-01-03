@@ -3,6 +3,7 @@ import { createApp } from "vue";
 import App from "@/App.vue";
 import "@/App.css";
 import "@/lib/logger"
+import "@/lib/managers/launcher"
 
 import InstancesPage from "@/pages/InstancesPage.vue";
 import StorePage from "@/pages/StorePage.vue";

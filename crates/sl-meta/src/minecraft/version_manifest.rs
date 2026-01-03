@@ -55,6 +55,10 @@ impl VersionManifest {
         self.versions.iter()
     }
 
+    pub fn version_ids(&self) -> impl Iterator<Item = &str> {
+        self.versions.iter().map(|v| v.id.as_str())
+    }
+
     /// Returns only Release versions of Minecraft
     pub fn release_versions(&self) -> impl Iterator<Item = &Version> {
         self.versions_by_type(VersionType::Release)
