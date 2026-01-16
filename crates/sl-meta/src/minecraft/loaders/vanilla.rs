@@ -24,16 +24,27 @@ pub enum RuleActionType {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Features(HashMap<String, bool>);
+
+const FEATURES: [&'static str; 5] = ["has_custom_resolution", "has_quick_plays_support", "is_quick_play_singleplayer", "is_quick_play_multiplayer", "is_quick_play_realms"];
+
+impl Features {
+    fn is_allowed(&self) -> bool
+    {
+        self.0.iter().all(|(key, val)| FEATURES.contains(&key.as_str()) == *val)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Rule {
     pub action: RuleActionType,
-    pub features: Option<HashMap<String, bool>>,
+    pub features: Option<Features>,
     pub os: Option<Os>,
 }
 
 impl Rule {
     fn matches(&self) -> bool {
-        (self.os.is_none() || self.os.as_ref().is_some_and(|os| os.matches()))
-            && self.features.is_none()
+        self.os.as_ref().is_none_or(|os| os.matches()) && self.features.as_ref().is_none_or(|f| f.is_allowed())
     }
 
     pub fn is_allowed(&self) -> bool {

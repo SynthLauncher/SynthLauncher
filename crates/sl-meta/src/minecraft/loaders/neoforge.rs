@@ -111,7 +111,7 @@ impl<'de> Deserialize<'de> for NeoForgeVersion {
 
 #[derive(Deserialize)]
 pub struct NeoForgeReleases {
-    versions: Vec<NeoForgeVersion>,
+    pub versions: Vec<NeoForgeVersion>,
 }
 
 impl NeoForgeReleases {

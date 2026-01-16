@@ -5,7 +5,7 @@ use sl_meta::minecraft::version_manifest::VersionManifest;
 use sl_utils::{elog, requester::Requester};
 
 use crate::{
-    accounts::AccountsManager, config::CONFIG_FILE_NAME, instances::InstanceManager, java,
+    accounts::AccountsManager, config::CONFIG_FILE_NAME, instances::{instance_metadata::ModLoaderVersions, InstanceManager}, java,
     minecraft::version_manifest,
 };
 use std::env;
@@ -52,6 +52,7 @@ pub struct LauncherEnv {
     config_path: PathBuf,
     versions_path: PathBuf,
 
+    loader_versions: OnceCell<Option<ModLoaderVersions>>,
     version_manifest: OnceCell<VersionManifest>,
     jre_manifest: OnceCell<JreManifest>,
     config: config::Config,
@@ -68,7 +69,7 @@ impl LauncherEnv {
         let libs_dir = root_launcher_dir.join("libs");
         let javas_dir = root_launcher_dir.join("javas");
         let versions_path = root_launcher_dir.join("versions");
-        let accounts_path = root_launcher_dir.join("profiles.json");
+        let accounts_path = root_launcher_dir.join("accounts.json");
         let instances_dir = root_launcher_dir.join("instances");
 
         Self {
@@ -81,6 +82,7 @@ impl LauncherEnv {
             config,
             instances_dir,
             versions_path,
+            loader_versions: OnceCell::new(),
             jre_manifest: OnceCell::new(),
             version_manifest: OnceCell::new(),
             http_requester: Requester::new(),
@@ -129,6 +131,11 @@ impl LauncherEnv {
             })
             .await
     }
+
+    // pub async fn mod_loader_versions(&self) -> &Option<ModLoaderVersions>
+    // {
+        // self.loader_versions
+    // }
 
     pub fn root(&self) -> &Path {
         self.root_launcher_dir.as_path()

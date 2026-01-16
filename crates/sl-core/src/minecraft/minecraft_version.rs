@@ -227,7 +227,7 @@ impl MinecraftVersionID {
         instance_dir: &Path,
     ) -> Result<(LoadedMinecraftVersion, InstanceConfig), BackendError> {
         let dir_path = self.dir_path(man.versions_root());
-        std::fs::create_dir_all(&dir_path)?;
+        tokio::fs::create_dir_all(&dir_path).await?;
 
         let client_jar_path = self.client_jar_path(&dir_path);
         let vanilla_json_path = self.vanilla_json_path(&dir_path);

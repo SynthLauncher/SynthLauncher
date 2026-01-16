@@ -1,10 +1,7 @@
 use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::environment::LauncherEnv;
-use sl_player::{
-    api::{auth::AuthFlow, player_info::get_premium_account_name},
-    PlayerData,
-};
+use sl_player::auth::ms_auth::{login_1_link, login_2_wait, login_3_xbox};
 use sl_utils::{dlog, elog, errors::BackendError, log, progress::ProgressReceiver};
 use tokio::io::{self};
 
@@ -12,7 +9,7 @@ mod cli;
 
 async fn run_cli() -> Result<(), BackendError> {
     let env = LauncherEnv::new_at_default();
-
+    let requester = env.requester();
     let cli = Cli::parse();
 
     match cli.command {
@@ -54,30 +51,12 @@ async fn run_cli() -> Result<(), BackendError> {
         }
         Commands::AddOfflineAccount { name } => {
             let mut accounts = env.accounts();
-            let data = PlayerData::offline(&name);
-            accounts.add_account(name, data).await?;
         }
-        // TODO: Improve this
         Commands::AddPremiumAccount => {
-            let mut auth = AuthFlow::new("74909cec-49b6-4fee-aa60-1b2a57ef72e1");
-            let code_res = auth.request_code().await.unwrap();
-
-            log!("Open this link in your browser {} and enter the following code: {}\nWaiting authentication...", code_res.verification_uri(), code_res.user_code());
-
-            auth.wait_for_login().await.unwrap();
-            auth.login_in_xbox_live().await.unwrap();
-            let minecraft = auth.login_in_minecraft().await.unwrap();
-
-
-            let name = get_premium_account_name(env.requester(), &minecraft.access_token()).await?;
-            let data = PlayerData::online(env.requester(), name.as_str(), minecraft.access_token().clone()).await?;
-
-            env.accounts()
-                .add_account(
-                    name,
-                    data
-                )
-                .await?;
+            let auth_code_res = login_1_link(requester).await?;
+            let auth_token_res = login_2_wait(auth_code_res, requester).await?;
+            let account = login_3_xbox(auth_token_res, true, requester).await?;
+            env.accounts().add_account(account).await?;
         }
         Commands::SetCurrentAccount { name } => {
             let mut accounts = env.accounts();
@@ -91,21 +70,21 @@ async fn run_cli() -> Result<(), BackendError> {
         }
         Commands::ListAccounts => {
             let accounts = env.accounts();
-            let accounts = accounts.load().await?;
+            // let accounts = accounts.load().await?;
 
-            for (i, profile) in accounts.accounts().iter() {
-                println!(
-                    "[{}]: Access Token: {}; ID: {}",
-                    i, profile.access_token, profile.id
-                );
-            }
+            // for (i, profile) in accounts.accounts().iter() {
+            //     println!(
+            //         "[{}]: Access Token: {}; ID: {}",
+            //         i, profile.access_token, profile.id
+            //     );
+            // }
         }
         Commands::CurrentAccount => {
             let accounts = env.accounts();
-            let accounts = accounts.load().await?;
+            // let accounts = accounts.load().await?;
 
-            let (current_account, _) = accounts.get_current();
-            log!("Current Account: {}", current_account);
+            // let (current_account, _) = accounts.get_current();
+            // log!("Current Account: {}", current_account);
         }
         Commands::ListMinecraftVersions => {
             let manifest = env.version_manifest().await;

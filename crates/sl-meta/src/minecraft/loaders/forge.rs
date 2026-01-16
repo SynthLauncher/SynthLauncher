@@ -6,7 +6,7 @@ use crate::minecraft::loaders::vanilla::{Arguments, Client, Library};
 
 #[derive(Debug, Deserialize)]
 pub struct ForgeVersions {
-    promos: HashMap<String, String>,
+    pub promos: HashMap<String, String>,
 }
 
 impl ForgeVersions {
@@ -61,6 +61,7 @@ impl ForgeLoaderProfile {
         client.arguments = client.arguments.concat(self.arguments);
 
         let libraries = client.libraries.into_iter();
+        
         let libraries =
             libraries.filter(|c| !self.libraries.iter().any(|l| l.name.is_same_type(&c.name)));
 

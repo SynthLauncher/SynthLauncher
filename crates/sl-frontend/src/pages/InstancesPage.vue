@@ -6,7 +6,6 @@ import InstanceCard from '@/components/instances/InstanceCard.vue';
 import CreateInstanceButton from '@/components/instances/CreateInstanceButton.vue';
 
 const router = useRouter()
-
 </script>
 
 <template>

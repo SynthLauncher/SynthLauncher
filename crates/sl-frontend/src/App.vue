@@ -1,23 +1,25 @@
+<script lang="ts" setup>
+</script>
+
 <template>
-    <main class="bg-[#1b1d21] h-screen w-screen flex flex-col overflow-y-hidden">
-        <router-view />
+    <main class="bg-background h-screen w-screen flex flex-col overflow-y-hidden">
+        <router-view :key="$route.fullPath" />
     </main>
 </template>
 
 <style>
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #4e4c57;
-    border-radius: 10px;
-    border: 2px solid #282c32;
+    background-color: #5c5870;
+    border-radius: 8px;
     opacity: 0.5;
 }
 
 ::-webkit-scrollbar-track {
-    background: #181a1e;
+    background: transparent;
     border-radius: 10px;
 }
 

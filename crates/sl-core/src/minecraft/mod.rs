@@ -19,9 +19,8 @@ use sl_utils::{
 
 pub(crate) mod minecraft_version;
 pub(crate) mod version_manifest;
-
+pub(crate) mod mod_loader;
 // TODO: Implement verify_data function that is fast enough, this one is really slow so i removed it and replaced it with verifying size
-// #[inline(always)]
 // async fn verify_data(file: &mut tokio::fs::File, sha1: &str) -> bool {
 //     let mut hasher = Sha1::new();
 //     let mut buffer = [0u8; 8192];

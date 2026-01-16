@@ -14,9 +14,13 @@ export const instancesManager = reactive({
         return instancesManager.instances.find(instance => instance.name === name);
     },
 
+    delete: (name: string) => {
+        instancesManager.instances = instancesManager.instances.filter(instance => instance.name != name);
+    },
+
     refresh: async () => {
         instancesManager.loading = true;
-        instancesManager.instances = await instancesManager.fetch_instances();
+        instancesManager.instances = await instancesManager.get_all_instances();
         instancesManager.loading = false;
     },
 
@@ -26,12 +30,12 @@ export const instancesManager = reactive({
         }
     },
 
-    fetch_instances: async () => {
+    get_all_instances: async () => {
         try {
             const result = await invoke<InstanceMetadata[]>("get_all_instances");
             return result as InstanceMetadata[];
         } catch (error) {
-            console.log(`getAllInstances error: ${error}`)
+            console.error(`get_all_instances error: ${error}`);
             return []
         }
     },
@@ -49,9 +53,10 @@ export const instancesManager = reactive({
                 loader: mod_loader,
                 loaderVersion: mod_loader_version
             })
-            
+
             instancesManager.add(new_instance)
         } catch (error) {
+            console.error(`create_instance error: ${error}`)
         }
     },
 
@@ -59,16 +64,26 @@ export const instancesManager = reactive({
         try {
             await invoke("launch_instance", { name: name })
         } catch (error) {
+            console.error(`launch_instance error: ${error}`)
         }
     },
 
-    delete_instance: async () => {
-
+    delete_instance: async (name: string) => {
+        try {
+            await invoke("delete_instance", { instanceName: name });
+            instancesManager.delete(name)
+        } catch (error) {
+            console.error(`delete_instance error: ${error}`)
+        }
     },
 
-    edit_instance: async () => {
+    // edit_instance: async (name: string, new_mc_version?: string, new_modloader_version?: string) => {
+    //     try {
 
-    }
+    //     } catch (error) {
+    //         console.error(`edit_instance error: ${error}`)
+    //     }
+    // }
 });
 
 await instancesManager.init()

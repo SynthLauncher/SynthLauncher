@@ -111,6 +111,8 @@ impl Requester {
     ) -> Result<T, HttpError> {
         Ok(self.get(url).await?.json::<T>().await?)
     }
+
+
 }
 
 impl Requester {

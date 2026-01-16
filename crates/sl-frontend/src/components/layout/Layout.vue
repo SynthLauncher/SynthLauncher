@@ -11,7 +11,7 @@ import AccountsSidebar from "@/components/layout/AccountsSidebar.vue";
         <div class="flex w-full h-full">
             <div class="relative flex w-full h-full">
                 <router-view
-                    class="bg-neutral-900 w-full h-full p-2 rounded-tl-2xl border-neutral-700 border-t-2 border-l-2" />
+                    class="bg-foreground w-full h-full p-2 rounded-tl-2xl border-border border-t-2 border-l-2" />
             </div>
             <AccountsSidebar />
         </div>

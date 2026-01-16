@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::io;
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct FabricLoaderVersion {
+pub struct FabricVersionInfo {
     pub build: u32,
     pub version: String,
     pub stable: bool,
@@ -11,10 +11,9 @@ pub struct FabricLoaderVersion {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct FabricVersion {
-    pub loader: FabricLoaderVersion,
+    pub loader: FabricVersionInfo,
 }
 
-// avoid adding deps on reqwest here
 /// Fetches the Fabric versions for a given game version using the provided request function.
 /// the function must return a Vec<u8> representing the response body, and must take a string parameter representing the URL.
 pub async fn get_fabric_versions<F, E>(

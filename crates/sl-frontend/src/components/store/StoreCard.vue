@@ -17,8 +17,8 @@ withDefaults(defineProps<{
 <template>
     <div :class="[
         'flex items-center justify-between gap-5 p-3 rounded-lg border-2 transition-colors duration-300',
-        storeManager.selectedContents.has(slug) ? 'border-sky-500' : 'border-[#4e4e4e]',
-        storeManager.selectedContent.slug == slug ? 'bg-[#26546c]/50' : 'bg-[#202227]',
+        storeManager.selectedContents.has(slug) ? 'border-secondary-accent' : 'border-border',
+        storeManager.selectedContent.slug == slug ? 'bg-primary/50' : 'bg-background',
     ]"
     @click="storeManager.selectContent(slug)"
     >

@@ -13,21 +13,22 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex items-center justify-between hover:bg-[#26546c]/50 hover:border-sky-500 bg-[#1b1d21] border-2 border-[#2c2f34] py-3 px-4 rounded-lg transition-colors duration-300 hover:cursor-pointer">
+  <div
+    class="flex items-center justify-between hover:bg-primary/50 hover:border-border-accent bg-background border-2 border-border py-3 px-4 rounded-lg transition-colors duration-300 hover:cursor-pointer">
 
     <div class="flex items-center gap-4 whitespace-nowrap min-w-0">
-      <img :src="icon" class="shrink-0 object-cover size-16 rounded-md border-2 border-[#525261] bg-[#2a2a31]" alt="Instance Icon">
+      <img :src="icon" class="shrink-0 object-cover size-16 rounded-md border-2 border-border bg-[#2a2a31]"
+        alt="Instance Icon">
 
       <div class="leading-tight min-w-0">
         <h1 class="text-white text-lg whitespace-nowrap truncate">{{ name }}</h1>
-        <p class="text-gray-400 text-sm whitespace-nowrap truncate">{{ mc_version }} {{ mod_loader }} {{ mod_loader_version }}</p>
+        <p class="text-gray-400 text-sm whitespace-nowrap truncate">{{ mc_version }} {{ mod_loader }} {{
+          mod_loader_version }}</p>
       </div>
     </div>
 
-    <button
-    @click.stop="async () => await instancesManager.launch_instance(name)" 
-    class="cursor-pointer flex items-center
- justify-center size-10 rounded-full bg-sky-500 hover:bg-sky-600 transition-colors shrink-0">
+    <button @click.stop="async () => await instancesManager.launch_instance(name)" class="cursor-pointer flex items-center
+        justify-center size-10 rounded-full bg-accent hover:bg-hover-accent transition-colors shrink-0 ml-2">
       <PlayIcon class="size-5 text-white" />
     </button>
   </div>

@@ -17,13 +17,14 @@ use sl_utils::{
 
 use crate::instances::instance_metadata::InstanceMetadata;
 
-pub mod content_caching;
 pub mod instance_exporter;
 pub mod instance_importer;
 pub mod instance_metadata;
 pub mod loaded_instance;
+pub mod content_manager;
 
 const INSTANCE_FILE_NAME: &str = "instance.json";
+const INSTANCE_ICON_NAME: &str = "icon.png";
 
 /// Manages instances
 pub struct InstanceManager<'a> {
@@ -35,7 +36,7 @@ impl<'a> InstanceManager<'a> {
         Self { env }
     }
 
-    /// Creates a new instance, returning it's metadata
+    /// Creates a new instance and returns it's metadata
     pub async fn create_instance(
         &mut self,
         name: String,
@@ -92,6 +93,10 @@ impl<'a> InstanceManager<'a> {
         self.env.javas_path()
     }
 
+    pub fn icon_path(&self, instance_path: &Path) -> PathBuf {
+        instance_path.join(INSTANCE_ICON_NAME)
+    }
+
     /// Returns the path to the instance directory under a given name
     pub fn instance_dir(&self, instance_name: &str) -> PathBuf {
         self.dir().join(instance_name)
@@ -115,11 +120,6 @@ impl<'a> InstanceManager<'a> {
 
     pub const fn config(&self) -> &'a config::Config {
         self.env.config()
-    }
-
-    /// Attempts to load the accounts from the environment.
-    pub async fn try_load_accounts(&self) -> io::Result<PlayerAccounts> {
-        self.env.accounts().load().await
     }
 
     fn overwrite_instance(

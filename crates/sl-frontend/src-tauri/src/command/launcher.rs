@@ -1,6 +1,6 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
-use sl_core::environment::LauncherEnv;
+use sl_core::{environment::LauncherEnv, instances::instance_metadata::ModLoader};
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
 use tokio::sync::RwLock;
@@ -35,3 +35,12 @@ pub async fn get_minecraft_versions(
 
     Ok(versions)
 }
+
+// pub async fn get_loader_versions(
+//     launcher_env: State<'_, RwLock<LauncherEnv>>
+// ) -> Result<HashMap<ModLoader, Vec<String>>>
+// {
+//     let env = launcher_env.read().await;
+    
+
+// }

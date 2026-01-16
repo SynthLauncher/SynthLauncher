@@ -1,32 +1,28 @@
-export type StoreCategoryType = "modpacks" | "mods" | "resourcepacks" | "shaderpacks"
-export type StoreType = "modrinth" | "curseforge"
-export type StoreSearch = { hits: ModrinthProjectSearch[] } | { data: CurseforgeContentMetadata[] };
 export type StoreContentVersion = ModrinthProject
 export type ContentFile = ModrinthFile
 
-export type StoreSearchResult = {
-    source: StoreType,
-    data: { hits: ModrinthProjectSearch[] } | { data: CurseforgeContentMetadata[] }
+export type StoreContentCategory = "modpacks" | "mods" | "resourcepacks" | "shaderpacks"
+export type StoreSource = "Modrinth" | "Curseforge"
+export type ContentIdentifier = {
+    modrinth: string,
+    curseforge: number,
 }
 
-interface CurseforgeContentMetadata {
-    id: number,
+export type StoreContentHit = {
+    source: StoreSource,
+    type: StoreContentCategory,
+    id: ContentIdentifier,
     name: string,
     slug: string,
-    summary: string,
-    downloadCount: number,
-    logo: { url?: string },
-    authors: { name: string }[]
-}
-
-interface ModrinthProjectSearch {
-    id: string,
-    slug: string,
-    title: string,
     description: string,
-    downloads: number,
     icon_url?: string,
     author: string,
+    downloads: number    
+}
+
+export type StoreContentHits = {
+    hits: StoreContentHit[],
+    total_hits: number
 }
 
 interface ModrinthFile {

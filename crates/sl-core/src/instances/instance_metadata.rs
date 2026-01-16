@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs::OpenOptions,
     io::{Seek, Write},
     path::Path,
@@ -7,8 +8,9 @@ use std::{
 use serde::{Deserialize, Serialize};
 use sl_meta::minecraft::{
     loaders::{
+        fabric::versions::get_fabric_versions,
         forge, neoforge,
-        quilt::{self},
+        quilt::{self, versions::get_quilt_versions},
     },
     version_manifest::{VersionManifest, VersionType},
 };
@@ -38,6 +40,7 @@ use crate::{
     EnumString,
     Display,
     AsRefStr,
+    Hash,
 )]
 #[strum(serialize_all = "lowercase")]
 pub enum ModLoader {
@@ -49,7 +52,61 @@ pub enum ModLoader {
     NeoForge,
 }
 
+pub type ModLoaderVersions = HashMap<ModLoader, Vec<String>>;
+
 impl ModLoader {
+    pub async fn get_mod_loader_versions(
+        &self,
+        requester: &Requester,
+        mc_version: &str,
+    ) -> Result<ModLoaderVersions, BackendError> {
+        let do_request = async |url: &str| -> Result<_, HttpError> {
+            Ok(requester.builder().download(url).await?.to_vec())
+        };
+
+        let mut versions = HashMap::new();
+
+        let fabric_versions = get_fabric_versions(mc_version, do_request).await?;
+        versions.insert(
+            ModLoader::Fabric,
+            fabric_versions
+                .iter()
+                .map(|v| v.loader.version.clone())
+                .collect(),
+        );
+
+        let quilt_versions = get_quilt_versions(mc_version, do_request).await?;
+        versions.insert(
+            ModLoader::Quilt,
+            quilt_versions
+                .iter()
+                .map(|v| v.loader.version.clone())
+                .collect(),
+        );
+
+        let forge_versions = forge::ForgeVersions::download(do_request).await?;
+        versions
+            .insert(
+                ModLoader::Forge,
+                forge_versions.promos
+                    .iter()
+                    .map(|v| v.0.clone())
+                    .collect()
+            );
+
+        let neoforge_versions = neoforge::NeoForgeReleases::download(do_request).await?;
+        versions
+            .insert(
+                ModLoader::NeoForge, 
+                neoforge_versions.versions
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect()
+            );
+
+        Ok(versions)
+    }
+
     /// Validate that the combination of Minecraft version and mod loader version is valid.
     pub async fn validate_version(
         &self,

@@ -22,6 +22,7 @@ impl Progress {
     }
 }
 
+/// Current progress window number
 static CURR_PROGRESS_WIN_NUMBER: AtomicUsize = AtomicUsize::new(0);
 
 pub async fn create_progress_window<R: Runtime>(app_handle: &AppHandle<R>) -> WebviewWindow<R> {

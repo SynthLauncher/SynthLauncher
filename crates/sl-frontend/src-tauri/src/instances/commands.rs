@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 use sl_core::{
     environment::LauncherEnv,
-    instances::instance_metadata::{InstanceMetadata, ModLoader},
+    instances::instance_metadata::{InstanceMetadata, ModLoader}, sl_utils::dlog,
 };
 use tauri::{AppHandle, State};
 use tokio::sync::RwLock;
 
-use crate::instances::progress::{create_progress_window, progress_receiver};
+use crate::{instances::progress::{create_progress_window, progress_receiver}};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Instance {
@@ -102,5 +102,46 @@ pub async fn launch_instance(
         .await
         .map_err(|e| e.to_string())?;
 
+    Ok(())
+}
+
+#[tauri::command]
+/// This command allows to edit an instance
+pub async fn edit_instance(
+    instance_name: &str,
+    new_mc_version: Option<&str>,
+    new_modloader_version: Option<&str>,
+    launcher_env: State<'_, RwLock<LauncherEnv>>,
+) -> Result<(), String>
+{
+    dlog!("Editing instance {instance_name}: Minecraft version update: {new_mc_version:?}; Mod loader version update: {new_modloader_version:?}");
+    
+    let env = launcher_env.read().await;
+    let mut instance_man = env.instances();
+    instance_man.edit_instance(
+        instance_name, 
+        new_mc_version, 
+        new_modloader_version
+    ).await
+    .map_err(|e| e.to_string())?;
+    
+    dlog!("Edited instance {instance_name}!");
+    Ok(())
+}
+
+#[tauri::command]
+/// This command allows to delete an instance
+pub async fn delete_instance(
+    instance_name: &str,
+    launcher_env: State<'_, RwLock<LauncherEnv>>,
+) -> Result<(), String>
+{
+    dlog!("Deleting instance {instance_name}!");
+
+    let env = launcher_env.read().await;
+    let mut instance_man = env.instances();
+    instance_man.remove(instance_name).map_err(|e| e.to_string())?;
+    
+    dlog!("Deleted instance {instance_name}!");
     Ok(())
 }

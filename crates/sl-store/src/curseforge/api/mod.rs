@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use crate::StoreCategory;
-
 pub mod project;
 pub mod search;
 
@@ -75,15 +73,4 @@ pub enum CurseforgeClassID
     Mod = 6,
     Shaderpack = 6552,
     Resourcepack = 12
-}
-
-impl From<StoreCategory> for CurseforgeClassID {
-    fn from(value: StoreCategory) -> Self {
-        match value {
-            StoreCategory::Modpacks => CurseforgeClassID::Modpack,
-            StoreCategory::Mods => CurseforgeClassID::Mod,
-            StoreCategory::Resourcepacks => CurseforgeClassID::Resourcepack,
-            StoreCategory::Shaderpacks => CurseforgeClassID::Shaderpack
-        }
-    }
 }

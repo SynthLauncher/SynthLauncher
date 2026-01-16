@@ -9,10 +9,10 @@ import {
 </script>
 
 <template>
-  <nav class="bg-[#1b1d21] w-full h-[3.4rem] p-2 flex justify-between items-center" data-tauri-drag-region>
+  <nav class="bg-background w-full h-[3.4rem] p-2 flex justify-between items-center" data-tauri-drag-region>
     <div class="flex gap-6">
       <div class="flex items-center gap-1 ml-[0.4rem] select-none">
-        <img width="37" height="37" src="/images/synthlauncher-logo.png" alt="SynthLauncher Logo" />
+        <img width="42" height="42" src="/images/synthlauncher-logo-v10.svg" alt="SynthLauncher Logo" />
         <h1 class="text-xl font-bold text-white">SynthLauncher</h1>
       </div>
     </div>

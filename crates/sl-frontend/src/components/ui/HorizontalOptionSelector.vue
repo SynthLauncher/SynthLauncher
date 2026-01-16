@@ -39,10 +39,10 @@ watch(activeValue, () => nextTick(updateIndicator))
 </script>
 
 <template>
-  <div class="relative flex basis-0 w-fit gap-1 p-1 rounded-full bg-[#262729] select-none">
+  <div class="relative flex basis-0 w-fit gap-1 p-1 rounded-full bg-background select-none">
     <div 
       ref="indicator"
-      class="absolute top-1 bottom-1 rounded-full bg-[#41a5e7]/20 shadow-sm transition-all duration-300 ease-in-out"
+      class="absolute top-1 bottom-1 rounded-full bg-secondary-accent/20 shadow-sm transition-all duration-300 ease-in-out"
       :style="indicatorStyle" />
 
     <div 
@@ -54,7 +54,7 @@ watch(activeValue, () => nextTick(updateIndicator))
       }" 
       :ref="el => items[i] = el as HTMLElement"
       class="relative z-10 cursor-pointer py-1 px-4 rounded-full transition-all active:scale-95"
-      :class="activeValue === value ? 'text-[#41a5e0]' : 'text-white'"
+      :class="activeValue === value ? 'text-secondary-accent-foreground' : 'text-white'"
     >
       <h1 class="capitalize text-lg font-medium">
         {{ value }}

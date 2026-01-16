@@ -4,7 +4,7 @@ import PlayerHead from './PlayerHead.vue';
 </script>
 
 <template>
-    <main class="min-w-2/12 h-full border-neutral-700 border-t-2 border-l-2 flex flex-col shrink-0 justify-between p-4">
+    <main class="min-w-[400px] h-full border-border border-t-2 border-l-2 flex flex-col shrink-0 justify-between p-4">
         <PlayerHead />
 
         <!-- <SkinView3d :width="300" :height="400"

@@ -1,10 +1,12 @@
+import { ModLoader } from "@/types/instances";
 import { invoke } from "@tauri-apps/api/core";
 import { reactive } from "vue";
 
 
 export const launcherManager = reactive({
     minecraftVersions: [] as string[],
-
+    versions: Map<ModLoader, string[]>,
+    
     init: async () => {
         launcherManager.minecraftVersions = await launcherManager.get_minecraft_versions();
     },

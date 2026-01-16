@@ -73,7 +73,7 @@ onMounted(onInit);
 </script>
 
 <template>
-    <div>
+    <div class="overflow-hidden">
         <h2 class="text-white">
             {{ progressMessage }}
         </h2>

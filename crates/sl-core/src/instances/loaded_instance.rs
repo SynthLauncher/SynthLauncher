@@ -1,11 +1,9 @@
 use crate::{
-    config::InstanceConfig,
-    instances::{instance_metadata::InstanceMetadata, InstanceManager},
-    minecraft::{install_client, minecraft_version::LoadedMinecraftVersion},
+    accounts::AccountsManager, config::InstanceConfig, instances::{instance_metadata::InstanceMetadata, InstanceManager}, minecraft::{install_client, minecraft_version::LoadedMinecraftVersion}
 };
 use sl_java_manager::MULTI_PATH_SEPARATOR;
 use sl_meta::{minecraft::loaders::vanilla::Client, minecraft::version_manifest::VersionType};
-use sl_player::PlayerData;
+use sl_player::PlayerAccount;
 use sl_utils::{dlog, errors::BackendError, log, progress::ProgressReceiver, wlog};
 
 use chrono::DateTime;
@@ -116,7 +114,8 @@ impl<'a> LoadedInstance<'a> {
         classpath.join(MULTI_PATH_SEPARATOR)
     }
 
-    // Thanks MrMayMan
+    /// Generates sound arguments that fix the older versions sounds
+    /// For some reason older versions of Minecraft do not have sound
     fn generate_sound_arguments(&self, jvm_args: &mut Vec<String>) {
         if self.mc_type() == VersionType::OldBeta || self.mc_type() == VersionType::OldAlpha {
             jvm_args.push("-Dhttp.proxyHost=betacraft.uk".to_owned());
@@ -149,8 +148,7 @@ impl<'a> LoadedInstance<'a> {
 
     async fn generate_arguments(
         &self,
-        player_username: &str,
-        player_data: &PlayerData,
+        player_account: &PlayerAccount,
     ) -> Result<Vec<String>, BackendError> {
         let classpath = self.generate_classpath();
         let game_dir = self.instance_dir();
@@ -176,9 +174,9 @@ impl<'a> LoadedInstance<'a> {
                 "version_name" => self.mc_version(),
                 "classpath" => classpath.as_str(),
                 "natives_directory" => natives_dir.to_str()?,
-                "auth_uuid" => &player_data.id,
-                "auth_access_token" => &player_data.access_token,
-                "auth_player_name" => &player_username,
+                "auth_uuid" => &player_account.uuid,
+                "auth_access_token" => &player_account.access_token.as_deref().unwrap_or("0"),
+                "auth_player_name" => &player_account.username,
                 "clientid" => "74909cec-49b6-4fee-aa60-1b2a57ef72e1", // Please don't steal :(
                 "version_type" => "SL",
                 "library_directory" => libs_root.to_str()?,
@@ -208,6 +206,7 @@ impl<'a> LoadedInstance<'a> {
             }
         };
 
+        println!("{:?}", game_args);
         fmt_args(&mut game_args);
         fmt_args(&mut jvm_args);
 
@@ -224,7 +223,7 @@ impl<'a> LoadedInstance<'a> {
     }
 
     #[must_use = "must wait on child to exit"]
-    /// Performs the execution of the instance.
+    /// Performs the execution of an instance.
     ///
     /// # Returns
     /// - Ok((child, reader)) reader is a pipe reader that can be used to read the output of the instance (stderr and stdout)
@@ -235,14 +234,17 @@ impl<'a> LoadedInstance<'a> {
         // you should aim to ensure that the caller will get a compile time error instead of causing a runtime bug and each exported function should be self-contained.
         self.download_minecraft(&self.progress_recv).await?;
 
-        let accounts = self.manager.try_load_accounts().await?;
-        let (name, data) = accounts.get_current();
+        let mut acc_man = self.manager.env.accounts();
+        let curr_acc = acc_man
+            .get_current_account()
+            .await?
+            .expect("Current account doesn't exist!");
 
         log!(
             "Executing instance '{}' with type '{:?}', using profile '{}'",
             self.instance_metadata.name,
             self.instance_metadata.mod_loader,
-            name
+            curr_acc.username
         );
 
         let current_java_path = self.config.java.java();
@@ -254,7 +256,7 @@ impl<'a> LoadedInstance<'a> {
 
         dlog!("min_ram: {}, max_ram: {}", min_ram, max_ram);
 
-        let args = self.generate_arguments(&name, &data).await?;
+        let args = self.generate_arguments(&curr_acc).await?;
 
         dlog!("Launching with args: {:?}", &args);
 
