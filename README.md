@@ -1,10 +1,10 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)"
-            srcset="assets/images/repo/synthlauncher-banner-logo-dark-mode.png">
+            srcset="assets/images/repo/synthlauncher-banner-logo-dark-mode.svg">
     <source media="(prefers-color-scheme: light)"
-            srcset="assets/images/repo/synthlauncher-banner-logo-white-mode.png">
-    <img src="assets/images/repo/synthlauncher-banner-logo-white-mode.png"
+            srcset="assets/images/repo/synthlauncher-banner-logo-white-mode.svg">
+    <img src="assets/images/repo/synthlauncher-banner-logo-white-mode.svg"
          alt="SynthLauncher Banner Logo">
   </picture>
 </p>
