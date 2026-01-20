@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/images/repo/synthlauncher.png" alt="SynthLauncher Logo" width="400" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/images/repo/synthlauncher-banner-logo-dark-mode.png">
+    <source media="(prefers-color-scheme: white)" srcset="assets/images/repo/synthlauncher-banner-logo-white-mode.png">
+  </picture>
 </p>
 
 <p align="center">  
