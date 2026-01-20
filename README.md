@@ -1,7 +1,11 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/images/repo/synthlauncher-banner-logo-dark-mode.png">
-    <source media="(prefers-color-scheme: white)" srcset="assets/images/repo/synthlauncher-banner-logo-white-mode.png">
+    <source media="(prefers-color-scheme: dark)"
+            srcset="assets/images/repo/synthlauncher-banner-logo-dark-mode.png">
+    <source media="(prefers-color-scheme: light)"
+            srcset="assets/images/repo/synthlauncher-banner-logo-white-mode.png">
+    <img src="assets/images/repo/synthlauncher-banner-logo-white-mode.png"
+         alt="SynthLauncher Banner Logo">
   </picture>
 </p>
 
