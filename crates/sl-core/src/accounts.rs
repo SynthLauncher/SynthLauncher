@@ -29,7 +29,7 @@ impl<'a> AccountsManager<'a> {
         Ok(())
     }
 
-    async fn refresh_current_account(&mut self, requester: &Requester) -> Result<(), BackendError> {
+    pub async fn refresh_current_account(&mut self, requester: &Requester) -> Result<(), BackendError> {
         self.load().await?;
 
         let PlayerAccounts {
@@ -90,6 +90,13 @@ impl<'a> AccountsManager<'a> {
     pub async fn get_current_account(&mut self) -> Result<Option<&PlayerAccount>, BackendError> {
         self.load().await?;
         Ok(self.accounts.get(&self.accounts.current_account))
+    }
+    
+    pub async fn get_current_account_mut(&mut self) -> Result<Option<&mut PlayerAccount>, BackendError>
+    {
+        self.load().await?;
+        let account = self.accounts.get_mut(&self.accounts.current_account.clone());
+        Ok(account)
     }
 }
 

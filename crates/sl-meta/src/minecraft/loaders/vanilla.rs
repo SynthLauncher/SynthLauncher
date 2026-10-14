@@ -44,7 +44,8 @@ pub struct Rule {
 
 impl Rule {
     fn matches(&self) -> bool {
-        self.os.as_ref().is_none_or(|os| os.matches()) && self.features.as_ref().is_none_or(|f| f.is_allowed())
+        (self.os.is_none() || self.os.as_ref().is_some_and(|os| os.matches()))
+            && self.features.is_none()
     }
 
     pub fn is_allowed(&self) -> bool {

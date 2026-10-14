@@ -55,7 +55,7 @@ export const storeManager = reactive({
             storeCategory: storeCategory,
             storePage: (storePage - 1)
         });
-
+        
         return result
     },
 
@@ -75,53 +75,53 @@ export const storeManager = reactive({
         }
     },
 
-    // fetchContentVersions: async () => {
-    //     if (storeManager.storeCategory === 'modpacks') {
-    //         const result = await invoke<StoreContentVersion[]>("fetch_content_versions", {
-    //             storeType: storeManager.storeType,
-    //             slug: storeManager.selectedContent.slug,
-    //             gameVersion: undefined,
-    //             loader: undefined
-    //         })
-    //         return result
-    //     }
+    fetchContentVersions: async () => {
+        if (storeManager.storeCategory === 'modpacks') {
+            const result = await invoke<StoreContentVersion[]>("fetch_content_versions", {
+                storeType: storeManager.storeType,
+                slug: storeManager.selectedContent.slug,
+                gameVersion: undefined,
+                loader: undefined
+            })
+            return result
+        }
 
-    //     const result = await invoke<StoreContentVersion[]>("fetch_content_versions", {
-    //         storeType: storeManager.storeType,
-    //         slug: storeManager.selectedContent.slug,
-    //         gameVersion: storeManager.selectedInstance?.mc_version,
-    //         loader: storeManager.selectedInstance?.mod_loader
-    //     })
+        const result = await invoke<StoreContentVersion[]>("fetch_content_versions", {
+            storeType: storeManager.storeType,
+            slug: storeManager.selectedContent.slug,
+            gameVersion: storeManager.selectedInstance?.mc_version,
+            loader: storeManager.selectedInstance?.mod_loader
+        })
 
-    //     console.log(result)
+        console.log(result)
 
-    //     return result
-    // },
+        return result
+    },
 
-    // loadContentVersions: async () => {
-    //     storeManager.selectedContent.loading = true;
-    //     try {
-    //         storeManager.selectedContent.versions = await storeManager.fetchContentVersions()
-    //         setIfNotPresent(storeManager.selectedContents, storeManager.selectedContent.slug, storeManager.selectedContent.versions[0])
-    //     } catch (error) {
-    //     } finally {
-    //         storeManager.selectedContent.loading = false;
-    //     }
-    // },
+    loadContentVersions: async () => {
+        storeManager.selectedContent.loading = true;
+        try {
+            storeManager.selectedContent.versions = await storeManager.fetchContentVersions()
+            setIfNotPresent(storeManager.selectedContents, storeManager.selectedContent.slug, storeManager.selectedContent.versions[0])
+        } catch (error) {
+        } finally {
+            storeManager.selectedContent.loading = false;
+        }
+    },
 
-    // installContent: async () => {
-    //     try {
-    //         await invoke("install_modpack", {
-    //             slug: storeManager.selectedContent.slug,
-    //             version: storeManager.selectedContents.get(storeManager.selectedContent.slug)?.id
-    //         })
-    //         // await invoke("install_content", {
-    //         //     instanceName: storeManager.selectedInstance?.name,
-    //         //     files: Array.from(storeManager.selectedContents.values()).map(val => val?.files[0])
-    //         // })
-    //         console.log("StoreManager.installContent log: Successfully installed")
-    //     } catch (error) {
-    //         console.error("StoreManager.installContent error: ", error)
-    //     }
-    // },
+    installContent: async () => {
+        try {
+            await invoke("install_modpack", {
+                slug: storeManager.selectedContent.slug,
+                version: storeManager.selectedContents.get(storeManager.selectedContent.slug)?.id
+            })
+            await invoke("install_content", {
+                instanceName: storeManager.selectedInstance?.name,
+                files: Array.from(storeManager.selectedContents.values()).map(val => val?.files[0])
+            })
+            console.log("StoreManager.installContent log: Successfully installed")
+        } catch (error) {
+            console.error("StoreManager.installContent error: ", error)
+        }
+    },
 })

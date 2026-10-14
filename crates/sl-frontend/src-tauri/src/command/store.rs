@@ -3,6 +3,8 @@ use sl_store::{search_store, StoreContentCategory, StoreContentSearchHits, Store
 use tauri::State;
 use tokio::sync::RwLock;
 
+use crate::command::launcher;
+
 #[tauri::command]
 pub async fn cmd_search_store(
     query: &str,
@@ -23,6 +25,15 @@ pub async fn cmd_search_store(
     .map_err(|e| e.to_string())?;
     Ok(result)
 }
+
+// #[tauri::command]
+// pub async fn fetch_content_versions(
+//     store_source: StoreSource,
+//     slug: &str,
+//     game_version: Option<&str>,
+//     loader: Option<&str>,
+//     launcher_env_state: State<'_, RwLock<LauncherEnv>>
+// ) -> Result<Store>
 
 // #[tauri::command]
 // pub async fn fetch_content_versions(

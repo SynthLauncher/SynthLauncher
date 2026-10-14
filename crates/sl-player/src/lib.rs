@@ -22,11 +22,25 @@ pub struct PlayerAccount {
     pub uuid: String,
     pub refresh_token: String,
     pub username: String,
-    pub needs_refresh: bool,
     pub account_type: PlayerAccountType,
 }
 
+pub fn generate_uuid(name: &str)
+{
+    
+}
+
 impl PlayerAccount {
+    pub fn new(access_token: Option<String>, uuid: String, refresh_token: String, username: String, account_type: PlayerAccountType) -> Self {
+        Self {
+            access_token,
+            uuid,
+            refresh_token,
+            username,
+            account_type
+        }
+    }
+    
     async fn get_refresh_data(
         &self,
         requester: &Requester,

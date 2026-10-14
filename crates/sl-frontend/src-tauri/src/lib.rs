@@ -42,7 +42,7 @@ pub fn run() {
 
             
             /* Store */
-            cmd_search_store,
+            // cmd_search_store,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -27,9 +27,9 @@ watch([
       <InstanceSelector v-show="storeManager.storeCategory != 'modpacks'" />
       <ContentVersionSelector />
 
-      <!-- <button class="p-3 bg-white" @click="storeManager.installContent">
+      <button class="p-3 bg-white" @click="storeManager.installContent">
         Install
-      </button> -->
+      </button>
     </div>
 
     <StoreSearchBar v-model:searchQuery="storeManager.searchQuery" :category="storeManager.storeCategory" />

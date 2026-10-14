@@ -1,7 +1,7 @@
 use clap::Parser;
 use cli::{Cli, Commands};
 use sl_core::environment::LauncherEnv;
-use sl_player::auth::ms_auth::{login_1_link, login_2_wait, login_3_xbox};
+use sl_player::{auth::ms_auth::{login_1_link, login_2_wait, login_3_xbox}, PlayerAccount};
 use sl_utils::{dlog, elog, errors::BackendError, log, progress::ProgressReceiver};
 use tokio::io::{self};
 
@@ -11,7 +11,7 @@ async fn run_cli() -> Result<(), BackendError> {
     let env = LauncherEnv::new_at_default();
     let requester = env.requester();
     let cli = Cli::parse();
-
+      
     match cli.command {
         Commands::Create {
             instance_name,
@@ -51,6 +51,8 @@ async fn run_cli() -> Result<(), BackendError> {
         }
         Commands::AddOfflineAccount { name } => {
             let mut accounts = env.accounts();
+
+            
         }
         Commands::AddPremiumAccount => {
             let auth_code_res = login_1_link(requester).await?;

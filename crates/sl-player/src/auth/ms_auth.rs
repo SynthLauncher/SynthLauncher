@@ -388,14 +388,13 @@ pub async fn login_3_xbox(
     //     let owns_game = check_ownership
     // }
 
-    let data = PlayerAccount {
-        access_token: Some(minecraft.access_token),
-        uuid: final_detailss.id.ok_or(BackendError::HttpError(HttpError::Timeout))?,
-        refresh_token: auth_token.refresh_token,
-        needs_refresh: false,
-        username: final_detailss.name,
-        account_type: PlayerAccountType::Microsoft
-    };
+    let data = PlayerAccount::new(
+        Some(minecraft.access_token), 
+        final_detailss.id.ok_or(BackendError::HttpError(HttpError::Timeout))?,
+        auth_token.refresh_token, 
+        final_detailss.name, 
+        PlayerAccountType::Microsoft
+    );
 
     Ok(data)
 }
