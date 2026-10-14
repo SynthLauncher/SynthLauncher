@@ -21,12 +21,12 @@ pub struct PlayerAccount {
     // saving doesn't work properly, additionally entering servers too, even if the
     // access token is right
     pub uuid: String,
-    pub refresh_token: String,
+    pub refresh_token: Option<String>,
     pub username: String,
     pub account_type: PlayerAccountType,
 }
 
-pub fn generate_offline_uuid(name: &str) -> String
+fn generate_offline_uuid(name: &str) -> String
 {
     let input = format!("OfflinePlayer:{}", name.to_lowercase());
     let mut hash = md5::compute(input.as_bytes()).0;
@@ -38,7 +38,7 @@ pub fn generate_offline_uuid(name: &str) -> String
 }
 
 impl PlayerAccount {
-    pub fn new(access_token: Option<String>, uuid: String, refresh_token: String, username: String, account_type: PlayerAccountType) -> Self {
+    pub fn new(access_token: Option<String>, uuid: String, refresh_token: Option<String>, username: String, account_type: PlayerAccountType) -> Self {
         Self {
             access_token,
             uuid,
@@ -54,7 +54,7 @@ impl PlayerAccount {
         Self {
             access_token: None,
             uuid,
-            refresh_token: String::from(""),
+            refresh_token: None,
             username: username,
             account_type: PlayerAccountType::Offline
         }
@@ -65,9 +65,16 @@ impl PlayerAccount {
         requester: &Requester,
     ) -> Result<Option<AccountRefreshData>, BackendError> {
         match self.account_type {
-            PlayerAccountType::Microsoft => Ok(Some(
-                ms_auth::login_refresh(&self.refresh_token, &requester).await?,
-            )),
+            PlayerAccountType::Microsoft => {
+                if let Some(refresh_token) = &self.refresh_token 
+                {
+                    Ok(Some(
+                        ms_auth::login_refresh(refresh_token, &requester).await?,
+                    ))
+                } else {
+                    Ok(None)
+                }         
+            },
             PlayerAccountType::Offline => Ok(None),
         }
     }
@@ -78,7 +85,7 @@ impl PlayerAccount {
     ) -> Result<(), BackendError> {
         if let Some(refresh_data) = self.get_refresh_data(requester).await? {
             self.access_token = Some(refresh_data.access_token);
-            self.refresh_token = refresh_data.refresh_token;
+            self.refresh_token = Some(refresh_data.refresh_token);
         }
         Ok(())
     }

@@ -391,7 +391,7 @@ pub async fn login_3_xbox(
     let data = PlayerAccount::new(
         Some(minecraft.access_token), 
         final_detailss.id.ok_or(BackendError::HttpError(HttpError::Timeout))?,
-        auth_token.refresh_token, 
+        Some(auth_token.refresh_token), 
         final_detailss.name, 
         PlayerAccountType::Microsoft
     );

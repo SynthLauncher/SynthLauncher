@@ -38,8 +38,16 @@ impl<'a> AccountsManager<'a> {
             ..
         } = &mut self.accounts;
 
-        if let Some(account) = list.get_mut(current_account) {
-            account.refresh_account_token(&requester).await?;
+        if current_account.is_none()
+        {
+            return Ok(());
+        }
+
+        if let Some(name) = current_account.as_deref()
+        {
+            if let Some(account) = list.get_mut(name) {
+                account.refresh_account_token(&requester).await?;
+            }
         }
 
         self.sync().await?;
@@ -64,13 +72,13 @@ impl<'a> AccountsManager<'a> {
 
         self.accounts.list.remove(name);
 
-        if name == self.accounts.current_account {
-            if let Some((new_current, _)) = self.accounts.list.iter().next() {
-                self.accounts.current_account = new_current.clone();
-            } else {
-                self.accounts.current_account = String::new();
-            }
-        }
+        // if name == self.accounts.current_account {
+        //     if let Some((new_current, _)) = self.accounts.list.iter().next() {
+        //         self.accounts.current_account = Some(new_current.clone());
+        //     } else {
+        //         self.accounts.current_account = None
+        //     }
+        // }
 
         self.sync().await?;
         Ok(())
@@ -80,7 +88,7 @@ impl<'a> AccountsManager<'a> {
     pub async fn set_current_account(&mut self, name: String) -> io::Result<()> {
         self.load().await?;
         if self.accounts.list.contains_key(&name) {
-            self.accounts.current_account = name;
+            self.accounts.current_account = Some(name);
             self.sync().await?;
         }
 
@@ -89,14 +97,24 @@ impl<'a> AccountsManager<'a> {
 
     pub async fn get_current_account(&mut self) -> Result<Option<&PlayerAccount>, BackendError> {
         self.load().await?;
-        Ok(self.accounts.get(&self.accounts.current_account))
+
+        if let Some(account) = &self.accounts.current_account
+        {
+            Ok(self.accounts.get(account))
+        } else {
+            Ok(None)
+        }
     }
     
     pub async fn get_current_account_mut(&mut self) -> Result<Option<&mut PlayerAccount>, BackendError>
     {
         self.load().await?;
-        let account = self.accounts.get_mut(&self.accounts.current_account.clone());
-        Ok(account)
+        if let Some(account) = &self.accounts.current_account.clone()
+        {
+            Ok(self.accounts.get_mut(account))
+        } else {
+            Ok(None)
+        }
     }
 }
 
@@ -105,14 +123,14 @@ pub type PlayerAccountsList = HashMap<String, PlayerAccount>;
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlayerAccounts {
     scheme_version: u32,
-    current_account: String,
+    current_account: Option<String>,
     list: PlayerAccountsList,
 }
 
 impl PlayerAccounts {
     pub fn new() -> Self {
         PlayerAccounts {
-            current_account: String::new(),
+            current_account: None,
             list: PlayerAccountsList::new(),
             scheme_version: 0,
         }
