@@ -235,7 +235,7 @@ impl<'a> LoadedInstance<'a> {
         self.download_minecraft(&self.progress_recv).await?;
 
         let mut acc_man = self.manager.env.accounts();
-        // acc_man.refresh_current_account(self.manager.requester()).await?;
+        acc_man.refresh_current_account(self.manager.requester()).await?;
         let curr_acc = acc_man
             .get_current_account()
             .await?

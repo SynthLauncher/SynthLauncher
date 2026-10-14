@@ -51,8 +51,8 @@ async fn run_cli() -> Result<(), BackendError> {
         }
         Commands::AddOfflineAccount { name } => {
             let mut accounts = env.accounts();
-
-            
+            let account = PlayerAccount::offline_account(name);
+            accounts.add_account(account).await?;
         }
         Commands::AddPremiumAccount => {
             let auth_code_res = login_1_link(requester).await?;

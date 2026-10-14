@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sl_utils::{errors::BackendError, requester::Requester};
 
+use uuid::Uuid;
 use crate::auth::{AccountRefreshData, ms_auth};
 
 pub mod api;
@@ -25,9 +26,15 @@ pub struct PlayerAccount {
     pub account_type: PlayerAccountType,
 }
 
-pub fn generate_uuid(name: &str)
+pub fn generate_offline_uuid(name: &str) -> String
 {
-    
+    let input = format!("OfflinePlayer:{}", name.to_lowercase());
+    let mut hash = md5::compute(input.as_bytes()).0;
+
+    // Doing some weird stuff with hashes
+    hash[6] = (hash[6] & 0x0f) | 0x30;
+    hash[8] = (hash[8] & 0x3f) | 0x80;
+    Uuid::from_bytes(hash).to_string()
 }
 
 impl PlayerAccount {
@@ -38,6 +45,18 @@ impl PlayerAccount {
             refresh_token,
             username,
             account_type
+        }
+    }
+
+    pub fn offline_account(username: String) -> Self
+    {
+        let uuid = generate_offline_uuid(&username);
+        Self {
+            access_token: None,
+            uuid,
+            refresh_token: String::from(""),
+            username: username,
+            account_type: PlayerAccountType::Offline
         }
     }
     
