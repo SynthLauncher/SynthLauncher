@@ -12,11 +12,12 @@ import ProgressPage from "@/pages/ProgressPage.vue";
 import HomePage from "./pages/HomePage.vue";
 import CosmeticsPage from "./pages/CosmeticsPage.vue";
 import ServersPage from "./pages/ServersPage.vue";
+import Layout from "@/components/layout/Layout.vue";
 
 const routes = [
   {
     path: "/",
-    component: () => import("@/components/layout/Layout.vue"),
+    component: Layout,
     children: [
       { path: "", name: "home", component: HomePage },
       { path: "instances", name: "instances", component: InstancesPage },
