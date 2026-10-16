@@ -16,6 +16,7 @@ use crate::instances::commands::{
 
 mod command;
 mod instances;
+mod discord_rpc;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

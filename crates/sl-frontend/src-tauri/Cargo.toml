@@ -28,3 +28,4 @@ sl-store = { path = "../../sl-store" }
 tokio = "1.47.1"
 tauri-plugin-shell = "2.3.1"
 tauri-plugin-fs = "2"
+discord-rich-presence = "1.1.0"
