@@ -84,7 +84,7 @@ The GUI is built using a frontend framework managed by `pnpm` and Tauri.
 
 [![r/SynthLauncher](https://img.shields.io/reddit/subreddit-subscribers/synthlauncher?style=for-the-badge&logo=reddit)](https://www.reddit.com/r/SynthLauncher)
 
-## Feature Gallery
+## Gallery
 
 **Mod compatibility**
 
