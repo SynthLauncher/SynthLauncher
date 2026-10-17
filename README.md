@@ -23,6 +23,7 @@
 - **Modrinth and Curseforge support:** SynthLauncher has full support for installing modpacks, mods, resourcepacks and shaderpacks from Modrinth and Curseforge. 
 - **Optimized performance:** SynthLauncher is designed to be fast, efficient, and lightweight.
 - **Open-Source:** SynthLauncher is completely open-source, and open to contributors.
+- **Discord Rich Presence:** Displays the launcher's status on Discord.
 
 # Running the Code
 
@@ -82,6 +83,18 @@ The GUI is built using a frontend framework managed by `pnpm` and Tauri.
 [![SynthLauncher Discord Server](https://discord.com/api/guilds/1250864715790553098/widget.png?style=banner3)](https://discord.gg/MbBGunfMJ4)
 
 [![r/SynthLauncher](https://img.shields.io/reddit/subreddit-subscribers/synthlauncher?style=for-the-badge&logo=reddit)](https://www.reddit.com/r/SynthLauncher)
+
+## Feature Gallery
+
+**Mod compatibility**
+
+<img src="assets/images/repo/fabric-2.png" alt="SynthLauncher CLI Output" />
+<img src="assets/images/repo/fabric-1.png" alt="SynthLauncher CLI Output" />
+
+
+<br>**Discord Rich Presence**
+
+<img src="assets/images/repo/discordrpc.png" alt="SynthLauncher CLI Output" />
 
 ## Contact
 
